@@ -19,36 +19,39 @@ public class QuorumTaskServerProxy implements TaskServer {
 
     @Override
     public void startProcess(TaskContainer task) {
-        if (clusterQuorum.isPresent()) {
+        int needToQuorum = clusterQuorum.needToQuorum();
+        if (needToQuorum == 0) {
             original.startProcess(task);
             return;
         }
 
-        throwOutOfQuorumException();
+        throwOutOfQuorumException(needToQuorum);
     }
 
     @Override
     public TaskContainer poll(ActorDefinition actorDefinition) {
-        if (clusterQuorum.isPresent()) {
+        int needToQuorum = clusterQuorum.needToQuorum();
+        if (needToQuorum == 0) {
             return original.poll(actorDefinition);
         }
 
-        throwOutOfQuorumException();
+        throwOutOfQuorumException(needToQuorum);
         return null;
     }
 
     @Override
     public void release(DecisionContainer taskResult) {
-        if (clusterQuorum.isPresent()) {
+        int needToQuorum = clusterQuorum.needToQuorum();
+        if (needToQuorum == 0) {
             original.release(taskResult);
             return;
         }
 
-        throwOutOfQuorumException();
+        throwOutOfQuorumException(needToQuorum);
     }
 
-    private void throwOutOfQuorumException() {
-        throw new OutOfQuorumException();
+    private void throwOutOfQuorumException(int needToQuorum) {
+        throw new OutOfQuorumException("need to quorum " + needToQuorum);
     }
 
 }

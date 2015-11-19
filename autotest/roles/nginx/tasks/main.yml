@@ -13,7 +13,8 @@
   tags:
   - start
   docker:
-    name: tsk_http
+    name: "{{ inventory_hostname }}"
+    hostname: "{{ inventory_hostname }}"
     image: nginx:1.9.5
     state: reloaded
     net: bridge
@@ -22,12 +23,13 @@
     - "{{ nginx_config }}:/etc/nginx/nginx.conf"
     ports:
     - "80:80"
+    net: autotest
 
 - name: 'Stop nginx container'
   tags:
   - stop
   docker:
-    name: tsk_http
+    name: "{{ inventory_hostname }}"
     image: nginx:1.9.5
     state: stopped
 
@@ -35,7 +37,7 @@
   tags:
   - clean
   docker:
-    name: tsk_http
+    name: "{{ inventory_hostname }}"
     image: nginx:1.9.5
     state: absent
 

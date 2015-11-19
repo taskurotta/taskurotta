@@ -18,13 +18,13 @@ public class QuorumTaskServerProxyTest {
     private class MockClusterQuorum implements ClusterQuorum {
         boolean isPresent;
 
-        @Override
-        public boolean isPresent() {
-            return isPresent;
-        }
-
         public void setPresent(boolean isPresent) {
             this.isPresent = isPresent;
+        }
+
+        @Override
+        public int needToQuorum() {
+            return isPresent? 0: 1;
         }
     }
 

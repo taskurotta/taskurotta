@@ -144,10 +144,15 @@ public class HzProcessService extends AbstractHzProcessService implements Proces
             return;
         }
 
+        finishProcessInternal(process, returnValue);
+    }
+
+    protected void finishProcessInternal(Process process, String returnValue) {
+
         process.setEndTime(System.currentTimeMillis());
         process.setReturnValue(returnValue);
         process.setState(Process.FINISH);
-        processIMap.set(processId, process, 0, TimeUnit.NANOSECONDS);
+        processIMap.set(process.getProcessId(), process, 0, TimeUnit.NANOSECONDS);
     }
 
     @Override

@@ -30,6 +30,22 @@ public class TransportUtils {
         return result;
     }
 
+    /**
+     * Java
+     */
+    public static String getCustomId(TaskContainer taskContainer) {
+        TaskOptionsContainer taskOptions = taskContainer.getOptions();
+        if (taskOptions == null) {
+            return null;
+        }
+        TaskConfigContainer taskConfigContainer = taskOptions.getTaskConfigContainer();
+        if (taskConfigContainer == null) {
+            return null;
+        }
+        return  taskConfigContainer.getCustomId();
+    }
+
+
     public static String createQueueName(String actorId, String taskList, String queueNamePrefix) {
         return createQueueName((queueNamePrefix!=null? queueNamePrefix+actorId: actorId), taskList);
     }

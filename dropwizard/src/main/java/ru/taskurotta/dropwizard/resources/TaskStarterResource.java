@@ -36,7 +36,7 @@ public class TaskStarterResource extends TaskServerAbstractResource {
             logger.debug("Successfully started process task[{}]", taskContainer);
         } catch (Throwable e) {
             GeneralTaskServer.errorsCounter.incrementAndGet();
-            logError("Starting of process by task failed! TaskContainer = [" + taskContainer + "] ", e);
+            logError("Starting of process by task failed!", e);
             return Response.serverError().build();
         }
 

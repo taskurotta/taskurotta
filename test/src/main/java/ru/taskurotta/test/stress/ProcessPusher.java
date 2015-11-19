@@ -6,6 +6,7 @@ import com.hazelcast.core.IExecutorService;
 import com.hazelcast.core.IMap;
 import com.hazelcast.monitor.LocalExecutorStats;
 import com.hazelcast.monitor.LocalMapStats;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.support.AbstractApplicationContext;
@@ -18,13 +19,16 @@ import ru.taskurotta.hazelcast.queue.store.mongodb.MongoCachedQueueStore;
 import ru.taskurotta.hazelcast.store.MongoMapStore;
 import ru.taskurotta.server.GeneralTaskServer;
 import ru.taskurotta.service.hz.queue.HzQueueService;
+import ru.taskurotta.service.hz.storage.StringSetCounter;
 import ru.taskurotta.service.recovery.impl.RecoveryServiceImpl;
 import ru.taskurotta.service.recovery.impl.RecoveryThreadsImpl;
 import ru.taskurotta.test.stress.process.Starter;
 import ru.taskurotta.util.DaemonThread;
 import ru.taskurotta.util.metrics.HzTaskServerMetrics;
 
+import java.util.ArrayList;
 import java.util.Formatter;
+import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
@@ -37,18 +41,31 @@ public class ProcessPusher {
 
     public static int taskPerSecondSpeed = 0;
 
+    private static class ProcessToStartItem {
+
+        public long timeToStart;
+        public String customId;
+
+        public ProcessToStartItem(long timeToStart, String customId) {
+            this.timeToStart = timeToStart;
+            this.customId = customId;
+        }
+    }
+
     //with default finished processes counter, only per node
     public ProcessPusher(final Starter starter, final HazelcastInstance hazelcastInstance, final int maxProcessQuantity,
                          final int startSpeedPerSecond, final int threadCount, final int minQueuesSize,
                          final int maxQueuesSize, final int waitAfterDoneSeconds, final boolean fixedPushRate) {
-        this(starter, hazelcastInstance, maxProcessQuantity, startSpeedPerSecond, threadCount, minQueuesSize, maxQueuesSize, waitAfterDoneSeconds, fixedPushRate, new DefaultFinishedProcessCounter());
+        this(starter, hazelcastInstance, maxProcessQuantity, startSpeedPerSecond, threadCount, minQueuesSize,
+                maxQueuesSize, waitAfterDoneSeconds, fixedPushRate, new SameJVMStringSetCounter());
     }
 
     public ProcessPusher(final Starter starter, final HazelcastInstance hazelcastInstance, final int maxProcessQuantity,
                          final int startSpeedPerSecond, final int threadCount, final int minQueuesSize,
-                         final int maxQueuesSize, final int waitAfterDoneSeconds, final boolean fixedPushRate, final ProcessesCounter fpCounter) {
+                         final int maxQueuesSize, final int waitAfterDoneSeconds, final boolean fixedPushRate, final
+                         StringSetCounter stringSetCounter) {
 
-        final Queue queue = new ConcurrentLinkedQueue();
+        final Queue<ProcessToStartItem> queue = new ConcurrentLinkedQueue<ProcessToStartItem>();
 
         final long startTestTime = System.currentTimeMillis();
 
@@ -65,7 +82,7 @@ public class ProcessPusher {
 
                 if (!fixedPushRate) {
 
-                    int finishedTaskSize = fpCounter.getCount();
+                    int finishedTaskSize = (int) stringSetCounter.getSize();
                     finishedTaskCounter.set(finishedTaskSize);
 
                     // should be waiting to prevent overload
@@ -94,19 +111,20 @@ public class ProcessPusher {
 
                     int needToPush = actualSpeed - currSize;
 
-//                    logger.info("process pusher: counter {}, planned {}, actual {}. start new {}", plannedTaskCounter.get(),
-//                            actualSpeed, (int) (1D * plannedTaskCounter.get() / ((System.currentTimeMillis() - startTestTime) /
-//                                    1000)), needToPush);
-
                     double interval = 1000l / actualSpeed;
                     double timeCursor = System.currentTimeMillis();
 
                     for (int i = 0; i < needToPush; i++) {
                         timeCursor += interval;
 
-                        queue.add((long) (timeCursor));
+                        int currentTaskId = plannedTaskCounter.incrementAndGet();
 
-                        if (plannedTaskCounter.incrementAndGet() == maxProcessQuantity) {
+                        ProcessToStartItem processToStartItem = new ProcessToStartItem((long) (timeCursor),
+                                createCustomId(currentTaskId));
+
+                        queue.add(processToStartItem);
+
+                        if (currentTaskId == maxProcessQuantity) {
                             taskPerSecondSpeed = (int) (1000.0 * LifetimeProfiler.taskCount
                                     .incrementAndGet() / (double) (System.currentTimeMillis() - LifetimeProfiler
                                     .startRateTime.get()));
@@ -128,7 +146,7 @@ public class ProcessPusher {
 
             @Override
             public void daemonJob() {
-                logger.info("process pusher: startedTasks {}, finishedTasks {}, plannedTasks {}. queue.size {}",
+                logger.info("process pusher: started {} finished {} planned {} queue.size {}",
                         startedTaskCounter.get(), finishedTaskCounter.get(), plannedTaskCounter.get(), queue.size());
             }
 
@@ -145,11 +163,25 @@ public class ProcessPusher {
                     return;
                 }
 
-                int finishedTaskSize = fpCounter.getCount();
+                int finishedTaskSize = (int) stringSetCounter.getSize();
                 finishedTaskCounter.set(finishedTaskSize);
 
-                if (fpCounter.getCount() >= maxProcessQuantity) {
+                if (finishedTaskSize >= maxProcessQuantity) {
                     // stop JVM
+
+                    List<String> supposedUniqueList = new ArrayList<>();
+                    for (int i = 1; i <= maxProcessQuantity; i++) {
+                        supposedUniqueList.add(createCustomId(i));
+                    }
+
+                    List<String> uniqueCustomIds = stringSetCounter.findUniqueItems(supposedUniqueList);
+                    if (uniqueCustomIds.size() != 0) {
+                        for (String customId: uniqueCustomIds) {
+                            logger.error("Process with customId = '{}' not finished", customId);
+                        }
+                    } else {
+                        logger.info("All processes are finished");
+                    }
 
                     logger.info("Done... Total process speed is {} pps. Task speed at the all process pushed " +
                                     "moment is {} tps. Waiting before exit {} seconds",
@@ -177,9 +209,9 @@ public class ProcessPusher {
                 @Override
                 public void daemonJob() {
 
-                    Long timeToStart = (Long) queue.poll();
+                    ProcessToStartItem processToStartItem = queue.poll();
 
-                    if (timeToStart == null) {
+                    if (processToStartItem == null) {
                         try {
                             TimeUnit.MILLISECONDS.sleep(100);
                         } catch (InterruptedException e) {
@@ -190,20 +222,22 @@ public class ProcessPusher {
 
                     long currTime = System.currentTimeMillis();
 
-                    if (currTime < timeToStart) {
+                    if (currTime < processToStartItem.timeToStart) {
 
                         try {
-                            TimeUnit.MILLISECONDS.sleep(timeToStart - currTime);
+                            TimeUnit.MILLISECONDS.sleep(processToStartItem.timeToStart - currTime);
                         } catch (InterruptedException e) {
                         }
                     }
 
                     try {
-                        starter.start();
+                        starter.start(processToStartItem.customId);
                         startedTaskCounter.incrementAndGet();
                     } catch (Throwable ex) {
                         logger.error("Cannot start process. Try it later", ex);
-                        queue.offer(System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(3));
+
+                        processToStartItem.timeToStart = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(3);
+                        queue.offer(processToStartItem);
                     }
                 }
             }.start();
@@ -211,17 +245,18 @@ public class ProcessPusher {
         }
 
 
-        // start dump thread
-        new DaemonThread("stats dumper", TimeUnit.SECONDS, 5) {
+        if (hazelcastInstance != null) {
 
-            @Override
-            public void daemonJob() {
+            // start dump thread
+            new DaemonThread("stats dumper", TimeUnit.SECONDS, 5) {
 
-                long totalHeapCost = 0;
+                @Override
+                public void daemonJob() {
 
-                StringBuilder sb = new StringBuilder();
+                    long totalHeapCost = 0;
 
-                if (hazelcastInstance != null) {
+                    StringBuilder sb = new StringBuilder();
+
                     sb.append("\n============  ").append(hazelcastInstance.getName()).append("  ===========");
 
                     for (DistributedObject distributedObject : hazelcastInstance.getDistributedObjects()) {
@@ -292,7 +327,7 @@ public class ProcessPusher {
                             "  started = " + startedCount +
                             "  delta = " + (pushedCount - startedCount) +
                             "  finished = " +
-                            fpCounter.getCount() +
+                            stringSetCounter.getSize() +
                             "  broken tasks = " +
                             GeneralTaskServer.brokenProcessesCounter.get());
 
@@ -336,12 +371,17 @@ public class ProcessPusher {
 
                     logger.info(sb.toString());
 
+
                 }
 
+            }.start();
 
-            }
+        }
+    }
 
-        }.start();
+    @NotNull
+    private String createCustomId(int i) {
+        return "" + i;
     }
 
     public static String bytesToMb(long bytes) {

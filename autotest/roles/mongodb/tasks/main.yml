@@ -8,7 +8,8 @@
   tags:
   - start
   docker:
-    name: tsk_mongodb
+    name: "{{ inventory_hostname }}"
+    hostname: "{{ inventory_hostname }}"
     image: mongo:{{ mongodb_version }}
     state: reloaded
     net: bridge
@@ -16,13 +17,14 @@
     volumes:
     - "{{ mongodb_path }}:/data/db"
     - "{{ mongodb_config }}:/etc/mongo/mongodb.conf"
+    net: autotest
 
 
 - name: 'Stop mongodb container'
   tags:
   - stop
   docker:
-    name: tsk_mongodb
+    name: "{{ inventory_hostname }}"
     image: mongo:{{ mongodb_version }}
     state: stopped
 
@@ -30,7 +32,7 @@
   tags:
   - clean
   docker:
-    name: tsk_mongodb
+    name: "{{ inventory_hostname }}"
     image: mongo:{{ mongodb_version }}
     state: absent
 

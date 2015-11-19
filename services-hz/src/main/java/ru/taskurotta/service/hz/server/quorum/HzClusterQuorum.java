@@ -36,8 +36,8 @@ public class HzClusterQuorum implements MembershipListener, ClusterQuorum {
         }
     }
 
-    public boolean isPresent() {
-        return membership.get() >= quorumSize;
+    public int needToQuorum() {
+        return quorumSize - membership.get();
     }
 
     @Override

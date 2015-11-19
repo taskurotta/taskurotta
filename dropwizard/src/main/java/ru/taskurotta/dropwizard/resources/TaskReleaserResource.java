@@ -32,7 +32,7 @@ public class TaskReleaserResource extends TaskServerAbstractResource {
             logger.debug("Task successfully released, [{}]", decisionContainer);
         } catch(Throwable e) {
             GeneralTaskServer.errorsCounter.incrementAndGet();
-            logError("Releasing of task failed! DecisionContainer = [" + decisionContainer + "] ", e);
+            logError("Releasing of task failed!", e);
 
             return Response.serverError().build();
         }

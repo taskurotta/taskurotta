@@ -19,6 +19,7 @@
   - start
   docker:
     name: "{{ inventory_hostname }}"
+    hostname: "{{ inventory_hostname }}"
     image: java:openjdk-8u66-jdk
     state: reloaded
     net: bridge
@@ -29,10 +30,13 @@
     - "{{ taskurotta_config }}:/etc/taskurotta/server/config.yml"
     command:
       java -Xmx512m -Xms512m -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp/javadumps
-      -Dhazelcast.health.monitoring.level=OFF -server -jar /opt/taskurotta/taskurotta.jar
+      -Dhazelcast.health.monitoring.level=OFF -Dru.taskurotta.service.hz.storage.saveFinishedProcessCustomId=true
+      -server -jar /opt/taskurotta/taskurotta.jar
       server /etc/taskurotta/server/config.yml
     expose:
     - "8811"
+    - "7777"
+    net: autotest
 
 - name: 'Wait cluster synchronization'
   tags:

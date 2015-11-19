@@ -14,6 +14,7 @@ import ru.taskurotta.service.ora.OracleQueryUtils;
 import ru.taskurotta.service.storage.ProcessService;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.model.serialization.JsonSerializer;
+import ru.taskurotta.transport.utils.TransportUtils;
 
 import javax.sql.DataSource;
 import java.io.IOException;
@@ -101,8 +102,7 @@ public class OraProcessService extends AbstractHzProcessService implements Proce
         ) {
             ps.setString(1, task.getProcessId().toString());
             ps.setString(2, task.getTaskId().toString());
-            ps.setString(3, ((task.getOptions() != null) && (task.getOptions().getTaskConfigContainer() != null)) ?
-                    task.getOptions().getTaskConfigContainer().getCustomId() : null);
+            ps.setString(3, TransportUtils.getCustomId(task));
             ps.setLong(4, (new Date()).getTime());
             ps.setInt(5, Process.START);
             ps.setString(6, (String) taskSerializer.serialize(task));

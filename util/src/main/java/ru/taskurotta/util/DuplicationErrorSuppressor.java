@@ -8,7 +8,7 @@ import java.util.concurrent.TimeUnit;
 public class DuplicationErrorSuppressor {
 
     // todo: should be parametrized
-    private long suppressDuplicationErrorMls = TimeUnit.SECONDS.toMillis(30);
+    private long suppressDuplicationErrorMls = TimeUnit.SECONDS.toMillis(60);
 
     private static class LogErrorEvent {
         String msg;
@@ -22,10 +22,10 @@ public class DuplicationErrorSuppressor {
         }
     }
 
-    private volatile LogErrorEvent lastErrorEvent;
+    private volatile LogErrorEvent lastErrorEvent = null;
 
 
-    public boolean isLastErrorEqualsTo(String msg, Throwable ex) {
+    public synchronized boolean isLastErrorEqualsTo(String msg, Throwable ex) {
 
         LogErrorEvent newLogErrorEvent = new LogErrorEvent(msg, ex);
 

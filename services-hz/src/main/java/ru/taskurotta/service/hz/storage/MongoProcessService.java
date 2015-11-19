@@ -24,12 +24,16 @@ import java.util.UUID;
 public class MongoProcessService extends HzProcessService {
 
     private static final Logger logger = LoggerFactory.getLogger(MongoProcessService.class);
+    private static final boolean saveFinishedProcessCustomId =
+            Boolean.getBoolean("ru.taskurotta.service.hz.storage.saveFinishedProcessCustomId");
+
 
     private static final String START_TIME_FIELD_NAME = ProcessBSerializer.START_TIME.toString();
     private static final String END_TIME_FIELD_NAME = ProcessBSerializer.END_TIME.toString();
     private static final String STATE_FIELD_NAME = ProcessBSerializer.STATE.toString();
 
     private final DBCollection dbCollection;
+    private StringSetCounter mongoStringSetCounter;
 
     public MongoProcessService(HazelcastInstance hzInstance, String processesStorageMapName, DB mongoDB,
                                BSerializationService bSerializationService) {
@@ -42,6 +46,10 @@ public class MongoProcessService extends HzProcessService {
         this.dbCollection.createIndex(new BasicDBObject(START_TIME_FIELD_NAME, 1).append(STATE_FIELD_NAME, 1));
         // index for finished processes
         this.dbCollection.createIndex(new BasicDBObject(END_TIME_FIELD_NAME, 1).append(STATE_FIELD_NAME, 1));
+
+        if (saveFinishedProcessCustomId) {
+            mongoStringSetCounter = new MongoStringSetCounter("finishedProcess", mongoDB);
+        }
     }
 
     @Override
@@ -132,4 +140,29 @@ public class MongoProcessService extends HzProcessService {
         }
     }
 
+    @Override
+    public void finishProcess(UUID processId, String returnValue) {
+
+        if (!saveFinishedProcessCustomId) {
+            super.finishProcess(processId, returnValue);
+            return;
+        }
+
+        Process process = getProcess(processId);
+
+        if (process == null) {
+            logger.error("#[{}]: can't finish process, because process not found in storage", processId);
+            return;
+        }
+
+        String customId = process.getCustomId();
+        if (customId == null) {
+            mongoStringSetCounter.add("__null");
+        } else {
+            mongoStringSetCounter.add(customId);
+        }
+
+
+        finishProcessInternal(process, returnValue);
+    }
 }

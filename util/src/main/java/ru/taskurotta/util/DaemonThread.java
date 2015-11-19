@@ -22,6 +22,7 @@ public abstract class DaemonThread extends Thread {
 
     }
 
+    public static StopSignal STOP = new ru.taskurotta.util.DaemonThread.StopSignal();
     public static class StopSignal extends RuntimeException {}
 
 

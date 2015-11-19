@@ -13,7 +13,8 @@
   tags:
   - start
   docker:
-    name: tsk_http
+    name: "{{ inventory_hostname }}"
+    hostname: "{{ inventory_hostname }}"
     image: haproxy:1.6.2
     state: reloaded
     net: bridge
@@ -24,12 +25,13 @@
     - "80"
     ports:
     - "80:80"
+    net: autotest
 
 - name: 'Stop haproxy container'
   tags:
   - stop
   docker:
-    name: tsk_http
+    name: "{{ inventory_hostname }}"
     image: haproxy:1.6.2
     state: stopped
 
@@ -37,7 +39,7 @@
   tags:
   - clean
   docker:
-    name: tsk_http
+    name: "{{ inventory_hostname }}"
     image: haproxy:1.6.2
     state: absent
 

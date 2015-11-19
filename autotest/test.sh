@@ -22,6 +22,9 @@ f_play()
 
 do_start()
 {
+    if [ ! -n "$(docker network ls| grep autotest)" ];
+        then docker network create autotest
+    fi
     f_play_order
     f_play start "$PLAY_ORDER"
 }
@@ -39,6 +42,10 @@ do_clean()
 
     f_play_order_reverse
     f_play clean "$PLAY_ORDER"
+
+    if [ -n "$(docker network ls| grep autotest)" ];
+        then docker network rm autotest
+    fi
 }
 
 do_tail()

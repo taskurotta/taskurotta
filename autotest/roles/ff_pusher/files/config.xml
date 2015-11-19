@@ -6,7 +6,9 @@
             http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
             http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 
-    <context:property-placeholder location="classpath:tests/quantity/pusher.properties"/>
+    <context:property-placeholder
+            location="classpath:default.properties,
+            classpath:tests/quantity/pusher.properties"/>
     <context:annotation-config/>
 
     <bean id="processStarter" class="ru.taskurotta.test.stress.process.FullFeatureStarter">
@@ -25,8 +27,46 @@
         <constructor-arg name="maxQueuesSize" value="${test.ff.maxQueuesSize}"/>
         <constructor-arg name="waitAfterDoneSeconds" value="${test.ff.waitAfterDoneSeconds}"/>
         <constructor-arg name="fixedPushRate" value="${test.ff.fixedPushRate}" />
-        <constructor-arg name="fpCounter" ref="fpCounter"/>
+        <constructor-arg name="stringSetCounter" ref="stringSetCounter"/>
+    </bean>
 
+    <bean id="stringSetCounter" class="ru.taskurotta.service.hz.storage.MongoStringSetCounter">
+        <constructor-arg name="name" value="finishedProcess" />
+        <constructor-arg name="db" ref="mongoDB" />
+    </bean>
+
+    <!-- Mongo -->
+    <bean id="writeConcern" class="com.mongodb.WriteConcern">
+        <constructor-arg name="w" value="${mongo.options.write-concern.w}"/>
+        <constructor-arg name="wtimeout" value="${mongo.options.write-concern.wtimeout}"/>
+        <constructor-arg name="fsync" value="${mongo.options.write-concern.fsync}"/>
+        <constructor-arg name="j" value="${mongo.options.write-concern.j}"/>
+    </bean>
+
+    <bean id="mongoClientOptionsBuilder" class="ru.taskurotta.mongodb.config.CustomMongoClientOptionsBuilder">
+        <constructor-arg name="minConnectionsPerHost" value="${mongo.options.min-connections-per-host}"/>
+        <constructor-arg name="connectionsPerHost" value="${mongo.options.connections-per-host}"/>
+        <constructor-arg name="threadsAllowedToBlockForConnectionMultiplier" value="${mongo.options.threads-allowed-to-block-for-connection-multiplier}"/>
+        <constructor-arg name="maxWaitTime" value="${mongo.options.max-wait-time}"/>
+        <constructor-arg name="maxConnectionIdleTime" value="${mongo.options.max-connection-idle-time}"/>
+        <constructor-arg name="maxConnectionLifeTime" value="${mongo.options.max-connection-life-time}"/>
+        <constructor-arg name="connectTimeout" value="${mongo.options.connect-timeout}"/>
+        <constructor-arg name="socketTimeout" value="${mongo.options.socket-timeout}"/>
+        <constructor-arg name="socketKeepAlive" value="${mongo.options.socket-keep-alive}"/>
+        <constructor-arg name="writeConcern" ref="writeConcern"/>
+    </bean>
+
+    <bean id="mongoClientURI" class="com.mongodb.MongoClientURI">
+        <constructor-arg name="uri" value="${mongo.client-uri}"/>
+        <constructor-arg name="builder" ref="mongoClientOptionsBuilder"/>
+    </bean>
+
+    <bean id="mongo" class="com.mongodb.MongoClient">
+        <constructor-arg name="uri" ref="mongoClientURI"/>
+    </bean>
+
+    <bean id="mongoDB" factory-bean="mongo" factory-method="getDB">
+        <constructor-arg name="dbname" value="${mongo.db.name}" />
     </bean>
 
     <!-- Jersey native ws client. Uses new thread for each connection -->

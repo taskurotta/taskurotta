@@ -35,7 +35,7 @@ public class TaskPollerResource extends TaskServerAbstractResource {
             logger.debug("Task polled for[{}] is[{}]", actorDefinition.getName(), result);
         } catch (Throwable e) {
             GeneralTaskServer.errorsCounter.incrementAndGet();
-            logError("Poll task failed! ActorDefinition = [" + actorDefinition + "] ", e);
+            logError("Poll task failed!", e);
 
             return Response.serverError().build();
         }

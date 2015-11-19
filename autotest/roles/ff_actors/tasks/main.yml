@@ -9,6 +9,7 @@
   - start
   docker:
     name: "{{ inventory_hostname }}"
+    hostname: "{{ inventory_hostname }}"
     image: java:openjdk-8u66-jdk
     state: reloaded
     net: bridge
@@ -20,6 +21,7 @@
     command:
       java -Xmx128m -Xms128m -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp/javadumps
       -cp /opt/taskurotta/taskurotta.jar ru.taskurotta.bootstrap.Main -f /etc/taskurotta/actors/config.yml
+    net: autotest
 
 
 - name: 'Stop ff_actors container'
