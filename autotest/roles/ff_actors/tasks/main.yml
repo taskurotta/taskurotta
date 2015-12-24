@@ -10,7 +10,7 @@
   docker:
     name: "{{ inventory_hostname }}"
     hostname: "{{ inventory_hostname }}"
-    image: java:openjdk-8u66-jdk
+    image: taskurotta/java-oracle-perf:20151209
     state: reloaded
     net: bridge
     volumes:
@@ -29,7 +29,7 @@
   - stop
   docker:
     name: "{{ inventory_hostname }}"
-    image: java:openjdk-8u66-jdk
+    image: taskurotta/java-oracle-perf:20151209
     state: stopped
 
 - name: 'Remove ff_actors container'
@@ -37,7 +37,7 @@
   - clean
   docker:
     name: "{{ inventory_hostname }}"
-    image: java:openjdk-8u66-jdk
+    image: taskurotta/java-oracle-perf:20151209
     state: absent
 
 - name: 'Remove ff_actors files'

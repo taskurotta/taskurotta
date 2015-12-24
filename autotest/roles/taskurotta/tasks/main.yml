@@ -20,7 +20,7 @@
   docker:
     name: "{{ inventory_hostname }}"
     hostname: "{{ inventory_hostname }}"
-    image: java:openjdk-8u66-jdk
+    image: taskurotta/java-oracle-perf:20151209
     state: reloaded
     net: bridge
     volumes:
@@ -29,8 +29,15 @@
     - "{{ taskurotta_jar }}:/opt/taskurotta/taskurotta.jar"
     - "{{ taskurotta_config }}:/etc/taskurotta/server/config.yml"
     command:
-      java -Xmx512m -Xms512m -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp/javadumps
+      java -Xmx512m -Xms512m
+      -XX:+PreserveFramePointer
+      -XX:+HeapDumpOnOutOfMemoryError
+      -XX:HeapDumpPath=/tmp/javadumps
       -Dhazelcast.health.monitoring.level=OFF -Dru.taskurotta.service.hz.storage.saveFinishedProcessCustomId=true
+      -Dhazelcast.socket.connect.timeout.seconds=10
+      -Dhazelcast.max.join.seconds=30
+      -Dhazelcast.merge.first.run.delay.seconds=10
+      -Dhazelcast.merge.next.run.delay.seconds=10
       -server -jar /opt/taskurotta/taskurotta.jar
       server /etc/taskurotta/server/config.yml
     expose:
@@ -51,7 +58,7 @@
   - stop
   docker:
     name: "{{ inventory_hostname }}"
-    image: java:openjdk-8u66-jdk
+    image: taskurotta/java-oracle-perf:20151209
     state: stopped
 
 - name: 'Remove taskurotta container'
@@ -59,7 +66,7 @@
   - clean
   docker:
     name: "{{ inventory_hostname }}"
-    image: java:openjdk-8u66-jdk
+    image: taskurotta/java-oracle-perf:20151209
     state: absent
 
 - name: 'Remove taskurotta files'

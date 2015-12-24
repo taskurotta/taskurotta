@@ -103,7 +103,7 @@ public class RecoveryServiceImpl implements RecoveryService {
     }
 
     private boolean resurrectProcessInternal(final UUID processId) {
-        logger.trace("#[{}]: try to restart process", processId);
+        logger.trace("#[{}]: try to resurrect process", processId);
 
 
         // skip broken and already finished process
@@ -159,6 +159,9 @@ public class RecoveryServiceImpl implements RecoveryService {
 
                 DecisionContainer decisionContainer = taskService.getDecisionContainer(taskId, processId);
                 if (decisionContainer != null) {
+
+                    logger.debug("#[{}]: task is finished but still ready in Graph. Apply task decision {}",
+                            processId, taskId);
 
                     // task is finished but still ready in Graph.
                     try {
@@ -268,7 +271,8 @@ public class RecoveryServiceImpl implements RecoveryService {
             //has some modifications, check if they expired
 
             long changeTimeout = System.currentTimeMillis() - lastChange;
-            logger.debug("#[{}]: activity check for graph: change timeout[{}], last change[{}]", graph.getGraphId(), changeTimeout, lastChange);
+            logger.debug("#[{}]: activity check for graph: last change[{}], elapsed time[{}]", graph.getGraphId(),
+                    lastChange, changeTimeout);
 
             // todo: may be we not need "recoveryProcessChangeTimeout" property?
             // we can have two properties: process-finish-timeout and process-idle-timeout.
@@ -294,7 +298,7 @@ public class RecoveryServiceImpl implements RecoveryService {
     }
 
     private int restartProcessTasks(Collection<TaskContainer> taskContainers, UUID processId) {
-        logger.trace("#[{}]: try to restart [{}] task containers", processId, taskContainers);
+        logger.trace("#[{}]: try to restart task containers: [{}]", processId, taskContainers);
 
         int restartedTasks = 0;
 
@@ -325,6 +329,8 @@ public class RecoveryServiceImpl implements RecoveryService {
                     it.remove();
                     continue;
                 }
+
+                logger.trace("#[{}]/[{}]: task is ready and can be restarted", processId, taskId);
 
                 // try to prepare task
                 boolean result = true;
@@ -545,7 +551,9 @@ public class RecoveryServiceImpl implements RecoveryService {
         // is never polled? => not ready
         if (lastEnqueueTime <= 0l) {
 
-            logger.debug("#[{}]/[{}]: skip process restart, because queue [{}] is not polled by any actor", processId, taskId, queueName);
+            logger.debug("#[{}]/[{}]: skip process restart, because queue [{}] is not polled by any actor. " +
+                    "lastEnqueueTime is {}",
+                    processId, taskId, queueName, lastEnqueueTime);
 
             return false;
 

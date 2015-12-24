@@ -12,7 +12,6 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -40,7 +39,8 @@ public class HzOperationExecutor<T> implements OperationExecutor<T> {
             @Override
             public boolean offer(Runnable runnable) {
                 try {
-                    super.put(runnable);//to block thread on queue is full
+                    //Using put method instead of offer will block planner thread if queue is full
+                    super.put(runnable);
                     return true;
                 } catch (InterruptedException e) {
                     return false;
@@ -49,26 +49,19 @@ public class HzOperationExecutor<T> implements OperationExecutor<T> {
         };
 
         final ExecutorService localNodeOperationES = new ThreadPoolExecutor(poolSize, poolSize,
-                0L, TimeUnit.MILLISECONDS,
-                localOperationQueue, new ThreadFactory() {
-            @Override
-            public Thread newThread(Runnable r) {
-                Thread thread = new Thread(r);
-                thread.setName("HzOperationExecutor::worker::"+queueName);
-                thread.setDaemon(true);
-                return thread;
-            }
+                0L, TimeUnit.MILLISECONDS, localOperationQueue, r -> {
+            Thread thread = new Thread(r);
+            thread.setName("HzOperationExecutor::worker::" + queueName);
+            thread.setDaemon(true);
+            return thread;
         });
 
         //new operation poller
-        Executors.newSingleThreadExecutor(new ThreadFactory() {
-            @Override
-            public Thread newThread (Runnable r) {
-                Thread thread = new Thread(r);
-                thread.setName("HzOperationExecutor::planner::"+queueName);
-                thread.setDaemon(true);
-                return thread;
-            }
+        Executors.newSingleThreadExecutor(r -> {
+            Thread thread = new Thread(r);
+            thread.setName("HzOperationExecutor::planner::" + queueName);
+            thread.setDaemon(true);
+            return thread;
         }).submit(new Runnable() {
             @Override
             public void run() {
@@ -96,7 +89,7 @@ public class HzOperationExecutor<T> implements OperationExecutor<T> {
     }
 
     @Override
-    public void enqueue (Operation<T> operation) {
+    public void enqueue(Operation<T> operation) {
         if (!enabled) {
             return;
         }
@@ -104,7 +97,7 @@ public class HzOperationExecutor<T> implements OperationExecutor<T> {
     }
 
     @Override
-    public int size () {
+    public int size() {
         if (!enabled) {
             return 0;
         }
@@ -112,7 +105,7 @@ public class HzOperationExecutor<T> implements OperationExecutor<T> {
     }
 
     @Override
-    public boolean isEmpty () {
+    public boolean isEmpty() {
         return !enabled || (operationIQueue.isEmpty() && localOperationQueue.isEmpty());
     }
 }

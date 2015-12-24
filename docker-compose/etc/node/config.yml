@@ -1,7 +1,6 @@
 #Location of Spring application context:
 #Hazelcast without mongo mapstore
-#contextLocation: "classpath*:spring/hz-mongo.xml, classpath*:spring/stat-monitor.xml, classpath*:spring/resurrect-broken-process.xml"
-contextLocation: "classpath*:spring/hz-mongo.xml, classpath*:spring/resurrect-broken-process.xml"
+contextLocation: "classpath*:spring/hz-mongo.xml, classpath*:spring/stat-monitor.xml, classpath*:spring/resurrect-broken-process.xml"
 
 #Used for static resource serving in development mode
 assets:
@@ -20,9 +19,7 @@ properties:
   hz.jmx.detailed: true
   hz.jmx: true
   hz.port: 7777
-  hz.quorum: 2
-  hz.nodes: {% for host in groups['taskurotta'] %}{{ host }}:7777,{% endfor %}
-
+  hz.nodes: tsk_node1:7777,tsk_node2:7777,tsk_node3:7777
   mongo.client-uri: mongodb://tsk_mongodb:27017  
   hz.map.interrupted-store.restore: true
   stats.monitor.period-sec: 5
@@ -67,15 +64,10 @@ server:
 logging:
     level: INFO
     loggers:
-        com.hazelcast.nio.tcp: ALL
-        com.hazelcast.cluster: ALL
         com.hazelcast: INFO
         com.yammer: INFO
         ru.taskurotta: INFO
         org.springframework: WARN
-        ru.taskurotta.service.recovery: INFO
-        ru.taskurotta.service.hz.queue.HzQueueService: INFO
-
     appenders:
     - type: file
       currentLogFilename: "/var/log/taskurotta/service.log"

@@ -56,6 +56,14 @@ do_tail()
     grep --line-buffered "totalRate:" <(tail -f -n 10000 data/tsk_ff_actors/actors.log)) | tee /tmp/output
 }
 
+do_tail_hz()
+{
+    (grep --line-buffered "com.hazelcast" <(tail -f -n 10000 data/tsk_node1/service.log) & \
+    grep --line-buffered "com.hazelcast" <(tail -f -n 10000 data/tsk_node2/service.log)) | tee /tmp/output
+}
+
+
+
 do_errors()
 {
     if [ -f data/tsk_ff_pusher/pusher.log ]; then grep "ERROR" data/tsk_ff_pusher/pusher.log; fi
@@ -83,6 +91,9 @@ case "$1" in
     ;;
     tail)
         do_tail
+    ;;
+    tail-hz)
+        do_tail_hz
     ;;
     stop)
         do_stop

@@ -116,11 +116,22 @@ public class Decision {
         return "Decision{" +
                 "taskId=" + taskId +
                 ", processId=" + processId +
-                ", state=" + state +
+                ", state=" + Decision.getStateString(state) +
                 ", pass=" + pass +
                 ", recoveryTime=" + recoveryTime +
                 ", errorAttempts=" + errorAttempts +
                 ", decisionContainer=" + decisionContainer +
                 '}';
+    }
+
+
+    public static String getStateString(int state) {
+        switch (state) {
+            case 0: return "ready";
+            case 1: return "in progress";
+            case 2: return "done";
+        }
+
+        return "unknown " + state;
     }
 }

@@ -144,6 +144,17 @@ public class HzQueueService implements QueueService, QueueInfoRetriever {
 
     @Override
     public long getLastPolledTaskEnqueueTime(String queueName) {
+
+        if (logger.isTraceEnabled()) {
+            logger.trace("getLastPolledTaskEnqueueTime(): actorId = [{}], lastPolledTaskEnqueueTimes mao size is {}",
+                    ActorUtils.toPrefixed(queueName, queueNamePrefix), lastPolledTaskEnqueueTimes.size());
+
+            for (Map.Entry<String, Long> item: lastPolledTaskEnqueueTimes.entrySet()) {
+                logger.trace("getLastPolledTaskEnqueueTime(): lastPolledTaskEnqueueTimes entry key {} value {}",
+                        item.getKey(), item.getValue());
+            }
+        }
+
         Long time = lastPolledTaskEnqueueTimes.get(ActorUtils.toPrefixed(queueName, queueNamePrefix));
 
         // if no tasks in queue, than return -1
