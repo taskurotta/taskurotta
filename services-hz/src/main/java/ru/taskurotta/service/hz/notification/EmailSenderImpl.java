@@ -28,7 +28,7 @@ public class EmailSenderImpl implements EmailSender {
     public void send(EmailNotification emailNotification) {
         try {
             mailSender.send(toMimeMessage(emailNotification));
-            logger.info("Notification [{}] successfully sent", emailNotification);
+            logger.debug("Notification [{}] successfully sent", emailNotification);
         } catch (Exception e) {
             logger.error("Cannot send email notification ["+ emailNotification +"]", e);
         }
