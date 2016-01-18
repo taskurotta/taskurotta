@@ -97,8 +97,8 @@ public class OraProcessService extends AbstractHzProcessService implements Proce
 
         try (Connection connection = dataSource.getConnection();
              PreparedStatement ps = connection.prepareStatement(
-                     "INSERT INTO TSK_PROCESS (PROCESS_ID, START_TASK_ID, CUSTOM_ID, START_TIME, STATE, START_JSON, ACTOR_ID) " +
-                             "VALUES (?, ?, ?, ?, ?, ?, ?)")
+                     "INSERT INTO TSK_PROCESS (PROCESS_ID, START_TASK_ID, CUSTOM_ID, START_TIME, STATE, START_JSON, ACTOR_ID, TASK_LIST) " +
+                             "VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
         ) {
             ps.setString(1, task.getProcessId().toString());
             ps.setString(2, task.getTaskId().toString());
@@ -107,6 +107,7 @@ public class OraProcessService extends AbstractHzProcessService implements Proce
             ps.setInt(5, Process.START);
             ps.setString(6, (String) taskSerializer.serialize(task));
             ps.setString(7, task.getActorId());
+            ps.setString(8, TransportUtils.getTaskList(task));
             ps.executeUpdate();
         } catch (SQLException ex) {
             logger.error("DataBase exception: " + ex.getMessage(), ex);
