@@ -1,5 +1,5 @@
 ff_actors_path: "{{ data_dir }}/{{ inventory_hostname }}"
-ff_actors_config: "{{ lookup('pipe', 'find $(pwd) -name config.yml') }}"
+ff_actors_config: "{{ lookup('pipe', 'find \"$(pwd)/roles/ff_actors/files\" -name config.yml') }}"
 #ff_actors_config: "{{ lookup('pipe', 'find $(pwd) -name config-speed.yml') }}"
 ff_actors_path_javadumps: "{{ ff_actors_path }}/javadumps"
 taskurotta_jar: "undefined"
