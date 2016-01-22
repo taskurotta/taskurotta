@@ -1,0 +1,18 @@
+tsk_node1: &tsk_node
+  volumes:
+    - ../assemble/target/assemble-$MVN_PROJECT_VERSION.jar:/opt/taskurotta/taskurotta.jar
+
+tsk_node2:
+  <<: *tsk_node
+
+tsk_web_dev:
+  container_name: tsk_web_dev
+  net: taskurotta
+  image: python:2.7.11
+  volumes:
+    - ../dropwizard/src/main/resources/assets/:/www
+  command: bash -c "cd www && python -m SimpleHTTPServer 8080"
+
+tsk_http:
+  volumes:
+    - ./etc/haproxy/haproxy_dev.conf:/usr/local/etc/haproxy/haproxy.cfg
