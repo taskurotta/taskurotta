@@ -22,7 +22,6 @@
     hostname: "{{ inventory_hostname }}"
     image: taskurotta/java-oracle-perf:20151209
     state: reloaded
-    net: bridge
     volumes:
     - "{{ taskurotta_path }}:/var/log/taskurotta"
     - "{{ taskurotta_path_javadumps }}:/tmp/javadumps"

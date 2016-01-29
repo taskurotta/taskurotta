@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 
 class Generator {
 
-    private static final String anchor = "<a name=\"#%s\"></a>";
+    private static final String anchor = "<a name=\"%s\"></a>";
     private static final String newLine = System.getProperty("line.separator");
     private static final char tabChar = (char) 9;
     private static final char whiteSpaceChar = (char) 32;

@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+export MVN_PROJECT_VERSION=$(cd .. && mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate \
+    -Dexpression=project.version |grep -Ev '(^\[|Download\w+:)')
+
 do_clean_data()
 {
     echo "Remove files from data/?/* directories (except jar file)..."
@@ -49,9 +52,6 @@ do_up()
         then docker network create taskurotta
     fi
 
-    export MVN_PROJECT_VERSION=$(cd .. && mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate \
-        -Dexpression=project.version |grep -Ev '(^\[|Download\w+:)')
-
     docker-compose -f docker-compose.yml -f docker-compose_dev.yml up -d --no-deps tsk_mongodb
     echo "Waiting tsk_mongodb..."
     f_wait_log_message data/mongo/mongodb.log "waiting for connections on port"
@@ -73,6 +73,9 @@ do_up()
 
     docker-compose -f docker-compose.yml -f docker-compose_dev.yml up -d --no-deps tsk_web_dev
     echo "Python web server started for static web files"
+
+    docker-compose -f docker-compose.yml -f docker-compose_dev.yml up -d --no-deps tsk_web_doc_dev
+    echo "Python web server started for documentation files"
 
     docker-compose -f docker-compose.yml -f docker-compose_dev.yml up -d --no-deps tsk_http
     echo "HA proxy started on 80 port"

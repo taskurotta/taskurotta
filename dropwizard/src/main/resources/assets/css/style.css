@@ -328,20 +328,23 @@ span.header-mini {
 }
 
 /* documentation */
-#sidebar {
+.documentation {
+    display: table;
+}
+.documentation-menu {
+    display: table-cell;
     border-right: 1px solid #cccccc;
-    display: inline-block;
-    float: left;
-    height: 95%;
-    padding: 27px 30px 15px;
+    padding: 10px 10px 10px;
     width: 300px;
 }
 
-#content {
+.documentation-content {
+    display: table-cell;
     border-left: 1px solid #cccccc;
-    display: inline-block;
-    float: left;
-    margin-left: -1px;
     padding: 10px 40px 80px 30px;
+}
+.documentation-menu-item {
+    cursor:pointer;
+    cursor:hand;
 }
 /* /documentation */
