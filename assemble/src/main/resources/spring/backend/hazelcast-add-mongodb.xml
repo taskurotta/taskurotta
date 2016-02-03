@@ -139,35 +139,6 @@
     </bean>
     <!-- /Services -->
 
-    <!-- Executors -->
-
-    <bean id="recoveryOperationExecutor" class="ru.taskurotta.service.hz.support.HzOperationExecutor">
-        <constructor-arg name="hzInstance" ref="hzInstance"/>
-        <constructor-arg name="nativePoint" ref="recoveryService"/>
-        <constructor-arg name="queueName" value="${recovery.operation.queue.name}"/>
-        <constructor-arg name="poolSize" value="${recovery.operation.pool-size}"/>
-        <constructor-arg name="enabled" value="${recovery.enabled}"/>
-    </bean>
-
-    <bean id="taskRecoveryOperationExecutor" class="ru.taskurotta.service.hz.support.HzOperationExecutor">
-        <constructor-arg name="enabled" value="${operation.task-restart.enabled}" />
-        <constructor-arg name="hzInstance" ref="hzInstance" />
-        <constructor-arg name="nativePoint" ref="recoveryService" />
-        <constructor-arg name="poolSize" value="${operation.task-restart.pool-size}" />
-        <constructor-arg name="queueName" value="${operation.task-restart.queue-name}" />
-    </bean>
-
-    <bean id="abortProcessOperationExecutor" class="ru.taskurotta.service.hz.support.HzOperationExecutor">
-        <constructor-arg name="hzInstance" ref="hzInstance"/>
-        <constructor-arg name="nativePoint" ref="recoveryService"/>
-        <constructor-arg name="queueName" value="${operation.abort-process.queue.name}"/>
-        <constructor-arg name="poolSize" value="${operation.abort-process.pool-size}"/>
-        <constructor-arg name="enabled" value="${operation.abort-process.enabled}"/>
-    </bean>
-
-    <!-- /Executors -->
-
-
     <!-- Services support -->
     <bean id = "hzInterruptedTasksSupport" class="ru.taskurotta.service.hz.support.HzInterruptedTasksRestoreSupport" init-method="init">
         <property name="hzInstance" ref="hzInstance" />

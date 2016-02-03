@@ -12,7 +12,6 @@
     hostname: "{{ inventory_hostname }}"
     image: mongo:{{ mongodb_version }}
     state: reloaded
-    net: bridge
     command: -f /etc/mongo/mongodb.conf
     volumes:
     - "{{ mongodb_path }}:/data/db"

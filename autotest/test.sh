@@ -68,10 +68,12 @@ do_tail_hz()
 
 do_errors()
 {
+    set +e
     if [ -f data/tsk_ff_pusher/pusher.log ]; then grep "ERROR" data/tsk_ff_pusher/pusher.log; fi
-    if [ -f data/tsk_ff_pusher/pusher.log ]; then grep "ERROR" data/tsk_node1/service.log; fi
-    if [ -f data/tsk_ff_pusher/pusher.log ]; then grep "ERROR" data/tsk_node2/service.log; fi
-    if [ -f data/tsk_ff_pusher/pusher.log ]; then grep "ERROR" data/tsk_ff_actors/actors.log; fi
+    if [ -f data/tsk_node1/service.log ]; then grep "ERROR" data/tsk_node1/service.log; fi
+    if [ -f data/tsk_node2/service.log ]; then grep "ERROR" data/tsk_node2/service.log; fi
+    if [ -f data/tsk_ff_actors/actors.log ]; then grep "ERROR" data/tsk_ff_actors/actors.log; fi
+    set -e
 }
 
 do_prepare()

@@ -160,6 +160,7 @@ public class QueueContainer {
             }
 
             if (buffer.isEmpty()) {
+
                 loadBuffer();
                 // open buffer if it is not full
                 if (size() <= maxBufferSize) {
@@ -201,10 +202,12 @@ public class QueueContainer {
     }
 
     private void reset() {
-        tailId = store.getMaxItemId();
-        headId = store.getMinItemId();
-        buffer.clear();
-        heapCost = 0;
+        if (store.isEnabled()) {
+            tailId = store.getMaxItemId();
+            headId = store.getMinItemId();
+            buffer.clear();
+            heapCost = 0;
+        }
     }
 
 
@@ -263,18 +266,23 @@ public class QueueContainer {
 
         maxBufferSize = config.getCacheSize();
 
-        tailId = store.getMaxItemId();
-        headId = store.getMinItemId();
+        if (this.store.isEnabled()) {
+            tailId = store.getMaxItemId();
+            headId = store.getMinItemId();
 
-        loadBuffer();
+            loadBuffer();
 
-        if (size() >= maxBufferSize) {
-            bufferClosed = true;
+            if (size() >= maxBufferSize) {
+                bufferClosed = true;
+            } else {
+                bufferClosed = false;
+            }
+
+            scheduleResizing();
         } else {
-            bufferClosed = false;
+            // disable queue item eviction logic
+            maxBufferSize = Integer.MAX_VALUE;
         }
-
-        scheduleResizing();
     }
 
     long nextId() {
@@ -291,6 +299,10 @@ public class QueueContainer {
     }
 
     public boolean isEvictable() {
+        if (!store.isEnabled()) {
+            return false;
+        }
+
         service.scheduleResizing(name, 5000);
 
         resizeBuffer(sizeAdviser.getRecommendedSize(name));

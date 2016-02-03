@@ -313,4 +313,16 @@
           init-method="init"/>
     <!-- Metrics data support -->
 
+    <!-- Executors -->
+
+    <bean id="abortProcessOperationExecutor" class="ru.taskurotta.service.hz.support.HzOperationExecutor">
+        <constructor-arg name="hzInstance" ref="hzInstance"/>
+        <constructor-arg name="nativePoint" ref="recoveryService"/>
+        <constructor-arg name="queueName" value="${operation.abort-process.queue.name}"/>
+        <constructor-arg name="poolSize" value="${operation.abort-process.pool-size}"/>
+        <constructor-arg name="enabled" value="${operation.abort-process.enabled}"/>
+    </bean>
+
+    <!-- /Executors -->
+
 </beans>

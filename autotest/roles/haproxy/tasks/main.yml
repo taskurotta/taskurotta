@@ -17,7 +17,6 @@
     hostname: "{{ inventory_hostname }}"
     image: haproxy:1.6.2
     state: reloaded
-    net: bridge
     volumes:
     - "{{ haproxy_path }}:/var/log/nginx"
     - "{{ haproxy_config }}:/usr/local/etc/haproxy/haproxy.cfg"
