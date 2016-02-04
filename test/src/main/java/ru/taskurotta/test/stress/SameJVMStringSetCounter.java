@@ -23,7 +23,7 @@ public class SameJVMStringSetCounter implements StringSetCounter {
 
     @NotNull
     @Override
-    public List<String> findUniqueItems(@NotNull List<? extends String> supposedUniqueList) {
+    public List<String> findUniqueItems(@NotNull List<String> supposedUniqueList) {
         throw new IllegalStateException("Not implemented yet!");
     }
 }

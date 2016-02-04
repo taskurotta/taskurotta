@@ -48,7 +48,7 @@ public class HzConfigService implements ConfigService, ConfigInfoRetriever {
         this.hazelcastInstance = hazelcastInstance;
         this.actorPreferencesMapName = actorPreferencesMapName;
 
-        new Thread(){
+        new Thread() {
             @Override
             public void run() {
                 try {
@@ -67,7 +67,7 @@ public class HzConfigService implements ConfigService, ConfigInfoRetriever {
         this.defaultTimeUnit = defaultTimeUnit;
         this.actorPreferencesMapName = actorPreferencesMapName;
 
-        new Thread(){
+        new Thread() {
             @Override
             public void run() {
                 try {
@@ -148,16 +148,22 @@ public class HzConfigService implements ConfigService, ConfigInfoRetriever {
         IMap<String, ActorPreferences> distributedActorPreferences = hazelcastInstance.getMap(actorPreferencesMapName);
         ActorPreferences value = null;
 
-        if (!distributedActorPreferences.containsKey(actorId)) {
-            value = new ActorPreferences();
-            value.setId(actorId);
-        } else {
+        distributedActorPreferences.lock(actorId);
+
+        try {
+
             value = distributedActorPreferences.get(actorId);
+
+            if (value == null) {
+                value = new ActorPreferences();
+                value.setId(actorId);
+            }
+
+            value.setBlocked(isBlocked);
+            distributedActorPreferences.set(actorId, value);
+        } finally {
+            distributedActorPreferences.unlock(actorId);
         }
-
-        value.setBlocked(isBlocked);
-        distributedActorPreferences.set(actorId, value);
-
     }
 
     @Override
@@ -167,7 +173,7 @@ public class HzConfigService implements ConfigService, ConfigInfoRetriever {
 
     public Collection<ActorPreferences> getAllActorPreferences() {
         if (localActorPreferences.isEmpty()) {
-            for (ActorPreferences ap: ConfigServiceUtils.getDefaultActorPreferences()) {
+            for (ActorPreferences ap : ConfigServiceUtils.getDefaultActorPreferences()) {
                 localActorPreferences.put(ap.getId(), ap);
             }
         }

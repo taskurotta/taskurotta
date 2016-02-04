@@ -16,7 +16,7 @@
         <url>http://taskurotta.org</url>
     </scm>
     <properties>
-        <kotlin.version>1.0.0-beta-2423</kotlin.version>
+        <kotlin.version>1.0.0-beta-4589</kotlin.version>
     </properties>
 
     <licenses>

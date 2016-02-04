@@ -345,6 +345,7 @@ public class GeneralTaskServer implements TaskServer {
 
             processService.finishProcess(processId, dependencyDecision.getFinishedProcessValue());
             taskService.finishProcess(processId, dependencyService.getGraph(processId).getProcessTasks());
+            // todo: use different time from config
             garbageCollectorService.collect(processId, timeBeforeDeleteFinishedProcess);
         }
 
