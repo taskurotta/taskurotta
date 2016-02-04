@@ -26,14 +26,13 @@ import com.hazelcast.spi.annotation.PrivateApi;
 import com.hazelcast.util.ExceptionUtil;
 import ru.taskurotta.hazelcast.queue.config.CachedQueueServiceConfig;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -250,19 +249,24 @@ public final class HazelcastInstanceFactory {
         }
     }
 
-    static Map<MemberImpl, HazelcastInstanceImpl> getInstanceImplMap() {
-        final Map<MemberImpl, HazelcastInstanceImpl> map = new HashMap<MemberImpl, HazelcastInstanceImpl>();
+    static Set<HazelcastInstanceImpl> getInstanceImpls(Collection<Member> members) {
+        final Set<HazelcastInstanceImpl> set = new HashSet<HazelcastInstanceImpl>();
         for (InstanceFuture f : INSTANCE_MAP.values()) {
             try {
-                HazelcastInstanceProxy instanceProxy = f.get();
-                final HazelcastInstanceImpl impl = instanceProxy.original;
-                if (impl != null) {
-                    map.put(impl.node.getLocalMember(), impl);
+                if (f.isSet()) {
+                    HazelcastInstanceProxy instanceProxy = f.get();
+                    final HazelcastInstanceImpl impl = instanceProxy.original;
+                    if (impl != null) {
+                        final MemberImpl localMember = impl.node.getLocalMember();
+                        if (members.contains(localMember)) {
+                            set.add(impl);
+                        }
+                    }
                 }
             } catch (RuntimeException ignore) {
             }
         }
-        return map;
+        return set;
     }
 
     static void remove(HazelcastInstanceImpl instance) {
@@ -319,6 +323,10 @@ public final class HazelcastInstanceFactory {
                 this.throwable = throwable;
                 notifyAll();
             }
+        }
+
+        boolean isSet() {
+            return hz != null;
         }
     }
 }
