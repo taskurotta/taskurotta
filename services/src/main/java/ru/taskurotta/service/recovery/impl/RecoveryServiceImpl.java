@@ -451,6 +451,9 @@ public class RecoveryServiceImpl implements RecoveryService {
             Graph graph = dependencyService.getGraph(processId);
             if (graph == null) {
 
+                // recovery service should restart this process from beginning
+                processService.markProcessAsStarted(processId);
+
                 // remove garbage
                 interruptedTasksService.delete(processId, taskId);
                 return false;
