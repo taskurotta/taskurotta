@@ -26,6 +26,7 @@ import java.util.concurrent.locks.Lock;
 public class LostProcessCleaner implements GarbageCollectorThread {
 
     private static final Logger logger = LoggerFactory.getLogger(LostProcessCleaner.class);
+    private static final long GRACE_WAIT_TIME = TimeUnit.MINUTES.toMillis(30);
 
     private ProcessService processService;
     private GarbageCollectorService garbageCollectorService;
@@ -47,8 +48,8 @@ public class LostProcessCleaner implements GarbageCollectorThread {
         this.garbageCollectorService = garbageCollectorService;
         this.lostProcessFindTimeout = lostProcessFindTimeout;
         this.batchSize = batchSize;
-        this.timeBeforeDeleteFinishedProcess = timeBeforeDeleteFinishedProcess;
-        this.timeBeforeDeleteAbortedProcess = timeBeforeDeleteAbortedProcess;
+        this.timeBeforeDeleteFinishedProcess = timeBeforeDeleteFinishedProcess + GRACE_WAIT_TIME;
+        this.timeBeforeDeleteAbortedProcess = timeBeforeDeleteAbortedProcess + GRACE_WAIT_TIME;
         this.enabled.set(enabled);
         this.nodeLock = nodeLock;
 

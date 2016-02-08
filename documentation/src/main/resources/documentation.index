@@ -1,15 +1,4 @@
-src/main/resources/content/Preface.md
 src/main/resources/content/WhatsNew.md
-	src/main/resources/content/WhatsNewImprovements.md
-	src/main/resources/content/WhatsNewFixes.md
-src/main/resources/content/GettingStarted.md
-	src/main/resources/content/WhyTaskurotta.md
-	src/main/resources/content/Installation.md
-		src/main/resources/content/InstallingWithMongodb.md
-	src/main/resources/content/StartingClusterAndActors.md
-	src/main/resources/content/ConfiguringTaskurotta.md
-	src/main/resources/content/UseCases.md
-	src/main/resources/content/Resources.md
-src/main/resources/content/FAQ.md
-src/main/resources/content/Glossary.md
+src/main/resources/content/GC.md
+src/main/resources/content/Documentation.md
 src/main/resources/content/Autotest.md

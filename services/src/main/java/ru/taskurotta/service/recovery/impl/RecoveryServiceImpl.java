@@ -464,7 +464,8 @@ public class RecoveryServiceImpl implements RecoveryService {
 
             if (taskService.restartTask(taskId, processId, false, true)) {
                 TaskContainer tc = taskService.getTask(taskId, processId);
-                if (tc != null && queueService.enqueueItem(tc.getActorId(), tc.getTaskId(), tc.getProcessId(), System.currentTimeMillis(), TransportUtils.getTaskList(tc))) {
+                if (tc != null && queueService.enqueueItem(tc.getActorId(), tc.getTaskId(), tc.getProcessId(),
+                        System.currentTimeMillis(), TransportUtils.getTaskList(tc))) {
                     interruptedTasksService.delete(processId, taskId);
                     restartedBrokenTasks.incrementAndGet();
                 }
@@ -479,7 +480,6 @@ public class RecoveryServiceImpl implements RecoveryService {
                 logger.debug("restartInterruptedTask(): Can not restart interrupted task. taskId = {} processId= {}",
                         taskId, processId);
             }
-
 
 
             return true;
@@ -555,7 +555,7 @@ public class RecoveryServiceImpl implements RecoveryService {
         if (lastEnqueueTime <= 0l) {
 
             logger.debug("#[{}]/[{}]: skip process restart, because queue [{}] is not polled by any actor. " +
-                    "lastEnqueueTime is {}",
+                            "lastEnqueueTime is {}",
                     processId, taskId, queueName, lastEnqueueTime);
 
             return false;

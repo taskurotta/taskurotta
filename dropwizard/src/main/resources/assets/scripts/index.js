@@ -342,7 +342,7 @@ angular.module('indexApp', ['coreApp','homeModule', 'queueModule', 'actorModule'
         });
 
         $stateProvider.state('documentation', {
-            url: '/documentation',
+            url: '/documentation?{anchor}',
             params: {},
             views: {
                 'navigation': {

@@ -1,7 +1,6 @@
 angular.module('documentationModule', ['coreApp'])
 
-    .controller('documentationController', function ($log, $scope, $http, $location) {
-        $log.info('documentationController');
+    .controller('documentationController', function ($scope, $rootScope, $http, $location, coreApp) {
 
         $scope.documentationUrl = $location.absUrl();
         $http.get('/documentation/menu.json').success(function (response) {
@@ -10,17 +9,27 @@ angular.module('documentationModule', ['coreApp'])
 
         $scope.scrollToAnchor = function (anchorId) {
             var anchors = document.getElementsByTagName("a");
-            for (var i = 0; i < anchors.length; i ++) {
+            for (var i = 0; i < anchors.length; i++) {
                 if (anchors[i].name === anchorId) {
                     window.scrollTo(0, anchors[i].offsetTop - 40);
                     break;
                 }
             }
-        }
+
+        };
+
+        $scope.formParams = coreApp.copyStateParams();
+
+        $rootScope.$on("$includeContentLoaded", function(event, templateName){
+            if ($scope.formParams.anchor) {
+                $scope.scrollToAnchor($scope.formParams.anchor);
+            }
+        });
+
     })
 
-    .directive('menuBuilder', function() {
+    .directive('menuBuilder', function () {
         return {
-            templateUrl: '/scripts/documentation/menu.html'
+            templateUrl: '/views/documentation/menu.html'
         };
     });

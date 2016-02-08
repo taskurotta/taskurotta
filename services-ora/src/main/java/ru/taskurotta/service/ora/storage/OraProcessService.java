@@ -396,7 +396,8 @@ public class OraProcessService extends AbstractHzProcessService implements Proce
     }
 
     @Override
-    public ResultSetCursor<UUID> findLostProcesses(long lastFinishedProcessDeleteTime, long lastAbortedProcessDeleteTime, int batchSize) {
+    public ResultSetCursor<UUID> findLostProcesses(long lastFinishedProcessDeleteTime,
+                                                   long lastAbortedProcessDeleteTime, int batchSize) {
         return new ResultSetCursor<UUID>() {
 
             private Connection connection;
@@ -408,7 +409,7 @@ public class OraProcessService extends AbstractHzProcessService implements Proce
                 preparedStatement = connection.prepareStatement(SQL_FIND_LOST_PROCESSES);
 
                 preparedStatement.setInt(1, Process.ABORTED);
-                preparedStatement.setLong(2, lastFinishedProcessDeleteTime);
+                preparedStatement.setLong(2, lastAbortedProcessDeleteTime);
                 preparedStatement.setInt(3, Process.FINISH);
                 preparedStatement.setLong(4, lastFinishedProcessDeleteTime);
                 preparedStatement.setFetchSize(batchSize);

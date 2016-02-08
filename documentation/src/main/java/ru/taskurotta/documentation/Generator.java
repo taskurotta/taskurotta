@@ -1,6 +1,7 @@
 package ru.taskurotta.documentation;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.pegdown.Extensions;
 import org.pegdown.PegDownProcessor;
 
 import java.io.BufferedReader;
@@ -150,7 +151,7 @@ class Generator {
     }
 
     private static String createSingleHtml(String markdownContent) throws IOException {
-        return new PegDownProcessor().markdownToHtml(markdownContent);
+        return new PegDownProcessor(Extensions.TABLES).markdownToHtml(markdownContent);
     }
 
     private static void saveSingleHtml(Path targetPath, String singleHtml) throws IOException {
