@@ -38,38 +38,43 @@ public abstract class AbstractGCTask implements Runnable {
             return;
         }
 
-        Process process = processService.getProcess(processId);
+        processService.lock(processId);
+        try {
+            Process process = processService.getProcess(processId);
 
-        Graph graph = graphDao.getGraph(processId);
+            Graph graph = graphDao.getGraph(processId);
 
-        if (graph != null && !graph.isFinished()) {
-            logger.error("Graph for process [{}] isn't finished, stop garbage collector for this process", processId);
-            return;
-        }
-
-        if (graph == null) {
-            logger.warn("Not found graph for process [{}], stop garbage collector for this process", processId);
-            if (processService.getStartTask(processId) == null) {
-                logger.warn("And processService has no start task for it [{}]", processId);
+            if (graph != null && !graph.isFinished()) {
+                logger.error("Graph for process [{}] isn't finished, stop garbage collector for this process", processId);
+                return;
             }
-        }  else {
 
-            Set<UUID> finishedItems = graph.getFinishedItems();
-            taskDao.deleteDecisions(finishedItems, processId);
-            taskDao.deleteTasks(finishedItems, processId);
+            if (graph == null) {
+                logger.warn("Not found graph for process [{}], stop garbage collector for this process", processId);
+                if (processService.getStartTask(processId) == null) {
+                    logger.warn("And processService has no start task for it [{}]", processId);
+                }
+            } else {
 
-            // todo: remove unfinished and interrupted tasks
+                Set<UUID> finishedItems = graph.getFinishedItems();
+                taskDao.deleteDecisions(finishedItems, processId);
+                taskDao.deleteTasks(finishedItems, processId);
 
-            graphDao.deleteGraph(processId);
+                // todo: remove unfinished and interrupted tasks
 
+                graphDao.deleteGraph(processId);
+
+            }
+
+            if (process != null) {
+                processService.deleteProcess(processId);
+            } else {
+                logger.warn("Not found process [{}]", processId);
+            }
+
+        } finally {
+            processService.unlock(processId);
         }
-
-        if (process != null) {
-            processService.deleteProcess(processId);
-        } else {
-            logger.warn("Not found process [{}]", processId);
-        }
-
 
         logger.debug("Finish garbage collector for process [{}]", processId);
     }
