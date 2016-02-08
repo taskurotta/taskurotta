@@ -6,7 +6,7 @@
     <parent>
         <artifactId>ru.taskurotta</artifactId>
         <groupId>ru.taskurotta</groupId>
-        <version>0.10.5-SNAPSHOT</version>
+        <version>10.5</version>
     </parent>
 
     <artifactId>assemble</artifactId>
