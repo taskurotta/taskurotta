@@ -170,6 +170,18 @@ angular.module('processModule', ['taskModule', 'coreApp'])
                 });
         };
 
+        $scope.abort = function (process) {
+            coreApp.openConfirmModal('Current process, it\'s graph, all tasks and decisions will be deleted.',
+                function confirmed() {
+                    processRest.abort(process.processId, function success(value) {
+                        $log.log('Process abort success', value);
+                        loadModel();
+                    }, function error(reason) {
+                        coreApp.error('Process abort error',reason);
+                    });
+                });
+        };
+
     })
 
     .controller('processCreateController', function ($scope, $log, coreApp, processRest, $stateParams, $state) {

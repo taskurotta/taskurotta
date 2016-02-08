@@ -18,6 +18,10 @@
                     popover="Clone process" popover-trigger="mouseenter">
                 <i class="icon-tags"></i>
             </button>
+            <button class="btn btn-small" ng-click="abort(process)"
+                    popover="Abort process" popover-trigger="mouseenter" ng-disabled = "process.state == 3">
+                <i class="icon-trash"></i>
+            </button>
         </div>
     </div>
     <table class="table table-striped">
