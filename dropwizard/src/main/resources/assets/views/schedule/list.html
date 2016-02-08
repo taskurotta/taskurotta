@@ -38,8 +38,8 @@
                     <a ui-sref="schedule({id:schedule.job.id})" class="btn-link">
                         <b>{{ schedule.job.name }}</b>
                     </a>
-                    <div ng-if="schedule.job.queueLimit>0" class="muted">
-                        <i>Queue limit:</i> <b>{{schedule.job.queueLimit}}</b>
+                    <div ng-if="schedule.job.limit>0" class="muted">
+                        <i>Limit:</i> <b>{{schedule.job.limit}}</b>
                     </div>
                     <div ng-if="schedule.job.maxErrors>0" class="muted">
                         <i>Max errors:</i> <b>{{schedule.job.maxErrors}}</b>

@@ -16,6 +16,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class HzGarbageCollectorService implements GarbageCollectorService {
 
@@ -24,6 +25,8 @@ public class HzGarbageCollectorService implements GarbageCollectorService {
     private boolean enabled;
 
     private CachedDelayQueue<UUID> garbageCollectorQueue;
+
+    public static AtomicLong deletedProcessCounter = new AtomicLong();
 
     public HzGarbageCollectorService(final ProcessService processService, final GraphDao graphDao,
                                      final TaskDao taskDao, QueueFactory queueFactory, String garbageCollectorQueueName,
@@ -62,6 +65,7 @@ public class HzGarbageCollectorService implements GarbageCollectorService {
                             UUID processId = garbageCollectorQueue.poll(50, TimeUnit.SECONDS);
                             if (processId != null) {
                                 gc(processId);
+                                deletedProcessCounter.incrementAndGet();
                             }
                         } catch (Exception e) {
                             logger.error(e.getLocalizedMessage(), e);

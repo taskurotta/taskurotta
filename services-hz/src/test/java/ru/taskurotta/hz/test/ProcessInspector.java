@@ -68,8 +68,8 @@ public class ProcessInspector {
                 getUUID("g0YD7ek9wGsjbGciFJL8sA=="));
 
 
-//        UUID processId = getUUID("I0ieD4Yc1LEHzv3XSCZAnw==");
-        UUID processId = UUID.fromString("febd8d5a-1f35-43ec-9770-142e7f48a425");
+        UUID processId = getUUID("Rktw9cpLJgm/FFXZw1MGmA==");
+//        UUID processId = UUID.fromString("febd8d5a-1f35-43ec-9770-142e7f48a425");
 
         System.err.println("Date = " + new Date(2863196575625l));
         System.err.println("Process ID = " + processId + "\n");
@@ -95,7 +95,7 @@ public class ProcessInspector {
                 System.err.println("Task decision = " + taskDecisionStore.load(taskKey));
 
                 try {
-                System.err.println("Task container = " + taskService.getTaskToExecute(taskId, processId, true));
+                    System.err.println("Task container = " + taskService.getTaskToExecute(taskId, processId, true));
                 } catch (IllegalStateException ex) {
                     System.err.println("Task container not ready yet..." + ex.getMessage());
                 }
@@ -222,7 +222,7 @@ public class ProcessInspector {
 
     private static MongoClient getMongoClient() throws Throwable {
         ServerAddress serverAddress = new ServerAddress("127.0.0.1", 27017);
-        MongoClientURI mongoClientURI = new MongoClientURI("mongodb://127.0.0.1:27017/?replicaSet=tskrs");
+        MongoClientURI mongoClientURI = new MongoClientURI("mongodb://172.18.0.2:27017");
         MongoClient mongoClient = new MongoClient(mongoClientURI);
         mongoClient.setWriteConcern(new WriteConcern(1, 0, false, true));
 
@@ -234,12 +234,12 @@ public class ProcessInspector {
 
         return new GeneralTaskService(new TaskDao() {
             @Override
-            public UUID startTask(UUID taskId, UUID processId, long workerTimeout, boolean failOnWorkerTimeout) {
+            public Decision startTask(UUID taskId, UUID processId, long workerTimeout, boolean failOnWorkerTimeout) {
                 return null;
             }
 
             @Override
-            public boolean restartTask(UUID taskId, UUID processId, boolean force) {
+            public boolean restartTask(UUID taskId, UUID processId, boolean force, boolean ifFatalError) {
                 return true;
             }
 
@@ -249,8 +249,8 @@ public class ProcessInspector {
             }
 
             @Override
-            public boolean finishTask(DecisionContainer taskDecision) {
-                return true;
+            public Decision finishTask(DecisionContainer taskDecision) {
+                return null;
             }
 
             @Override
@@ -271,10 +271,20 @@ public class ProcessInspector {
             }
 
             @Override
-            public DecisionContainer getDecision(UUID taskId, UUID processId) {
-
+            public Decision getDecision(UUID taskId, UUID processId) {
                 TaskKey taskKey = new TaskKey(taskId, processId);
-                return ((Decision) taskDecisionStore.load(taskKey)).getDecisionContainer();
+                return (Decision) taskDecisionStore.load(taskKey);
+            }
+
+            @Override
+            public DecisionContainer getDecisionContainer(UUID taskId, UUID processId) {
+
+                Decision decision = getDecision(taskId, processId);
+                if (decision == null) {
+                    return null;
+                }
+
+                return decision.getDecisionContainer();
             }
 
             @Override

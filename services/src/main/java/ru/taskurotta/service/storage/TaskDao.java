@@ -3,6 +3,7 @@ package ru.taskurotta.service.storage;
 import ru.taskurotta.service.common.ResultSetCursor;
 import ru.taskurotta.service.console.model.GenericPage;
 import ru.taskurotta.service.console.retriever.command.TaskSearchCommand;
+import ru.taskurotta.transport.model.Decision;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 
@@ -17,13 +18,20 @@ import java.util.UUID;
  */
 public interface TaskDao {
 
-    UUID startTask(UUID taskId, UUID processId, long workerTimeout, boolean failOnWorkerTimeout);
+    Decision startTask(UUID taskId, UUID processId, long workerTimeout, boolean failOnWorkerTimeout);
 
-    boolean restartTask(UUID taskId, UUID processId, boolean force);
+    /**
+     * @param taskId
+     * @param processId
+     * @param force restart task anyway
+     * @param ifFatalError restart only if decision container has fatal error
+     * @return
+     */
+    boolean restartTask(UUID taskId, UUID processId, boolean force, boolean ifFatalError);
 
     boolean retryTask(UUID taskId, UUID processId);
 
-    boolean finishTask(DecisionContainer taskDecision);
+    Decision finishTask(DecisionContainer taskDecision);
 
     TaskContainer getTask(UUID taskId, UUID processId);
 
@@ -31,7 +39,9 @@ public interface TaskDao {
 
     void updateTask(TaskContainer taskContainer);
 
-    DecisionContainer getDecision(UUID taskId, UUID processId);
+    Decision getDecision(UUID taskId, UUID processId);
+
+    DecisionContainer getDecisionContainer(UUID taskId, UUID processId);
 
     boolean isTaskReleased(UUID taskId, UUID processId);
 

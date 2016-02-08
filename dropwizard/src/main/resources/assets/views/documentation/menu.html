@@ -1,0 +1,11 @@
+<script type="text/ng-template" id="menu-tree">
+    <a ui-sref="documentation({anchor:item.anchor})" class="documentation-menu-item">{{item.caption}}</a>
+    <!--ng-click="scrollToAnchor(item.anchor)"-->
+    <ol ng-if="item.children">
+        <li ng-repeat="item in item.children" ng-include="'menu-tree'"></li>
+    </ol>
+</script>
+
+<ol>
+    <li ng-repeat="item in menuItems" ng-include="'menu-tree'"></li>
+</ol>

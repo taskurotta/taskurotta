@@ -1,5 +1,7 @@
 package ru.taskurotta.service.dependency.links;
 
+import ru.taskurotta.service.common.ResultSetCursor;
+
 import java.util.UUID;
 
 /**
@@ -49,4 +51,6 @@ public interface GraphDao {
         public boolean apply(Graph graph);
 
     }
+
+    ResultSetCursor<UUID> findLostGraphs(long lastGraphChangeTime, int batchSize);
 }

@@ -8,6 +8,7 @@ import ru.taskurotta.service.console.model.GenericPage;
 import ru.taskurotta.service.console.retriever.TaskInfoRetriever;
 import ru.taskurotta.service.console.retriever.command.TaskSearchCommand;
 import ru.taskurotta.transport.model.ArgContainer;
+import ru.taskurotta.transport.model.Decision;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.model.TaskOptionsContainer;
@@ -50,7 +51,7 @@ public class GeneralTaskService implements TaskService, TaskInfoRetriever {
         // due guarantees for its immutability.
 
         if (task == null) {
-            logger.error("Inconsistent state, taskId[{}] does not present at task service", taskId);
+            logger.warn("Inconsistent state, taskId[{}] does not present at task service", taskId);
             return null;
         }
 
@@ -111,12 +112,15 @@ public class GeneralTaskService implements TaskService, TaskInfoRetriever {
 
         if (!simulate) {
             // todo: actors should support acceptLast and acceptFirst strategies depends of their needs
-            UUID pass = taskDao.startTask(taskId, processId, workerTimeoutMilliseconds, false);
+            Decision decision = taskDao.startTask(taskId, processId, workerTimeoutMilliseconds, false);
 
-            if (pass == null) {
-                logger.error("{}/{} Task can not be executed. It is already started or finished", taskId, processId);
+            if (decision == null) {
+                logger.debug("{}/{} Task can not be executed. It is already started or finished", taskId, processId);
+
                 return null;
             }
+
+            task.setErrorAttempts(decision.getErrorAttempts());
 
 //            task.setPass(pass);
         }
@@ -176,7 +180,7 @@ public class GeneralTaskService implements TaskService, TaskInfoRetriever {
      */
     private ArgContainer getTaskValue(UUID taskId, UUID processId, boolean isNoWait) throws IllegalStateException {
 
-        DecisionContainer taskDecision = taskDao.getDecision(taskId, processId);
+        DecisionContainer taskDecision = taskDao.getDecisionContainer(taskId, processId);
 
         if (taskDecision == null) {
             if (isNoWait) {
@@ -243,22 +247,15 @@ public class GeneralTaskService implements TaskService, TaskInfoRetriever {
     }
 
     @Override
-    public boolean finishTask(DecisionContainer taskDecision) {
+    public Decision finishTask(DecisionContainer taskDecision) {
         logger.debug("finishTask() taskDecision [{}]", taskDecision);
 
-        if (!taskDao.finishTask(taskDecision)) {
-            return false;
-        }
+        return taskDao.finishTask(taskDecision);
+    }
 
-        // increment number of attempts for error tasks with retry policy
-        if (taskDecision.containsError() && taskDecision.getRestartTime() != -1) {
-
-            TaskContainer task = taskDao.getTask(taskDecision.getTaskId(), taskDecision.getProcessId());
-
-            // TODO: should be optimized
-            task.incrementErrorAttempts();
-            taskDao.updateTask(task);
-        }
+    @Override
+    public void addNewTasks(DecisionContainer taskDecision) {
+        logger.debug("addNewTasks() taskDecision [{}]", taskDecision);
 
         TaskContainer[] taskContainers = taskDecision.getTasks();
         if (taskContainers != null) {
@@ -266,8 +263,6 @@ public class GeneralTaskService implements TaskService, TaskInfoRetriever {
                 taskDao.addTask(taskContainer);
             }
         }
-
-        return true;
     }
 
     @Override
@@ -276,13 +271,18 @@ public class GeneralTaskService implements TaskService, TaskInfoRetriever {
     }
 
     @Override
-    public boolean restartTask(UUID taskId, UUID processId, boolean force) {
-        return taskDao.restartTask(taskId, processId, force);
+    public boolean restartTask(UUID taskId, UUID processId, boolean force, boolean ifFatalError) {
+        return taskDao.restartTask(taskId, processId, force, ifFatalError);
     }
 
     @Override
-    public DecisionContainer getDecision(UUID taskId, UUID processId) {
+    public Decision getDecision(UUID taskId, UUID processId) {
         return taskDao.getDecision(taskId, processId);
+    }
+
+    @Override
+    public DecisionContainer getDecisionContainer(UUID taskId, UUID processId) {
+        return taskDao.getDecisionContainer(taskId, processId);
     }
 
     @Override

@@ -1,5 +1,6 @@
 package ru.taskurotta.service.storage;
 
+import ru.taskurotta.transport.model.Decision;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 
@@ -35,16 +36,22 @@ public interface TaskService {
     TaskContainer getTask(UUID taskId, UUID processId);
 
 
-    boolean finishTask(DecisionContainer taskDecision);
+    Decision finishTask(DecisionContainer taskDecision);
 
     boolean retryTask(UUID taskId, UUID processId);
 
-    boolean restartTask(UUID taskId, UUID processId, boolean force);
-
     /**
-     * Idempotent getter for task decisions
+     * @param taskId
+     * @param processId
+     * @param force     restart task anyway
+     * @param ifFatalError restart only if decision container has fatal error
+     * @return
      */
-    DecisionContainer getDecision(UUID taskId, UUID processId);
+    boolean restartTask(UUID taskId, UUID processId, boolean force, boolean ifFatalError);
+
+    Decision getDecision(UUID taskId, UUID processId);
+
+    DecisionContainer getDecisionContainer(UUID taskId, UUID processId);
 
     List<TaskContainer> getAllRunProcesses();
 
@@ -61,10 +68,12 @@ public interface TaskService {
      * Clean up resources after process.
      * Service should avoid synchronous removing artifacts due to performance issues.
      *
-     * @param processId - ID of the process
+     * @param processId       - ID of the process
      * @param finishedTaskIds - all task UUIDs of finished process
      */
     void finishProcess(UUID processId, Collection<UUID> finishedTaskIds);
 
     void updateTaskDecision(DecisionContainer taskDecision);
+
+    void addNewTasks(DecisionContainer taskDecision);
 }

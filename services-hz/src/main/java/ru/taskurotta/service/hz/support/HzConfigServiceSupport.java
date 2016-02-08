@@ -6,11 +6,15 @@ import com.hazelcast.core.DistributedObjectEvent;
 import com.hazelcast.core.DistributedObjectListener;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
+import com.hazelcast.core.OperationTimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.hazelcast.queue.CachedQueue;
 import ru.taskurotta.service.config.model.ActorPreferences;
 import ru.taskurotta.util.ActorUtils;
+import ru.taskurotta.util.DaemonThread;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * Designed to populate distributed ActorPreferences map at runtime.
@@ -30,11 +34,28 @@ public class HzConfigServiceSupport implements DistributedObjectListener {
 
     private void init() {
         hzInstance.addDistributedObjectListener(this);
-        distributedActorPreferences = hzInstance.getMap(actorPreferencesMapName);
 
-        for (DistributedObject distributedObject : hzInstance.getDistributedObjects()) {
-            registerObject(distributedObject);
-        }
+        // asynchronous part to prevent crash of HzConfigServiceSupport bean
+        new DaemonThread("info", TimeUnit.SECONDS, 5) {
+
+            @Override
+            public void daemonJob() {
+
+                try {
+                    distributedActorPreferences = hzInstance.getMap(actorPreferencesMapName);
+
+                    hzInstance.getDistributedObjects().forEach(HzConfigServiceSupport.this::registerObject);
+
+                    throw new StopSignal();
+
+                } catch (OperationTimeoutException e) {
+                    logger.error("Error registering actor. Try it later..");
+                }
+            }
+
+        }.start();
+
+
     }
 
     @Override

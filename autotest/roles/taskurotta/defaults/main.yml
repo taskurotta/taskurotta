@@ -1,0 +1,4 @@
+taskurotta_path: "{{ data_dir }}/{{ inventory_hostname }}"
+taskurotta_path_javadumps: "{{ taskurotta_path }}/javadumps"
+taskurotta_jar: "undefined"
+taskurotta_config: "{{ taskurotta_path }}/config.yml"

@@ -1,0 +1,2 @@
+nginx_path: "{{ data_dir }}/{{ inventory_hostname }}"
+nginx_config: "{{ nginx_path }}/nginx.conf"

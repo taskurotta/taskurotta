@@ -1,6 +1,7 @@
 package ru.taskurotta.service.console.model;
 
 import ru.taskurotta.transport.model.TaskContainer;
+import ru.taskurotta.transport.utils.TransportUtils;
 
 import java.io.Serializable;
 import java.util.UUID;
@@ -33,6 +34,7 @@ public class Process implements Serializable {
         this.startTime = System.currentTimeMillis();
         this.state = START;
         this.startTask = startTask;
+        this.customId = TransportUtils.getCustomId(startTask);
     }
 
     public Process(TaskContainer startTask, String customId, long startTime, long endTime, int state, String returnValue) {

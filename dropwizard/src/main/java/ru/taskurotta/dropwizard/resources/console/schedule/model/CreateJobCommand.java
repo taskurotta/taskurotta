@@ -14,9 +14,9 @@ public class CreateJobCommand extends TaskCommand implements Serializable {
     private long id = -1l;
     private String name;
     private String cron;
-    private int queueLimit = -1;
     private int maxErrors = JobConstants.DEFAULT_MAX_CONSEQUENTIAL_ERRORS;
     private int status = JobConstants.STATUS_UNDEFINED;
+    private int limit;
 
     public long getId() {
         return id;
@@ -42,14 +42,6 @@ public class CreateJobCommand extends TaskCommand implements Serializable {
         this.cron = cron;
     }
 
-    public int getQueueLimit() {
-        return queueLimit;
-    }
-
-    public void setQueueLimit(int queueLimit) {
-        this.queueLimit = queueLimit;
-    }
-
     public int getMaxErrors() {
         return maxErrors;
     }
@@ -66,15 +58,23 @@ public class CreateJobCommand extends TaskCommand implements Serializable {
         this.status = status;
     }
 
+    public int getLimit() {
+        return limit;
+    }
+
+    public void setLimit(int limit) {
+        this.limit = limit;
+    }
+
     @Override
     public String toString() {
         return "CreateJobCommand{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
                 ", cron='" + cron + '\'' +
-                ", queueLimit=" + queueLimit +
                 ", maxErrors=" + maxErrors +
                 ", status=" + status +
+                ", limit=" + limit +
                 "} " + super.toString();
     }
 

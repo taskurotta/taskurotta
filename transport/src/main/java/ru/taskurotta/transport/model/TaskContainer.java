@@ -90,11 +90,6 @@ public class TaskContainer implements Serializable {
         return failTypes;
     }
 
-    public void incrementErrorAttempts() {
-        errorAttempts++;
-    }
-
-
     public void setArgs(ArgContainer[] args) {
         this.args = args;
     }
@@ -117,6 +112,10 @@ public class TaskContainer implements Serializable {
 
     public void setPass(UUID pass) {
         this.pass = pass;
+    }
+
+    public void setErrorAttempts(int errorAttempts) {
+        this.errorAttempts = errorAttempts;
     }
 
     @Override

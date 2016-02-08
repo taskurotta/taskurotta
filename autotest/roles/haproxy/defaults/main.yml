@@ -1,0 +1,2 @@
+haproxy_path: "{{ data_dir }}/{{ inventory_hostname }}"
+haproxy_config: "{{ haproxy_path }}/haproxy.conf"

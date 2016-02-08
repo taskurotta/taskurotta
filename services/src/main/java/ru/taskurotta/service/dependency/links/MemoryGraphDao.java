@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.taskurotta.service.common.ResultSetCursor;
 
 import java.io.IOException;
 import java.util.Map;
@@ -158,5 +159,10 @@ public class MemoryGraphDao implements GraphDao {
         }
 
         return false;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public ResultSetCursor<UUID> findLostGraphs(long lastGraphChangeTime, int batchSize) {
+        throw new UnsupportedOperationException("Please, use MongoGraphDao");
     }
 }

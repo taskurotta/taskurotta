@@ -14,6 +14,7 @@ import ru.taskurotta.service.ora.OracleQueryUtils;
 import ru.taskurotta.service.storage.ProcessService;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.model.serialization.JsonSerializer;
+import ru.taskurotta.transport.utils.TransportUtils;
 
 import javax.sql.DataSource;
 import java.io.IOException;
@@ -47,6 +48,10 @@ public class OraProcessService extends AbstractHzProcessService implements Proce
             "SELECT PROCESS_ID, START_TASK_ID, CUSTOM_ID, START_TIME, END_TIME, STATE, RETURN_VALUE, START_JSON FROM TSK_PROCESS";
     protected static final String SQL_GET_ORDERED_PROCESS_LIST =
             "SELECT /*+ INDEX_ASC(TSK_PROCESS TSK_PROCESS_START_TIME_IDX) */ PROCESS_ID, START_TASK_ID, CUSTOM_ID, START_TIME, END_TIME, STATE, RETURN_VALUE, START_JSON FROM TSK_PROCESS";
+    protected static final String SQL_FIND_LOST_PROCESSES =
+            "SELECT PROCESS_ID FROM TSK_PROCESS WHERE (STATE = ? AND START_TIME < ?) OR (STATE = ? AND END_TIME < ?)";
+    protected static final String SQL_GET_PROCESS_CNT_BY_STATE_AND_STARTER_ID =
+            "SELECT COUNT(PROCESS_ID) AS cnt FROM TSK_PROCESS WHERE STATE = ? AND ACTOR_ID = ? ";
 
     public static final String WILDCARD = "%";
 
@@ -92,17 +97,17 @@ public class OraProcessService extends AbstractHzProcessService implements Proce
 
         try (Connection connection = dataSource.getConnection();
              PreparedStatement ps = connection.prepareStatement(
-                     "INSERT INTO TSK_PROCESS (PROCESS_ID, START_TASK_ID, CUSTOM_ID, START_TIME, STATE, START_JSON, ACTOR_ID) " +
-                             "VALUES (?, ?, ?, ?, ?, ?, ?)")
+                     "INSERT INTO TSK_PROCESS (PROCESS_ID, START_TASK_ID, CUSTOM_ID, START_TIME, STATE, START_JSON, ACTOR_ID, TASK_LIST) " +
+                             "VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
         ) {
             ps.setString(1, task.getProcessId().toString());
             ps.setString(2, task.getTaskId().toString());
-            ps.setString(3, ((task.getOptions() != null) && (task.getOptions().getTaskConfigContainer() != null)) ?
-                    task.getOptions().getTaskConfigContainer().getCustomId() : null);
+            ps.setString(3, TransportUtils.getCustomId(task));
             ps.setLong(4, (new Date()).getTime());
             ps.setInt(5, Process.START);
             ps.setString(6, (String) taskSerializer.serialize(task));
             ps.setString(7, task.getActorId());
+            ps.setString(8, TransportUtils.getTaskList(task));
             ps.executeUpdate();
         } catch (SQLException ex) {
             logger.error("DataBase exception: " + ex.getMessage(), ex);
@@ -391,6 +396,71 @@ public class OraProcessService extends AbstractHzProcessService implements Proce
     }
 
     @Override
+    public ResultSetCursor<UUID> findLostProcesses(long lastFinishedProcessDeleteTime,
+                                                   long lastAbortedProcessDeleteTime, int batchSize) {
+        return new ResultSetCursor<UUID>() {
+
+            private Connection connection;
+            private PreparedStatement preparedStatement;
+            private ResultSet resultSet;
+
+            private void init() throws SQLException {
+                connection = dataSource.getConnection();
+                preparedStatement = connection.prepareStatement(SQL_FIND_LOST_PROCESSES);
+
+                preparedStatement.setInt(1, Process.ABORTED);
+                preparedStatement.setLong(2, lastAbortedProcessDeleteTime);
+                preparedStatement.setInt(3, Process.FINISH);
+                preparedStatement.setLong(4, lastFinishedProcessDeleteTime);
+                preparedStatement.setFetchSize(batchSize);
+
+                resultSet = preparedStatement.executeQuery();
+            }
+
+            @Override
+            public Collection<UUID> getNext() {
+                Collection<UUID> result = new ArrayList<>(batchSize);
+                try {
+                    if (resultSet == null) {
+                        init();
+                    }
+
+                    int i = 0;
+                    while (i++ < batchSize && resultSet.next()) {
+                        result.add(UUID.fromString(resultSet.getString("process_id")));
+                    }
+                } catch (SQLException e) {
+                    logger.error("Catch exception when finding lost processes before time[" + lastFinishedProcessDeleteTime + "] processes batchSize[" + batchSize + "]", e);
+                    throw new ServiceCriticalException("Lost processes search before time[" + lastFinishedProcessDeleteTime + "] failed", e);
+                }
+
+                return result;
+            }
+
+            @Override
+            public void close() throws IOException {
+                closeResultSet(resultSet);
+
+                if (preparedStatement != null) {
+                    try {
+                        preparedStatement.close();
+                    } catch (SQLException e) {
+                        throw new ServiceCriticalException("Error on closing PreparedStatement", e);
+                    }
+                }
+
+                if (connection != null) {
+                    try {
+                        connection.close();
+                    } catch (SQLException e) {
+                        throw new ServiceCriticalException("Error on closing Connection", e);
+                    }
+                }
+            }
+        };
+    }
+
+    @Override
     public int getBrokenProcessCount() {
         int result = 0;
         ResultSet resultSet = null;
@@ -406,6 +476,33 @@ public class OraProcessService extends AbstractHzProcessService implements Proce
             throw new ServiceCriticalException("Database error", ex);
         } finally {
             closeResultSet(resultSet);
+        }
+        return result;
+    }
+
+    @Override
+    public int getActiveCount(String actorId, String taskList) {
+        int result = 0;
+        if (actorId != null) {
+            ResultSet resultSet = null;
+            String sql = taskList!=null? SQL_GET_PROCESS_CNT_BY_STATE_AND_STARTER_ID + " AND TASK_LIST = ?" : SQL_GET_PROCESS_CNT_BY_STATE_AND_STARTER_ID;
+            try (Connection connection = dataSource.getConnection();
+                 PreparedStatement ps = connection.prepareStatement(sql)) {
+                ps.setInt(1, Process.START);
+                ps.setString(2, actorId);
+                if (taskList != null) {
+                    ps.setString(3, taskList);
+                }
+                resultSet = ps.executeQuery();
+                while (resultSet.next()) {
+                    result = resultSet.getInt("cnt");
+                }
+            } catch (SQLException ex) {
+                logger.error("DataBase exception: " + ex.getMessage(), ex);
+                throw new ServiceCriticalException("Database error", ex);
+            } finally {
+                closeResultSet(resultSet);
+            }
         }
         return result;
     }

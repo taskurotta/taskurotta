@@ -12,10 +12,9 @@ import ru.taskurotta.exception.SerializationException;
 import ru.taskurotta.exception.server.ServerConnectionException;
 import ru.taskurotta.exception.server.ServerException;
 import ru.taskurotta.internal.core.TaskDecisionImpl;
+import ru.taskurotta.util.DuplicationErrorSuppressor;
 
-import java.util.Arrays;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 /**
  * User: stukushin
@@ -25,21 +24,7 @@ import java.util.concurrent.TimeUnit;
 public class ActorExecutor implements Runnable {
     private final static Logger logger = LoggerFactory.getLogger(ActorExecutor.class);
 
-    private static final long SUPPRESS_REPEATED_ERROR_MLS = TimeUnit.SECONDS.toMillis(30);
-
-    protected static class LogErrorEvent {
-        String msg;
-        Throwable ex;
-        long timeMls;
-
-        public LogErrorEvent(String msg, Throwable ex) {
-            this.msg = msg;
-            this.ex = ex;
-            this.timeMls = System.currentTimeMillis();
-        }
-    }
-
-    private volatile LogErrorEvent lastErrorEvent;
+    private DuplicationErrorSuppressor duplicationErrorSuppressor = new DuplicationErrorSuppressor();
 
     private Profiler profiler;
     private RuntimeProcessor runtimeProcessor;
@@ -152,67 +137,9 @@ public class ActorExecutor implements Runnable {
     }
 
     protected void logError(String msg, Throwable ex) {
-
-        LogErrorEvent newLogErrorEvent = new LogErrorEvent(msg, ex);
-
-        // try to find same error
-        if (lastErrorEvent != null && isRepeatedError(lastErrorEvent, newLogErrorEvent)) {
-
-            // skip it
-            return;
+        if (!duplicationErrorSuppressor.isLastErrorEqualsTo(msg, ex)) {
+            logger.error(msg, ex);
         }
-
-        lastErrorEvent = newLogErrorEvent;
-
-        logger.error(msg, ex);
-    }
-
-    private static boolean isRepeatedError(LogErrorEvent oldErrorEvent, LogErrorEvent newErrorEvent) {
-
-        if (oldErrorEvent == null) {
-            return false;
-        }
-
-        if (newErrorEvent.timeMls - SUPPRESS_REPEATED_ERROR_MLS > oldErrorEvent.timeMls) {
-            return false;
-        }
-
-        if (!newErrorEvent.msg.equals(oldErrorEvent.msg)) {
-            return false;
-        }
-
-        // we cannot use ex.equals()
-
-        return recursionEquals(oldErrorEvent.ex, newErrorEvent.ex);
-    }
-
-    private static boolean recursionEquals(Throwable oldEx, Throwable newEx) {
-
-        if (oldEx == null && newEx == null) {
-            return true;
-        }
-
-        if (oldEx == null || newEx == null) {
-            return false;
-        }
-
-        String oldExMsg = oldEx.getMessage();
-        String newExMsg = newEx.getMessage();
-
-
-        if (!((newExMsg == null && oldExMsg == null) || (newExMsg != null && oldExMsg != null && newExMsg
-                .equals(oldExMsg)))) {
-            return false;
-        }
-
-        StackTraceElement[] oldStElements = oldEx.getStackTrace();
-        StackTraceElement[] newStElements = newEx.getStackTrace();
-
-        if (!Arrays.equals(oldStElements, newStElements)) {
-            return false;
-        }
-
-        return recursionEquals(oldEx.getCause(), newEx.getCause());
     }
 
     /**

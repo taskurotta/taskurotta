@@ -1,0 +1,98 @@
+runtime:
+  - MainRuntimeConfig:
+      class: ru.taskurotta.spring.configs.RuntimeConfigPathXmlApplicationContext
+      instance:
+        context: classpath:ru/taskurotta/test/fullfeature/RuntimeBeans.xml
+
+spreader:
+  - MainTaskSpreaderConfig:
+      class: ru.taskurotta.spring.configs.SpreaderConfigPathXmlApplicationContext
+      instance:
+        context: classpath:tests/quantity/ff-actor-spreader.xml
+        properties:
+          connectTimeout: 5000
+          readTimeout: 0
+          threadPoolSize: 50
+          endpoint: "http://tsk_http:80"
+
+
+profiler:
+  - MainProfilerConfig:
+      class: ru.taskurotta.bootstrap.config.DefaultProfilerConfig
+      instance:
+        class: ru.taskurotta.test.stress.LifetimeProfiler
+        properties:
+          tasksForStat: 1000
+          dropTaskDecisionEveryNTasks: 100
+          breakProcessEveryNTasks: 100
+          logProfilerSeconds: 10
+          everyNTaskReleaseTimeout: 1000
+          releaseTimeout: 120000
+
+
+actor:
+  - FFDecider:
+      actorInterface: ru.taskurotta.test.fullfeature.decider.FullFeatureDecider
+      runtimeConfig: MainRuntimeConfig
+      spreaderConfig: MainTaskSpreaderConfig
+      profilerConfig: MainProfilerConfig
+      count: 25
+
+  - FFWorker:
+      actorInterface: ru.taskurotta.test.fullfeature.worker.FullFeatureWorker
+      runtimeConfig: MainRuntimeConfig
+      spreaderConfig: MainTaskSpreaderConfig
+      profilerConfig: MainProfilerConfig
+      count: 25
+
+logback:
+    appender:
+        - STDOUT:
+             key: name
+             \@class: ch.qos.logback.core.ConsoleAppender
+             encoder:
+                 pattern: \%c - \%m\%n
+        - FILE:
+             key: name
+             \@class: ch.qos.logback.core.FileAppender
+             file: /var/log/taskurotta/actors/actors.log
+             append: false
+             encoder:
+                 pattern: \%d [\%t] \%-5p \%c - \%m\%n
+    logger:
+        - ru.taskurotta.service.hz.dependency.HzGraphDao2:
+             key: name
+             \@level: DEBUG
+        - ru.taskurotta.service.recovery.GeneralRecoveryProcessService2:
+             key: name
+             \@level: DEBUG
+        - com.hazelcast:
+             key: name
+             \@level: WARN
+        - ru.taskurotta:
+             key: name
+             \@level: INFO
+        - ru.taskurotta.test.monkey:
+             key: name
+             \@level: DEBUG
+        - ru.taskurotta.test.fullfeature:
+             key: name
+             \@level: INFO
+        - ru.taskurotta.internal.GeneralRuntimeProcessor:
+             key: name
+             \@level: !!!str OFF
+        - ru.taskurotta.service.hz.gc:
+             key: name
+             \@level: DEBUG
+        - org:
+             key: name
+             \@level: ERROR
+        - httpclient:
+             key: name
+             \@level: ERROR
+    root:
+        appender-ref:
+            - STDOUT:
+                key: ref
+            - FILE:
+                key: ref

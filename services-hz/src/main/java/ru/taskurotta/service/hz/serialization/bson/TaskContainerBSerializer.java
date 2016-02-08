@@ -26,7 +26,6 @@ public class TaskContainerBSerializer implements StreamBSerializer<TaskContainer
     private static final CString PROCESS_ID = new CString("p");
     private static final CString ACTOR_ID = new CString("actorId");
     private static final CString METHOD = new CString("method");
-    private static final CString ERROR_ATTEMPTS = new CString("errorAttempts");
     private static final CString TYPE = new CString("type");
     private static final CString START_TIME = new CString("startTime");
     private static final CString FAIL_TYPES = new CString("failTypes");
@@ -61,7 +60,6 @@ public class TaskContainerBSerializer implements StreamBSerializer<TaskContainer
         out.writeString(ACTOR_ID, object.getActorId());
         out.writeInt(TYPE, object.getType().getValue(), TaskType.DECIDER_ASYNCHRONOUS.getValue());
         out.writeLong(START_TIME, object.getStartTime(), -1l);
-        out.writeInt(ERROR_ATTEMPTS, object.getErrorAttempts(), 0);
         writeArrayOfObjectsIfNotEmpty(ARGS, object.getArgs(), argContainerBSerializer, out);
         writeObjectIfNotNull(TASK_OPTIONS, object.getOptions(), taskOptionsContainerBSerializer, out);
         out.writeBoolean(UNSAFE, object.isUnsafe(), false);
@@ -79,7 +77,6 @@ public class TaskContainerBSerializer implements StreamBSerializer<TaskContainer
         String actorId = in.readString(ACTOR_ID);
         TaskType type = TaskType.fromInt(in.readInt(TYPE, TaskType.DECIDER_ASYNCHRONOUS.getValue()));
         long startTime = in.readLong(START_TIME, -1l);
-        int errorAttempts = in.readInt(ERROR_ATTEMPTS, 0);
         ArgContainer[] argContainers = readArrayOfObjects(ARGS, ArgContainerBSerializer.arrayFactory,
                 argContainerBSerializer, in);
         TaskOptionsContainer taskOptionsContainer = readObject(TASK_OPTIONS,
@@ -87,7 +84,7 @@ public class TaskContainerBSerializer implements StreamBSerializer<TaskContainer
         boolean unsafe = in.readBoolean(UNSAFE, false);
         String[] failTypes = readArrayOfString(FAIL_TYPES, in);
 
-        return new TaskContainer(taskId, processId, null, method, actorId, type, startTime, errorAttempts,
+        return new TaskContainer(taskId, processId, null, method, actorId, type, startTime, 0,
                 argContainers, taskOptionsContainer, unsafe, failTypes);
     }
 }

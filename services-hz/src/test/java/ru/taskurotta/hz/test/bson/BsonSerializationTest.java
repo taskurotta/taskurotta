@@ -168,7 +168,7 @@ public class BsonSerializationTest {
         String actorId = "actorId#" + taskId.toString();
         TaskType type = TaskType.DECIDER_START;
         long startTime = 15121234;
-        int errorAttempts = 2;
+        int errorAttempts = 0;
 
         List<ArgContainer> containerList = new ArrayList<>();
         ArgContainer argContainer1 = new ArgContainer();

@@ -1,0 +1,74 @@
+---
+#- debug:
+#    var={{ taskurotta_jar }}
+#  tags:
+#  - start
+
+- name: 'Create taskurotta data directory'
+  tags:
+  - start
+  file: path={{ taskurotta_path }} state=directory
+
+- name: 'Generate taskurotta config file'
+  tags:
+  - start
+  template: src=config.yml.j2 dest={{ taskurotta_path }}/config.yml
+
+- name: 'Start taskurotta container'
+  tags:
+  - start
+  docker:
+    name: "{{ inventory_hostname }}"
+    hostname: "{{ inventory_hostname }}"
+    image: taskurotta/java-oracle-perf:20151209
+    state: reloaded
+    volumes:
+    - "{{ taskurotta_path }}:/var/log/taskurotta"
+    - "{{ taskurotta_path_javadumps }}:/tmp/javadumps"
+    - "{{ taskurotta_jar }}:/opt/taskurotta/taskurotta.jar"
+    - "{{ taskurotta_config }}:/etc/taskurotta/server/config.yml"
+    command:
+      java -Xmx512m -Xms512m
+      -XX:+PreserveFramePointer
+      -XX:+HeapDumpOnOutOfMemoryError
+      -XX:HeapDumpPath=/tmp/javadumps
+      -Dhazelcast.health.monitoring.level=OFF -Dru.taskurotta.service.hz.storage.saveFinishedProcessCustomId=true
+      -Dhazelcast.socket.connect.timeout.seconds=10
+      -Dhazelcast.max.join.seconds=30
+      -Dhazelcast.merge.first.run.delay.seconds=10
+      -Dhazelcast.merge.next.run.delay.seconds=10
+      -server -jar /opt/taskurotta/taskurotta.jar
+      server /etc/taskurotta/server/config.yml
+    expose:
+    - "8811"
+    - "7777"
+    net: autotest
+
+- name: 'Wait cluster synchronization'
+  tags:
+  - start
+  shell: >
+    {{ lookup('pipe', 'find $(pwd) -name wait_cluster.sh') }}
+    {{ taskurotta_path}}/service.log {{ groups['taskurotta']|length }}
+  changed_when: False
+
+- name: 'Stop taskurotta container'
+  tags:
+  - stop
+  docker:
+    name: "{{ inventory_hostname }}"
+    image: taskurotta/java-oracle-perf:20151209
+    state: stopped
+
+- name: 'Remove taskurotta container'
+  tags:
+  - clean
+  docker:
+    name: "{{ inventory_hostname }}"
+    image: taskurotta/java-oracle-perf:20151209
+    state: absent
+
+- name: 'Remove taskurotta files'
+  tags:
+  - clean
+  shell: "sudo rm -rf {{ taskurotta_path }} removes={{ taskurotta_path }}"

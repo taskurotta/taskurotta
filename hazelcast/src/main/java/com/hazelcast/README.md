@@ -2,9 +2,9 @@
 
 Added serializersCache
 
-# com.hazelcast.queue.impl.QueueContainer
+# HazelcastInstanceFactory
 
-Check possible data loss on date storage and invoke triggerCleanup operation to skip unavailable items.
+registration of CachedQueue implementation
 
 # ExecutorServiceProxy
 

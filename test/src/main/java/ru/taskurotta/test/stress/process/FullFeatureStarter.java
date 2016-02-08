@@ -2,6 +2,7 @@ package ru.taskurotta.test.stress.process;
 
 import ru.taskurotta.client.ClientServiceManager;
 import ru.taskurotta.client.DeciderClientProvider;
+import ru.taskurotta.core.TaskConfig;
 import ru.taskurotta.test.fullfeature.decider.FullFeatureDeciderClient;
 
 /**
@@ -18,7 +19,7 @@ public class FullFeatureStarter implements Starter {
     }
 
     @Override
-    public void start() {
-        deciderClient.start();
+    public void start(String customId) {
+        deciderClient.start(new TaskConfig().setCustomId(customId));
     }
 }

@@ -1,0 +1,93 @@
+#Location of Spring application context:
+#Hazelcast without mongo mapstore
+#contextLocation: "classpath*:spring/hz-mongo.xml, classpath*:spring/stat-monitor.xml, classpath*:spring/resurrect-broken-process.xml"
+contextLocation: "classpath*:spring/hz-mongo.xml, classpath*:spring/stat-monitor.xml, classpath*:spring/resurrect-broken-process.xml"
+
+#Used for static resource serving in development mode
+assets:
+  overrides:
+    /: ../dropwizard/src/main/resources/assets/
+
+#Configuration of actors served by this server:
+actorConfig:
+  actorPreferences:
+    - id: "default"
+
+#Task server common properties (will be available as placeholders in spring context):
+properties:
+  server.poll-delay: 60 seconds
+  hz.mancenter.enabled: false
+  hz.jmx.detailed: true
+  hz.jmx: true
+  hz.port: 7777
+  hz.quorum: 2
+  hz.nodes: {% for host in groups['taskurotta'] %}{{ host }}:7777,{% endfor %}
+
+  mongo.client-uri: mongodb://tsk_mongodb:27017  
+  hz.map.interrupted-store.restore: true
+  stats.monitor.period-sec: 5
+  gc.enabled: true
+  gc.pool-size: 8
+  gc.time-before-delete: 20 seconds
+  recovery.enabled: true
+  recovery.process.incomplete-timeout: 30 seconds
+  recovery.find-incomplete-process-period: 5 seconds
+  recovery.process.change-timeout: 30 seconds
+  hz.queue.task.batch-load-size: 10000
+  hz.queue.delay.batch-load-size: 10000
+  taskurotta.memory.auto: true
+  taskurotta.memory.config: k:48Mb f:70% (p:20 g:20 gd:20 t:20 td:20 q:1)
+ 
+
+server:
+  type: simple
+  applicationContextPath: /
+  adminContextPath: /admin
+  connector:
+    type: http
+    port: 8811
+  requestLog:
+    timeZone: UTC
+    appenders:
+    - type: file
+      currentLogFilename: "/var/log/taskurotta/request.log"
+      threshold: ALL
+      archive: true
+      archivedLogFilenamePattern: "/var/log/taskurotta/requests-%d.log.gz"
+      archivedFileCount: 5
+      timeZone: UTC
+      logFormat: "%-4r %d [%t] %-5p %c - %m%n"
+#    - type: console
+#      threshold: ALL
+#      timeZone: UTC
+#      target: stdout
+#      logFormat: "%-4r %d [%t] %-5p %c - %m%n"
+
+#Http server configuration:
+logging:
+    level: INFO
+    loggers:
+        com.hazelcast.nio.tcp: ALL
+        com.hazelcast.cluster: ALL
+        com.hazelcast: INFO
+        com.yammer: INFO
+        ru.taskurotta: INFO
+        org.springframework: WARN
+        ru.taskurotta.service.recovery: INFO
+        ru.taskurotta.service.hz.queue.HzQueueService: INFO
+
+    appenders:
+    - type: file
+      currentLogFilename: "/var/log/taskurotta/service.log"
+      threshold: ALL
+      archive: true
+      archivedLogFilenamePattern: "/var/log/taskurotta/service-%d.log.gz"
+      archivedFileCount: 5
+      timeZone: UTC
+      logFormat: "%-4r %d [%t] %-5p %c - %m%n"
+    - type: console
+      threshold: ALL
+      timeZone: UTC
+      target: stdout
+      logFormat: "%-4r %d [%t] %-5p %c - %m%n"
+

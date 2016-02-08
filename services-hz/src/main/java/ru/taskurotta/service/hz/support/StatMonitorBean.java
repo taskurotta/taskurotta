@@ -4,6 +4,7 @@ import com.hazelcast.core.DistributedObject;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IExecutorService;
 import com.hazelcast.core.IMap;
+import com.hazelcast.core.Member;
 import com.hazelcast.monitor.LocalExecutorStats;
 import com.hazelcast.monitor.LocalMapStats;
 import org.slf4j.Logger;
@@ -16,13 +17,21 @@ import ru.taskurotta.hazelcast.queue.store.mongodb.MongoCachedQueueStore;
 import ru.taskurotta.hazelcast.store.MongoMapStore;
 import ru.taskurotta.server.GeneralTaskServer;
 import ru.taskurotta.service.console.retriever.StatInfoRetriever;
+import ru.taskurotta.service.hz.gc.HzGarbageCollectorService;
+import ru.taskurotta.service.hz.gc.LostGraphCleaner;
+import ru.taskurotta.service.hz.gc.LostProcessCleaner;
 import ru.taskurotta.service.hz.queue.HzQueueService;
 import ru.taskurotta.service.recovery.impl.RecoveryServiceImpl;
 import ru.taskurotta.service.recovery.impl.RecoveryThreadsImpl;
 import ru.taskurotta.util.DaemonThread;
 import ru.taskurotta.util.metrics.HzTaskServerMetrics;
 
+import java.io.Serializable;
 import java.util.Formatter;
+import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -33,12 +42,23 @@ public class StatMonitorBean implements StatInfoRetriever {
     private static final Logger logger = LoggerFactory.getLogger(StatMonitorBean.class);
 
     private HazelcastInstance hazelcastInstance;
+    private IExecutorService executorService;
 
     private int periodSec;
+
+    public static class FinishedProcessesCounterCallable implements Callable<Integer>, Serializable {
+
+        @Override
+        public Integer call() throws Exception {
+            return GeneralTaskServer.finishedProcessesCounter.get();
+        }
+    }
 
     public StatMonitorBean(HazelcastInstance hazelcastInstance, int periodSec) {
         this.hazelcastInstance = hazelcastInstance;
         this.periodSec = periodSec;
+
+        executorService = hazelcastInstance.getExecutorService(getClass().getName());
     }
 
     public void init() {
@@ -113,7 +133,7 @@ public class StatMonitorBean implements StatInfoRetriever {
     }
 
     @Override
-    public String getNodeStats () {
+    public String getNodeStats() {
         StringBuilder sb = new StringBuilder();
 
         sb.append("\nMongo Maps statistics (rate per second at last one minute):");
@@ -178,6 +198,10 @@ public class StatMonitorBean implements StatInfoRetriever {
                 ()) + " with delay = " + HzQueueService.pushedTaskToQueueWithDelay.get() + " backed " +
                 MongoStorageFactory.bakedTasks.get());
 
+        sb.append("\n GC: total = " + HzGarbageCollectorService.deletedProcessCounter.get() +
+                    " lost processes = " + LostProcessCleaner.cleanedProcessesCounter.get() +
+                    " lost graphs = " + LostGraphCleaner.cleanedGraphsCounter.get());
+
         {
             double release = HzTaskServerMetrics.statRelease.mean();
             double statPdAll = HzTaskServerMetrics.statPdAll.mean();
@@ -193,6 +217,32 @@ public class StatMonitorBean implements StatInfoRetriever {
         }
 
         return sb.toString();
+    }
+
+    @Override
+    public int getFinishedProcessesCounter() {
+
+        Map<Member, Future<Integer>> nodesResults = executorService.submitToAllMembers(new
+                FinishedProcessesCounterCallable());
+
+        int sum = 0;
+
+        for (Future<Integer> nodeResultFuture : nodesResults.values()) {
+            Integer nodeResult = null;
+            try {
+                nodeResult = nodeResultFuture.get();
+            } catch (InterruptedException | ExecutionException e) {
+                throw new RuntimeException("Can not receive finishedProcessCounter value from node", e);
+            }
+
+            if (nodeResult == null) {
+                continue;
+            }
+
+            sum += nodeResult;
+        }
+
+        return sum;
     }
 
 

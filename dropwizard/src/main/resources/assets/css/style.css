@@ -326,3 +326,25 @@ span.header-mini {
     font-weight: bold;
     margin-left: 3px;
 }
+
+/* documentation */
+.documentation {
+    display: table;
+}
+.documentation-menu {
+    display: table-cell;
+    border-right: 1px solid #cccccc;
+    padding: 10px 10px 10px;
+    width: 300px;
+}
+
+.documentation-content {
+    display: table-cell;
+    border-left: 1px solid #cccccc;
+    padding: 10px 40px 80px 30px;
+}
+.documentation-menu-item {
+    cursor:pointer;
+    cursor:hand;
+}
+/* /documentation */

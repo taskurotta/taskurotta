@@ -6,6 +6,7 @@ import com.hazelcast.core.IExecutorService;
 import com.hazelcast.core.IMap;
 import com.hazelcast.monitor.LocalExecutorStats;
 import com.hazelcast.monitor.LocalMapStats;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.support.AbstractApplicationContext;
@@ -18,13 +19,16 @@ import ru.taskurotta.hazelcast.queue.store.mongodb.MongoCachedQueueStore;
 import ru.taskurotta.hazelcast.store.MongoMapStore;
 import ru.taskurotta.server.GeneralTaskServer;
 import ru.taskurotta.service.hz.queue.HzQueueService;
+import ru.taskurotta.service.hz.storage.StringSetCounter;
 import ru.taskurotta.service.recovery.impl.RecoveryServiceImpl;
 import ru.taskurotta.service.recovery.impl.RecoveryThreadsImpl;
 import ru.taskurotta.test.stress.process.Starter;
 import ru.taskurotta.util.DaemonThread;
 import ru.taskurotta.util.metrics.HzTaskServerMetrics;
 
+import java.util.ArrayList;
 import java.util.Formatter;
+import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
@@ -35,64 +39,77 @@ public class ProcessPusher {
 
     private final static Logger logger = LoggerFactory.getLogger(ProcessPusher.class);
 
-    public static AtomicInteger counter = new AtomicInteger(0);
     public static int taskPerSecondSpeed = 0;
+
+    private static class ProcessToStartItem {
+
+        public long timeToStart;
+        public String customId;
+
+        public ProcessToStartItem(long timeToStart, String customId) {
+            this.timeToStart = timeToStart;
+            this.customId = customId;
+        }
+    }
 
     //with default finished processes counter, only per node
     public ProcessPusher(final Starter starter, final HazelcastInstance hazelcastInstance, final int maxProcessQuantity,
                          final int startSpeedPerSecond, final int threadCount, final int minQueuesSize,
                          final int maxQueuesSize, final int waitAfterDoneSeconds, final boolean fixedPushRate) {
-        this(starter, hazelcastInstance, maxProcessQuantity, startSpeedPerSecond, threadCount, minQueuesSize, maxQueuesSize, waitAfterDoneSeconds, fixedPushRate, new DefaultFpCounter());
+        this(starter, hazelcastInstance, maxProcessQuantity, startSpeedPerSecond, threadCount, minQueuesSize,
+                maxQueuesSize, waitAfterDoneSeconds, fixedPushRate, new SameJVMStringSetCounter());
     }
 
     public ProcessPusher(final Starter starter, final HazelcastInstance hazelcastInstance, final int maxProcessQuantity,
                          final int startSpeedPerSecond, final int threadCount, final int minQueuesSize,
-                         final int maxQueuesSize, final int waitAfterDoneSeconds, final boolean fixedPushRate, final ProcessesCounter fpCounter) {
+                         final int maxQueuesSize, final int waitAfterDoneSeconds, final boolean fixedPushRate, final
+                         StringSetCounter stringSetCounter) {
 
-        final Queue queue = new ConcurrentLinkedQueue();
+        final Queue<ProcessToStartItem> queue = new ConcurrentLinkedQueue<ProcessToStartItem>();
 
         final long startTestTime = System.currentTimeMillis();
 
+        final AtomicInteger plannedTaskCounter = new AtomicInteger(0);
+        final AtomicInteger startedTaskCounter = new AtomicInteger(0);
+        final AtomicInteger finishedTaskCounter = new AtomicInteger(0);
+        final AtomicInteger currentSpeedPerSecond = new AtomicInteger(startSpeedPerSecond);
+
         // start planner thread
         new DaemonThread("process planner", TimeUnit.SECONDS, 1) {
-
-            int currentSpeedPerSecond = startSpeedPerSecond;
-            //            int currentSpeedPerSecond = 10000;
 
             @Override
             public void daemonJob() {
 
                 if (!fixedPushRate) {
 
-                    int sumQueuesSize = getSumQueuesSize(hazelcastInstance);
+                    int finishedTaskSize = (int) stringSetCounter.getSize();
+                    finishedTaskCounter.set(finishedTaskSize);
 
                     // should be waiting to prevent overload
-                    if (sumQueuesSize > maxQueuesSize) {
+                    int processInWorkSize = (plannedTaskCounter.get() - finishedTaskSize);
+                    if (processInWorkSize > maxQueuesSize) {
 
                         // go slowly
-                        currentSpeedPerSecond--;
+                        currentSpeedPerSecond.decrementAndGet();
                         return;
                     }
 
 
-                    if (sumQueuesSize < minQueuesSize) {
+                    if (processInWorkSize < minQueuesSize) {
 
                         // go faster
-                        currentSpeedPerSecond++;
+                        currentSpeedPerSecond.incrementAndGet();
                     }
                 }
 
 
                 int currSize = queue.size();
 
-                if (currSize < currentSpeedPerSecond) {
+                if (currSize < currentSpeedPerSecond.get()) {
 
-                    int actualSpeed = currentSpeedPerSecond;
+                    int actualSpeed = currentSpeedPerSecond.get();
 
                     int needToPush = actualSpeed - currSize;
-
-                    logger.info("Speed pps: planned {}, actual {}. start new {}", actualSpeed,
-                            (int) (1D * counter.get() / ((System.currentTimeMillis() - startTestTime) / 1000)), needToPush);
 
                     double interval = 1000l / actualSpeed;
                     double timeCursor = System.currentTimeMillis();
@@ -100,12 +117,17 @@ public class ProcessPusher {
                     for (int i = 0; i < needToPush; i++) {
                         timeCursor += interval;
 
-                        queue.add((long) (timeCursor));
+                        int currentTaskId = plannedTaskCounter.incrementAndGet();
 
-                        if (counter.incrementAndGet() == maxProcessQuantity) {
+                        ProcessToStartItem processToStartItem = new ProcessToStartItem((long) (timeCursor),
+                                createCustomId(currentTaskId));
+
+                        queue.add(processToStartItem);
+
+                        if (currentTaskId == maxProcessQuantity) {
                             taskPerSecondSpeed = (int) (1000.0 * LifetimeProfiler.taskCount
                                     .incrementAndGet() / (double) (System.currentTimeMillis() - LifetimeProfiler
-                                    .startTestTime.get()));
+                                    .startRateTime.get()));
 
                             throw new StopSignal();
                         }
@@ -116,22 +138,16 @@ public class ProcessPusher {
 
             }
 
-            private int getSumQueuesSize(HazelcastInstance hazelcastInstance) {
+        }.start();
 
-                if (hazelcastInstance == null) {
-                    return 0;
-                }
 
-                int sum = 0;
+        // start info thread
+        new DaemonThread("info", TimeUnit.SECONDS, 5) {
 
-                for (DistributedObject distributedObject : hazelcastInstance.getDistributedObjects()) {
-                    if (distributedObject instanceof CachedQueue) {
-                        Queue queue = (CachedQueue) distributedObject;
-                        sum += queue.size();
-                    }
-                }
-
-                return sum;
+            @Override
+            public void daemonJob() {
+                logger.info("process pusher: started {} finished {} planned {} queue.size {}",
+                        startedTaskCounter.get(), finishedTaskCounter.get(), plannedTaskCounter.get(), queue.size());
             }
 
         }.start();
@@ -143,9 +159,29 @@ public class ProcessPusher {
             @Override
             public void daemonJob() {
 
-                if (counter.get() >= maxProcessQuantity &&
-                        fpCounter.getCount() >= maxProcessQuantity) {
+                if (plannedTaskCounter.get() < maxProcessQuantity) {
+                    return;
+                }
+
+                int finishedTaskSize = (int) stringSetCounter.getSize();
+                finishedTaskCounter.set(finishedTaskSize);
+
+                if (finishedTaskSize >= maxProcessQuantity) {
                     // stop JVM
+
+                    List<String> supposedUniqueList = new ArrayList<>();
+                    for (int i = 1; i <= maxProcessQuantity; i++) {
+                        supposedUniqueList.add(createCustomId(i));
+                    }
+
+                    List<String> uniqueCustomIds = stringSetCounter.findUniqueItems(supposedUniqueList);
+                    if (uniqueCustomIds.size() != 0) {
+                        for (String customId: uniqueCustomIds) {
+                            logger.error("Process with customId = '{}' not finished", customId);
+                        }
+                    } else {
+                        logger.info("All processes are finished");
+                    }
 
                     logger.info("Done... Total process speed is {} pps. Task speed at the all process pushed " +
                                     "moment is {} tps. Waiting before exit {} seconds",
@@ -173,9 +209,9 @@ public class ProcessPusher {
                 @Override
                 public void daemonJob() {
 
-                    Long timeToStart = (Long) queue.poll();
+                    ProcessToStartItem processToStartItem = queue.poll();
 
-                    if (timeToStart == null) {
+                    if (processToStartItem == null) {
                         try {
                             TimeUnit.MILLISECONDS.sleep(100);
                         } catch (InterruptedException e) {
@@ -186,32 +222,41 @@ public class ProcessPusher {
 
                     long currTime = System.currentTimeMillis();
 
-                    if (currTime < timeToStart.longValue()) {
+                    if (currTime < processToStartItem.timeToStart) {
 
                         try {
-                            TimeUnit.MILLISECONDS.sleep(timeToStart.longValue() - currTime);
+                            TimeUnit.MILLISECONDS.sleep(processToStartItem.timeToStart - currTime);
                         } catch (InterruptedException e) {
                         }
                     }
 
-                    starter.start();
+                    try {
+                        starter.start(processToStartItem.customId);
+                        startedTaskCounter.incrementAndGet();
+                    } catch (Throwable ex) {
+                        logger.error("Cannot start process. Try it later", ex);
+
+                        processToStartItem.timeToStart = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(3);
+                        queue.offer(processToStartItem);
+                    }
                 }
             }.start();
 
         }
 
 
-        // start dump thread
-        new DaemonThread("stats dumper", TimeUnit.SECONDS, 5) {
+        if (hazelcastInstance != null) {
 
-            @Override
-            public void daemonJob() {
+            // start dump thread
+            new DaemonThread("stats dumper", TimeUnit.SECONDS, 5) {
 
-                long totalHeapCost = 0;
+                @Override
+                public void daemonJob() {
 
-                StringBuilder sb = new StringBuilder();
+                    long totalHeapCost = 0;
 
-                if (hazelcastInstance != null) {
+                    StringBuilder sb = new StringBuilder();
+
                     sb.append("\n============  ").append(hazelcastInstance.getName()).append("  ===========");
 
                     for (DistributedObject distributedObject : hazelcastInstance.getDistributedObjects()) {
@@ -245,91 +290,98 @@ public class ProcessPusher {
                     }
 
                     sb.append("\n\nTOTAL Heap Cost = " + bytesToMb(totalHeapCost));
+
+
+                    sb.append("\nMongo Maps statistics (rate per second at last one minute):");
+                    sb.append(String.format("\ndelete mean: %8.3f rate: %8.3f max: %8.3f",
+                            MongoMapStore.deleteTimer.mean(), MongoMapStore.deleteTimer.oneMinuteRate(), MongoMapStore
+                                    .deleteTimer.max()));
+                    sb.append(String.format("\nload   mean: %8.3f rate: %8.3f max: %8.3f",
+                            MongoMapStore.loadTimer.mean(), MongoMapStore.loadTimer.oneMinuteRate(), MongoMapStore
+                                    .loadTimer.max()));
+                    sb.append(String.format("\nloadS  mean: %8.3f rate: %8.3f max: %8.3f",
+                            MongoMapStore.loadSuccessTimer.mean(), MongoMapStore.loadSuccessTimer.oneMinuteRate(),
+                            MongoMapStore.loadSuccessTimer.max()));
+                    sb.append(String.format("\nstore  mean: %8.3f rate: %8.3f max: %8.3f",
+                            MongoMapStore.storeTimer.mean(), MongoMapStore.storeTimer.oneMinuteRate(), MongoMapStore
+                                    .storeTimer.max()));
+
+                    sb.append("\nMongo Queues statistics:");
+                    sb.append(String.format("\ndelete mean: %8.3f rate: %8.3f max: %8.3f",
+                            MongoCachedQueueStore.deleteTimer.mean(), MongoCachedQueueStore.deleteTimer.oneMinuteRate(),
+                            MongoCachedQueueStore.deleteTimer.max()));
+                    sb.append(String.format("\nload   mean: %8.3f rate: %8.3f max: %8.3f",
+                            MongoCachedQueueStore.loadTimer.mean(), MongoCachedQueueStore.loadTimer.oneMinuteRate(),
+                            MongoCachedQueueStore.loadTimer.max()));
+                    sb.append(String.format("\nloadA  mean: %8.3f rate: %8.3f max: %8.3f",
+                            MongoCachedQueueStore.loadAllTimer.mean(), MongoCachedQueueStore.loadAllTimer.oneMinuteRate()
+                            , MongoCachedQueueStore.loadAllTimer.max()));
+                    sb.append(String.format("\nstore  mean: %8.3f rate: %8.3f max: %8.3f",
+                            MongoCachedQueueStore.storeTimer.mean(), MongoCachedQueueStore.storeTimer.oneMinuteRate(),
+                            MongoCachedQueueStore.storeTimer.max()));
+
+                    int pushedCount = plannedTaskCounter.get();
+                    int startedCount = GeneralTaskServer.startedProcessesCounter.get();
+
+                    sb.append("\n Processes: pushed = " + pushedCount +
+                            "  started = " + startedCount +
+                            "  delta = " + (pushedCount - startedCount) +
+                            "  finished = " +
+                            stringSetCounter.getSize() +
+                            "  broken tasks = " +
+                            GeneralTaskServer.brokenProcessesCounter.get());
+
+                    sb.append("\n processesOnTimeout = " +
+                            RecoveryThreadsImpl.processesOnTimeoutFoundedCounter.get() +
+                            "  recoveredProcesses = " +
+                            RecoveryServiceImpl.recoveredProcessesCounter.get() +
+                            "  recoveredTasks = " +
+                            RecoveryServiceImpl.recoveredTasksCounter.get() +
+                            "  recoveredInterruptedTasks = " +
+                            RecoveryServiceImpl.recoveredInterruptedTasksCounter.get() +
+                            "  restartedBrokenTasks = " +
+                            RecoveryServiceImpl.restartedBrokenTasks.get() +
+                            "  recoveredProcessDecision = " +
+                            RecoveryServiceImpl.recoveredProcessDecisionCounter.get() +
+                            "  restartedIncompleteTasksCounter = " +
+                            RecoveryServiceImpl.restartedIncompleteTasksCounter.get());
+
+                    sb.append("\n decisions = " + GeneralTaskServer.receivedDecisionsCounter.get() +
+                            "  pending = " + (GeneralTaskServer.receivedDecisionsCounter.get()
+                            - GeneralTaskServer.processedDecisionsCounter.get()));
+
+                    sb.append("\n pushed to queue = " + HzQueueService.pushedTaskToQueue.get() +
+                            "  pending = " + (HzQueueService.pushedTaskToQueue.get() - QueueContainer.addedTaskToQueue.get
+                            ()) + " with delay = " + HzQueueService.pushedTaskToQueueWithDelay.get() + " backed " +
+                            MongoStorageFactory.bakedTasks.get());
+
+                    {
+                        double release = HzTaskServerMetrics.statRelease.mean();
+                        double statPdAll = HzTaskServerMetrics.statPdAll.mean();
+                        double statPdLock = HzTaskServerMetrics.statPdLock.mean();
+                        double statPdWork = HzTaskServerMetrics.statPdWork.mean();
+
+                        sb.append(String.format("\n decision: release = %8.3f process: rate = %8.3f sum = %8.3f lock = " +
+                                        "%8.3f work = %8.3f unlock = %8.3f maxR = %8.3f  maxD = %8.3f",
+                                release, HzTaskServerMetrics.statPdAll.oneMinuteRate(), statPdAll, statPdLock, statPdWork,
+                                (statPdAll - statPdLock - statPdWork), HzTaskServerMetrics.statRelease.max(),
+                                HzTaskServerMetrics.statPdAll.max()));
+
+                    }
+
+                    logger.info(sb.toString());
+
+
                 }
 
-                sb.append("\nMongo Maps statistics (rate per second at last one minute):");
-                sb.append(String.format("\ndelete mean: %8.3f rate: %8.3f max: %8.3f",
-                        MongoMapStore.deleteTimer.mean(), MongoMapStore.deleteTimer.oneMinuteRate(), MongoMapStore
-                                .deleteTimer.max()));
-                sb.append(String.format("\nload   mean: %8.3f rate: %8.3f max: %8.3f",
-                        MongoMapStore.loadTimer.mean(), MongoMapStore.loadTimer.oneMinuteRate(), MongoMapStore
-                                .loadTimer.max()));
-                sb.append(String.format("\nloadS  mean: %8.3f rate: %8.3f max: %8.3f",
-                        MongoMapStore.loadSuccessTimer.mean(), MongoMapStore.loadSuccessTimer.oneMinuteRate(),
-                        MongoMapStore.loadSuccessTimer.max()));
-                sb.append(String.format("\nstore  mean: %8.3f rate: %8.3f max: %8.3f",
-                        MongoMapStore.storeTimer.mean(), MongoMapStore.storeTimer.oneMinuteRate(), MongoMapStore
-                                .storeTimer.max()));
+            }.start();
 
-                sb.append("\nMongo Queues statistics:");
-                sb.append(String.format("\ndelete mean: %8.3f rate: %8.3f max: %8.3f",
-                        MongoCachedQueueStore.deleteTimer.mean(), MongoCachedQueueStore.deleteTimer.oneMinuteRate(),
-                        MongoCachedQueueStore.deleteTimer.max()));
-                sb.append(String.format("\nload   mean: %8.3f rate: %8.3f max: %8.3f",
-                        MongoCachedQueueStore.loadTimer.mean(), MongoCachedQueueStore.loadTimer.oneMinuteRate(),
-                        MongoCachedQueueStore.loadTimer.max()));
-                sb.append(String.format("\nloadA  mean: %8.3f rate: %8.3f max: %8.3f",
-                        MongoCachedQueueStore.loadAllTimer.mean(), MongoCachedQueueStore.loadAllTimer.oneMinuteRate()
-                        , MongoCachedQueueStore.loadAllTimer.max()));
-                sb.append(String.format("\nstore  mean: %8.3f rate: %8.3f max: %8.3f",
-                        MongoCachedQueueStore.storeTimer.mean(), MongoCachedQueueStore.storeTimer.oneMinuteRate(),
-                        MongoCachedQueueStore.storeTimer.max()));
+        }
+    }
 
-                int pushedCount = ProcessPusher.counter.get();
-                int startedCount = GeneralTaskServer.startedProcessesCounter.get();
-
-                sb.append("\n Processes: pushed = " + pushedCount +
-                        "  started = " + startedCount +
-                        "  delta = " + (pushedCount - startedCount) +
-                        "  finished = " +
-                        fpCounter.getCount() +
-                        "  broken tasks = " +
-                        GeneralTaskServer.brokenProcessesCounter.get());
-
-                sb.append("\n processesOnTimeout = " +
-                        RecoveryThreadsImpl.processesOnTimeoutFoundedCounter.get() +
-                        "  recoveredProcesses = " +
-                        RecoveryServiceImpl.recoveredProcessesCounter.get() +
-                        "  recoveredTasks = " +
-                        RecoveryServiceImpl.recoveredTasksCounter.get() +
-                        "  recoveredInterruptedTasks = " +
-                        RecoveryServiceImpl.recoveredInterruptedTasksCounter.get() +
-                        "  restartedBrokenTasks = " +
-                        RecoveryServiceImpl.restartedBrokenTasks.get() +
-                        "  recoveredProcessDecision = " +
-                        RecoveryServiceImpl.recoveredProcessDecisionCounter.get() +
-                        "  restartedIncompleteTasksCounter = " +
-                        RecoveryServiceImpl.restartedIncompleteTasksCounter.get());
-
-                sb.append("\n decisions = " + GeneralTaskServer.receivedDecisionsCounter.get() +
-                        "  pending = " + (GeneralTaskServer.receivedDecisionsCounter.get()
-                        - GeneralTaskServer.processedDecisionsCounter.get()));
-
-                sb.append("\n pushed to queue = " + HzQueueService.pushedTaskToQueue.get() +
-                        "  pending = " + (HzQueueService.pushedTaskToQueue.get() - QueueContainer.addedTaskToQueue.get
-                        ()) + " with delay = " + HzQueueService.pushedTaskToQueueWithDelay.get() + " backed " +
-                        MongoStorageFactory.bakedTasks.get());
-
-                {
-                    double release = HzTaskServerMetrics.statRelease.mean();
-                    double statPdAll = HzTaskServerMetrics.statPdAll.mean();
-                    double statPdLock = HzTaskServerMetrics.statPdLock.mean();
-                    double statPdWork = HzTaskServerMetrics.statPdWork.mean();
-
-                    sb.append(String.format("\n decision: release = %8.3f process: rate = %8.3f sum = %8.3f lock = " +
-                                    "%8.3f work = %8.3f unlock = %8.3f maxR = %8.3f  maxD = %8.3f",
-                            release, HzTaskServerMetrics.statPdAll.oneMinuteRate(), statPdAll, statPdLock, statPdWork,
-                            (statPdAll - statPdLock - statPdWork), HzTaskServerMetrics.statRelease.max(),
-                            HzTaskServerMetrics.statPdAll.max()));
-
-                }
-
-                logger.info(sb.toString());
-
-
-            }
-
-        }.start();
+    @NotNull
+    private String createCustomId(int i) {
+        return "" + i;
     }
 
     public static String bytesToMb(long bytes) {

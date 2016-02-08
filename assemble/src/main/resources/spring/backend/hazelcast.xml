@@ -151,7 +151,7 @@
     </bean>
 
     <bean id="recoveryService" class="ru.taskurotta.service.recovery.impl.RecoveryServiceImpl">
-        <constructor-arg name="generalTaskServer" ref="realTaskServer"/>
+        <constructor-arg name="generalTaskServer" ref="generalTaskServer"/>
         <constructor-arg name="dependencyService" ref="dependencyService"/>
         <constructor-arg name="processService" ref="processService"/>
         <constructor-arg name="queueService" ref="queueService"/>
@@ -260,7 +260,22 @@
     <!-- /Notification service -->
 
     <!-- Task server -->
-    <bean id="realTaskServer" class="ru.taskurotta.service.hz.server.HzTaskServer"
+    <bean id="realTaskServer" class="ru.taskurotta.server.quorum.QuorumTaskServerProxy">
+        <constructor-arg name="original" ref="hzTaskServer"/>
+        <constructor-arg name="clusterQuorum" ref="clusterQuorum"/>
+    </bean>
+
+    <bean id="clusterQuorum" class="ru.taskurotta.service.hz.server.quorum.HzClusterQuorum">
+        <constructor-arg name="cluster">
+            <bean factory-bean="hzInstance" factory-method="getCluster" />
+        </constructor-arg>
+        <constructor-arg name="quorumSize" value="${hz.quorum}" />
+    </bean>
+
+    <alias name="hzTaskServer" alias="generalTaskServer" />
+
+    <!-- Task server -->
+    <bean id="hzTaskServer" class="ru.taskurotta.service.hz.server.HzTaskServer"
           depends-on="pendingQueueConfigurator">
         <constructor-arg name="configService" ref="configService"/>
         <constructor-arg name="dependencyService" ref="dependencyService"/>
@@ -297,5 +312,17 @@
     <bean id="metricsNumberDataHandler" class="ru.taskurotta.service.metrics.handler.NumberDataHandler"
           init-method="init"/>
     <!-- Metrics data support -->
+
+    <!-- Executors -->
+
+    <bean id="abortProcessOperationExecutor" class="ru.taskurotta.service.hz.support.HzOperationExecutor">
+        <constructor-arg name="hzInstance" ref="hzInstance"/>
+        <constructor-arg name="nativePoint" ref="recoveryService"/>
+        <constructor-arg name="queueName" value="${operation.abort-process.queue.name}"/>
+        <constructor-arg name="poolSize" value="${operation.abort-process.pool-size}"/>
+        <constructor-arg name="enabled" value="${operation.abort-process.enabled}"/>
+    </bean>
+
+    <!-- /Executors -->
 
 </beans>

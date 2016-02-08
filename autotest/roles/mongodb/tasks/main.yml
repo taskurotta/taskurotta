@@ -1,0 +1,42 @@
+---
+- name: 'Create mongodb data directory'
+  tags:
+  - start
+  file: path={{ mongodb_path }} state=directory
+
+- name: 'Start mongodb container'
+  tags:
+  - start
+  docker:
+    name: "{{ inventory_hostname }}"
+    hostname: "{{ inventory_hostname }}"
+    image: mongo:{{ mongodb_version }}
+    state: reloaded
+    command: -f /etc/mongo/mongodb.conf
+    volumes:
+    - "{{ mongodb_path }}:/data/db"
+    - "{{ mongodb_config }}:/etc/mongo/mongodb.conf"
+    net: autotest
+
+
+- name: 'Stop mongodb container'
+  tags:
+  - stop
+  docker:
+    name: "{{ inventory_hostname }}"
+    image: mongo:{{ mongodb_version }}
+    state: stopped
+
+- name: 'Remove mongodb container'
+  tags:
+  - clean
+  docker:
+    name: "{{ inventory_hostname }}"
+    image: mongo:{{ mongodb_version }}
+    state: absent
+
+- name: 'Remove mongodb files'
+  tags:
+  - clean
+  shell: "sudo rm -rf {{ mongodb_path }} removes={{ mongodb_path }}"
+#  command: mv /path/to/foo /path/to/bar creates=/path/to/bar removes=/path/to/foo

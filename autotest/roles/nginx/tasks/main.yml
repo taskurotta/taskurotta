@@ -1,0 +1,48 @@
+---
+- name: 'Create nginx log directory'
+  tags:
+  - start
+  file: path={{ nginx_path }} state=directory
+
+- name: 'Generate nginx config file'
+  tags:
+  - start
+  template: src=nginx.conf.j2 dest={{ nginx_config }}
+
+- name: 'Start nginx container'
+  tags:
+  - start
+  docker:
+    name: "{{ inventory_hostname }}"
+    hostname: "{{ inventory_hostname }}"
+    image: nginx:1.9.5
+    state: reloaded
+    net: bridge
+    volumes:
+    - "{{ nginx_path }}:/var/log/nginx"
+    - "{{ nginx_config }}:/etc/nginx/nginx.conf"
+    ports:
+    - "80:80"
+    net: autotest
+
+- name: 'Stop nginx container'
+  tags:
+  - stop
+  docker:
+    name: "{{ inventory_hostname }}"
+    image: nginx:1.9.5
+    state: stopped
+
+- name: 'Remove nginx container'
+  tags:
+  - clean
+  docker:
+    name: "{{ inventory_hostname }}"
+    image: nginx:1.9.5
+    state: absent
+
+- name: 'Remove nginx files'
+  tags:
+  - clean
+  shell: "sudo rm -rf {{ nginx_path }} removes={{ nginx_path }}"
+#  command: mv /path/to/foo /path/to/bar creates=/path/to/bar removes=/path/to/foo

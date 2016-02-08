@@ -6,9 +6,6 @@ import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.util.ActorDefinition;
 
 /**
- * User: romario
- * Date: 12/3/13
- * Time: 9:26 PM
  */
 public class ProxyTaskServer implements TaskServer {
 

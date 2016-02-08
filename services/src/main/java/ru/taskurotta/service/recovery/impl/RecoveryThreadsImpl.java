@@ -65,34 +65,36 @@ public class RecoveryThreadsImpl implements RecoveryThreads {
 
         // todo: more then one threads may be running after fastest stop() and start() invocation. Current thread
         // may be sleeping and can not catch stop signal from shared atomic long "enabled"
-        Thread processFinder = new Thread(new Runnable() {
-            @Override
-            public void run() {
+        Thread processFinder = new Thread(() -> {
 
-                while (!Shutdown.isTrue() && enabled.get() && !Thread.currentThread().isInterrupted()) {
+            while (!Shutdown.isTrue() && enabled.get() && !Thread.currentThread().isInterrupted()) {
 
-                    try {
+                try {
 
-                        TimeUnit.MILLISECONDS.sleep(findIncompleteProcessPeriod);
+                    TimeUnit.MILLISECONDS.sleep(findIncompleteProcessPeriod);
 
-                        logger.debug("Fired incomplete process searcher, iteration period[{}] ms", findIncompleteProcessPeriod);
+                    logger.debug("Fired incomplete process searcher, iteration period[{}] ms",
+                            findIncompleteProcessPeriod);
 
-                        //has some processes previously recovered still in processing
-                        if (!operationExecutor.isEmpty()) {
-                            logger.debug("RecoveryOperationExecutor queue isn't empty. Skip find incomplete processes");
-                            continue;
-                        }
+                    //has some processes previously recovered still in processing
+                    if (!operationExecutor.isEmpty()) {
+                        logger.debug("RecoveryOperationExecutor queue isn't empty. Skip find incomplete processes");
+                        continue;
+                    }
 
-                        if (nodeLock.tryLock()) {
+                    if (nodeLock.tryLock()) {
+
+                        try {
 
                             long timeBefore = System.currentTimeMillis() - incompleteTimeOutMillis;
 
                             if (logger.isDebugEnabled()) {
-                                logger.debug("Try to find incomplete processes started before [{}]", new Date(timeBefore));
+                                logger.debug("Try to find incomplete processes started before [{}]",
+                                        new Date(timeBefore));
                             }
 
-                            try (ResultSetCursor<UUID> incompleteProcessesCursor = processService.findIncompleteProcesses(timeBefore,
-                                    batchSize)) {
+                            try (ResultSetCursor<UUID> incompleteProcessesCursor =
+                                         processService.findIncompleteProcesses(timeBefore, batchSize)) {
 
                                 while (true) {
                                     Collection<UUID> incompleteProcesses = incompleteProcessesCursor.getNext();
@@ -113,13 +115,17 @@ public class RecoveryThreadsImpl implements RecoveryThreads {
 
                             }
 
-                        } else {
-                            logger.debug("Can't get lock for incomplete processes search, skip iteration");
+                        } finally {
+                            nodeLock.unlock();
                         }
 
-                    } catch (Throwable e) {
-                        logger.error("IncompleteProcessFinder iteration failed due to error, try to resume in [" + findIncompleteProcessPeriod + "] ms...", e);
+                    } else {
+                        logger.debug("Can't get lock for incomplete processes search, skip iteration");
                     }
+
+                } catch (Throwable e) {
+                    logger.error("IncompleteProcessFinder iteration failed due to error, try to resume in [" +
+                            findIncompleteProcessPeriod + "] ms...", e);
                 }
             }
         });

@@ -88,7 +88,7 @@ public class OraNotificationDao extends JdbcDaoSupport implements NotificationDa
     public Subscription getSubscription(long id) {
         try {
             Subscription result = getJdbcTemplate().queryForObject(SQL_GET_SUBSCRIPTION_BY_ID, subscriptionMapper, id);
-            List<Long> triggerKeys = getJdbcTemplate().query(SQL_LIST_TRIGGER_KEYS_BY_SUBSCRIPTION, keyMapper);
+            List<Long> triggerKeys = getJdbcTemplate().query(SQL_LIST_TRIGGER_KEYS_BY_SUBSCRIPTION, keyMapper, id);
             result.setTriggersKeys(triggerKeys);
             return result;
         } catch (EmptyResultDataAccessException e) {
@@ -156,7 +156,13 @@ public class OraNotificationDao extends JdbcDaoSupport implements NotificationDa
 
     @Override
     public void updateSubscription(Subscription subscription, long id) {
-        getJdbcTemplate().update(SQL_UPDATE_SUBSCRIPTION, subscription.getActorIds(), subscription.getEmails(), subscription.getChangeDate(), id);
+        getJdbcTemplate().update(SQL_UPDATE_SUBSCRIPTION, NotificationUtils.listToJson(subscription.getActorIds(), "[]"), NotificationUtils.listToJson(subscription.getEmails(), "[]"), subscription.getChangeDate(), id);
+        getJdbcTemplate().update(SQL_DELETE_SUBSCRIPTION_LINKS, id);
+        if (subscription.getTriggersKeys() != null) {
+            for (long triggerKey : subscription.getTriggersKeys()) {
+                insertLink(id, triggerKey);
+            }
+        }
     }
 
     @Override

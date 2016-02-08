@@ -14,17 +14,19 @@ public class Decision {
     private UUID processId;
     private int state = STATE_REGISTERED;
     private UUID pass;
-    long recoveryTime = 0;
+    private long recoveryTime = 0;
+    private int errorAttempts = 0;
 
     private DecisionContainer decisionContainer;
 
-    public Decision(UUID taskId, UUID processId, int state, UUID pass, long recoveryTime, DecisionContainer
-            decisionContainer) {
+    public Decision(UUID taskId, UUID processId, int state, UUID pass, long recoveryTime, int errorAttempts,
+                    DecisionContainer decisionContainer) {
         this.taskId = taskId;
         this.processId = processId;
         this.state = state;
         this.pass = pass;
         this.recoveryTime = recoveryTime;
+        this.errorAttempts = errorAttempts;
         this.decisionContainer = decisionContainer;
     }
 
@@ -68,6 +70,18 @@ public class Decision {
         this.decisionContainer = decisionContainer;
     }
 
+    public int getErrorAttempts() {
+        return errorAttempts;
+    }
+
+    public void setErrorAttempts(int errorAttempts) {
+        this.errorAttempts = errorAttempts;
+    }
+
+    public void incrementErrorAttempts() {
+        this.errorAttempts++;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -75,24 +89,24 @@ public class Decision {
 
         Decision decision = (Decision) o;
 
-        if (recoveryTime != decision.recoveryTime) return false;
         if (state != decision.state) return false;
-        if (decisionContainer != null ? !decisionContainer.equals(decision.decisionContainer) : decision.decisionContainer != null)
-            return false;
+        if (recoveryTime != decision.recoveryTime) return false;
+        if (errorAttempts != decision.errorAttempts) return false;
+        if (!taskId.equals(decision.taskId)) return false;
+        if (!processId.equals(decision.processId)) return false;
         if (pass != null ? !pass.equals(decision.pass) : decision.pass != null) return false;
-        if (processId != null ? !processId.equals(decision.processId) : decision.processId != null) return false;
-        if (taskId != null ? !taskId.equals(decision.taskId) : decision.taskId != null) return false;
+        return !(decisionContainer != null ? !decisionContainer.equals(decision.decisionContainer) : decision.decisionContainer != null);
 
-        return true;
     }
 
     @Override
     public int hashCode() {
-        int result = taskId != null ? taskId.hashCode() : 0;
-        result = 31 * result + (processId != null ? processId.hashCode() : 0);
+        int result = taskId.hashCode();
+        result = 31 * result + processId.hashCode();
         result = 31 * result + state;
         result = 31 * result + (pass != null ? pass.hashCode() : 0);
         result = 31 * result + (int) (recoveryTime ^ (recoveryTime >>> 32));
+        result = 31 * result + errorAttempts;
         result = 31 * result + (decisionContainer != null ? decisionContainer.hashCode() : 0);
         return result;
     }
@@ -102,10 +116,22 @@ public class Decision {
         return "Decision{" +
                 "taskId=" + taskId +
                 ", processId=" + processId +
-                ", state=" + state +
+                ", state=" + Decision.getStateString(state) +
                 ", pass=" + pass +
                 ", recoveryTime=" + recoveryTime +
+                ", errorAttempts=" + errorAttempts +
                 ", decisionContainer=" + decisionContainer +
                 '}';
+    }
+
+
+    public static String getStateString(int state) {
+        switch (state) {
+            case 0: return "ready";
+            case 1: return "in progress";
+            case 2: return "done";
+        }
+
+        return "unknown " + state;
     }
 }

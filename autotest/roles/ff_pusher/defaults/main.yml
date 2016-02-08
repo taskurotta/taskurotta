@@ -1,0 +1,7 @@
+ff_pusher_path: "{{ data_dir }}/{{ inventory_hostname }}"
+ff_pusher_config: "{{ lookup('pipe', 'find $(pwd) -name config.xml') }}"
+ff_pusher_config_logback: "{{ lookup('pipe', 'find $(pwd) -name logback.xml') }}"
+ff_pusher_path_javadumps: "{{ ff_pusher_path }}/javadumps"
+taskurotta_jar: "undefined"
+
+tsk_ff_pusher_test_ff_maxProcessQuantity: "50000"

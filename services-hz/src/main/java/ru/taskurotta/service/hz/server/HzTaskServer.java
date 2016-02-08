@@ -31,7 +31,6 @@ import static ru.taskurotta.util.metrics.HzTaskServerMetrics.statRelease;
 /**
  * Task server with async decision processing.
  * Behaves exactly like GeneralTaskServer except for overridden release() method
- * Created by void 18.06.13 18:39
  */
 public class HzTaskServer extends GeneralTaskServer {
 
@@ -121,7 +120,7 @@ public class HzTaskServer extends GeneralTaskServer {
         long startTime = clock.tick();
 
         // save it firstly
-        if (!taskService.finishTask(taskDecision)) {
+        if (taskService.finishTask(taskDecision) == null) {
             logger.warn("{}/{} Task decision can not be saved", taskDecision.getTaskId(), taskDecision.getProcessId());
             return;
         }
@@ -150,10 +149,6 @@ public class HzTaskServer extends GeneralTaskServer {
 
         ProcessDecisionUnitOfWork call = new ProcessDecisionUnitOfWork(taskKey);
         distributedExeService.submit(call);
-    }
-
-    protected DecisionContainer getDecision(UUID taskId, UUID processId) {
-        return taskService.getDecision(taskId, processId);
     }
 
 

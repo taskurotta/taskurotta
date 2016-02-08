@@ -12,6 +12,13 @@
         <constructor-arg name="bSerializationService" ref="bSerializationService"/>
         <constructor-arg name="decisionCollectionName" value="${hz.map.decision.name}"/>
     </bean>
+
+    <bean id="mongoGraphDao" class="ru.taskurotta.service.hz.dependency.MongoGraphDao">
+        <constructor-arg name="hzInstance" ref="hzInstance"/>
+        <constructor-arg name="graphsMapName" value="${hz.map.graph.name}"/>
+        <constructor-arg name="mongoDB" ref="mongoDB"/>
+        <constructor-arg name="bSerializationService" ref="bSerializationService"/>
+    </bean>
     <!-- /Backends -->
 
     <!-- Queues persistence support -->
@@ -87,36 +94,50 @@
         <constructor-arg name="enabled" value="${recovery.task.enabled}"/>
     </bean>
 
+    <bean id="lostProcessCleaner" class="ru.taskurotta.service.hz.gc.LostProcessCleaner">
+        <constructor-arg name="processService" ref="processService"/>
+        <constructor-arg name="garbageCollectorService" ref="garbageCollectorService"/>
+        <constructor-arg name="lostProcessFindTimeout">
+            <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
+                <constructor-arg name="duration" value="${gc.lost-process.find-timeout}"/>
+            </bean>
+        </constructor-arg>
+        <constructor-arg name="batchSize" value="${gc.lost-process.batch-size}"/>
+        <constructor-arg name="timeBeforeDeleteFinishedProcess">
+            <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
+                <constructor-arg name="duration" value="${gc.time-before-delete-finished-process}"/>
+            </bean>
+        </constructor-arg>
+        <constructor-arg name="timeBeforeDeleteAbortedProcess">
+            <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
+                <constructor-arg name="duration" value="${gc.time-before-manual-delete-process}"/>
+            </bean>
+        </constructor-arg>
+        <constructor-arg name="enabled" value="${gc.lost-process.enabled}"/>
+        <constructor-arg name="gcEnabled" value="${gc.enabled}"/>
+        <constructor-arg name="nodeLock" ref="gcLostProcessNodeLock"/>
+    </bean>
+
+    <bean id="lostGraphCleaner" class="ru.taskurotta.service.hz.gc.LostGraphCleaner">
+        <constructor-arg name="graphDao" ref="mongoGraphDao"/>
+        <constructor-arg name="processService" ref="processService"/>
+        <constructor-arg name="garbageCollectorService" ref="garbageCollectorService"/>
+        <constructor-arg name="lostGraphFindTimeout">
+            <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
+                <constructor-arg name="duration"  value="${gc.lost-graph.find-timeout}"/>
+            </bean>
+        </constructor-arg>
+        <constructor-arg name="batchSize" value="${gc.lost-graph.batch-size}"/>
+        <constructor-arg name="incompleteProcessTimeout">
+            <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
+                <constructor-arg name="duration"  value="${recovery.process.incomplete-timeout}"/>
+            </bean>
+        </constructor-arg>
+        <constructor-arg name="enabled" value="${gc.lost-graph.enabled}"/>
+        <constructor-arg name="gcEnabled" value="${gc.enabled}"/>
+        <constructor-arg name="nodeLock" ref="gcLostGraphNodeLock"/>
+    </bean>
     <!-- /Services -->
-
-    <!-- Executors -->
-
-    <bean id="recoveryOperationExecutor" class="ru.taskurotta.service.hz.support.HzOperationExecutor">
-        <constructor-arg name="hzInstance" ref="hzInstance"/>
-        <constructor-arg name="nativePoint" ref="recoveryService"/>
-        <constructor-arg name="queueName" value="${recovery.operation.queue.name}"/>
-        <constructor-arg name="poolSize" value="${recovery.operation.pool-size}"/>
-        <constructor-arg name="enabled" value="${recovery.enabled}"/>
-    </bean>
-
-    <bean id="taskRecoveryOperationExecutor" class="ru.taskurotta.service.hz.support.HzOperationExecutor">
-        <constructor-arg name="enabled" value="${operation.task-restart.enabled}" />
-        <constructor-arg name="hzInstance" ref="hzInstance" />
-        <constructor-arg name="nativePoint" ref="recoveryService" />
-        <constructor-arg name="poolSize" value="${operation.task-restart.pool-size}" />
-        <constructor-arg name="queueName" value="${operation.task-restart.queue-name}" />
-    </bean>
-
-    <bean id="abortProcessOperationExecutor" class="ru.taskurotta.service.hz.support.HzOperationExecutor">
-        <constructor-arg name="hzInstance" ref="hzInstance"/>
-        <constructor-arg name="nativePoint" ref="recoveryService"/>
-        <constructor-arg name="queueName" value="${operation.abort-process.queue.name}"/>
-        <constructor-arg name="poolSize" value="${operation.abort-process.pool-size}"/>
-        <constructor-arg name="enabled" value="${operation.abort-process.enabled}"/>
-    </bean>
-
-    <!-- /Executors -->
-
 
     <!-- Services support -->
     <bean id = "hzInterruptedTasksSupport" class="ru.taskurotta.service.hz.support.HzInterruptedTasksRestoreSupport" init-method="init">
