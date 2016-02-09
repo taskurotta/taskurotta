@@ -61,7 +61,7 @@ public class MongoProcessService extends HzProcessService {
 
         BasicDBList orStates = new BasicDBList();
         orStates.add(new BasicDBObject(STATE_FIELD_NAME, null));
-        orStates.add(new BasicDBObject(STATE_FIELD_NAME, Process.START));
+        orStates.add(new BasicDBObject(STATE_FIELD_NAME, Process.ACTIVE));
 
         query.append("$or", orStates);
 
@@ -74,7 +74,7 @@ public class MongoProcessService extends HzProcessService {
     public ResultSetCursor<UUID> findLostProcesses(long lastFinishedProcessDeleteTime, long lastAbortedProcessDeleteTime, int batchSize) {
         BasicDBObject queryFinishedProcess =
                 new BasicDBObject(END_TIME_FIELD_NAME, new BasicDBObject("$lte", lastFinishedProcessDeleteTime));
-        queryFinishedProcess.append(STATE_FIELD_NAME, Process.FINISH);
+        queryFinishedProcess.append(STATE_FIELD_NAME, Process.FINISHED);
 
         BasicDBObject queryAbortedProcess =
                 new BasicDBObject(START_TIME_FIELD_NAME, new BasicDBObject("$lte", lastAbortedProcessDeleteTime));

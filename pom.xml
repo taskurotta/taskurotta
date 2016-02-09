@@ -5,7 +5,7 @@
 
     <groupId>ru.taskurotta</groupId>
     <artifactId>ru.taskurotta</artifactId>
-    <version>10.5</version>
+    <version>10.6</version>
     <packaging>pom</packaging>
 
     <name>Taskurotta :: Parent module</name>

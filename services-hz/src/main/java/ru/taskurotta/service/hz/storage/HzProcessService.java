@@ -60,7 +60,7 @@ public class HzProcessService extends AbstractHzProcessService implements Proces
     public ResultSetCursor findIncompleteProcesses(long recoveryTime, int limit) {
         com.hazelcast.query.Predicate predicate = new Predicates.AndPredicate(
                 new Predicates.BetweenPredicate(START_TIME_INDEX_NAME, 0l, recoveryTime),
-                new Predicates.EqualPredicate(STATE_INDEX_NAME, Process.START));
+                new Predicates.EqualPredicate(STATE_INDEX_NAME, Process.ACTIVE));
 
         //PagingPredicate should be available in HZ 3.2
         final Collection<UUID> result = new ArrayList<>();
@@ -108,7 +108,7 @@ public class HzProcessService extends AbstractHzProcessService implements Proces
                         Predicates.equal(STATE_INDEX_NAME, Process.ABORTED)),
                     Predicates.and(
                         Predicates.between(END_TIME_INDEX_NAME, 0l, lastFinishedProcessDeleteTime),
-                        Predicates.equal(STATE_INDEX_NAME, Process.FINISH))
+                        Predicates.equal(STATE_INDEX_NAME, Process.FINISHED))
                 ), batchSize);
 
         Collection<UUID> result = new ArrayList<>(processIMap.keySet(pagingPredicate));
@@ -151,7 +151,7 @@ public class HzProcessService extends AbstractHzProcessService implements Proces
 
         process.setEndTime(System.currentTimeMillis());
         process.setReturnValue(returnValue);
-        process.setState(Process.FINISH);
+        process.setState(Process.FINISHED);
         processIMap.set(process.getProcessId(), process, 0, TimeUnit.NANOSECONDS);
     }
 
@@ -179,12 +179,12 @@ public class HzProcessService extends AbstractHzProcessService implements Proces
 
     @Override
     public void markProcessAsBroken(UUID processId) {
-        setProcessState(processId, Process.START, Process.BROKEN);
+        setProcessState(processId, Process.ACTIVE, Process.BROKEN);
     }
 
     @Override
     public void markProcessAsStarted(UUID processId) {
-        setProcessState(processId, Process.BROKEN, Process.START);
+        setProcessState(processId, Process.BROKEN, Process.ACTIVE);
     }
 
     @Override
@@ -289,7 +289,7 @@ public class HzProcessService extends AbstractHzProcessService implements Proces
         Collection<Process> processes = processIMap.values();
 
         for (Process process : processes) {
-            if (process.getState() == Process.FINISH) {
+            if (process.getState() == Process.FINISHED) {
                 if (customId == null || customId.equals(process.getCustomId())) {
                     result++;
                 }
@@ -319,7 +319,7 @@ public class HzProcessService extends AbstractHzProcessService implements Proces
         if (actorId != null) {
             Collection<Process> processes = processIMap.values();
             for (Process process : processes) {
-                if (process.getState() == Process.START && actorId.equals(process.getStartTask().getActorId()) && (taskList==null || taskList.equals(TransportUtils.getTaskList(process.getStartTask())))) {
+                if (process.getState() == Process.ACTIVE && actorId.equals(process.getStartTask().getActorId()) && (taskList==null || taskList.equals(TransportUtils.getTaskList(process.getStartTask())))) {
                     result++;
                 }
             }
