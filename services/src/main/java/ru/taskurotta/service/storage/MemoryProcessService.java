@@ -37,7 +37,7 @@ public class MemoryProcessService implements ProcessService, ProcessInfoRetrieve
     public void finishProcess(UUID processId, String returnValue) {
         Process process = processesStorage.get(processId);
         process.setEndTime(System.currentTimeMillis());
-        process.setState(Process.FINISH);
+        process.setState(Process.FINISHED);
         process.setReturnValue(returnValue);
         processesStorage.put(processId, process);
     }
@@ -102,7 +102,7 @@ public class MemoryProcessService implements ProcessService, ProcessInfoRetrieve
 
     @Override
     public void markProcessAsStarted(UUID processId) {
-        setProcessState(processId, Process.START);
+        setProcessState(processId, Process.ACTIVE);
     }
 
     @Override
@@ -176,7 +176,7 @@ public class MemoryProcessService implements ProcessService, ProcessInfoRetrieve
         Iterator<Process> iterator = processesStorage.values().iterator();
         while (iterator.hasNext()) {
             Process process = iterator.next();
-            if (process.getState() == Process.FINISH) {
+            if (process.getState() == Process.FINISHED) {
                 if (customId == null || customId.equals(process.getCustomId())) {
                     result++;
                 }
@@ -206,7 +206,7 @@ public class MemoryProcessService implements ProcessService, ProcessInfoRetrieve
         if (actorId != null) {
             Collection<Process> processes = processesStorage.values();
             for (Process process : processes) {
-                if (process.getState() == Process.START && actorId.equals(process.getStartTask().getActorId()) && (taskList==null || taskList.equals(TransportUtils.getTaskList(process.getStartTask())))) {
+                if (process.getState() == Process.ACTIVE && actorId.equals(process.getStartTask().getActorId()) && (taskList==null || taskList.equals(TransportUtils.getTaskList(process.getStartTask())))) {
                     count++;
                 }
             }

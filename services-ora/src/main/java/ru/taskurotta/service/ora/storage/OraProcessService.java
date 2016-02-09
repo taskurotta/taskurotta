@@ -67,7 +67,7 @@ public class OraProcessService extends AbstractHzProcessService implements Proce
                      "UPDATE TSK_PROCESS SET END_TIME = ?, STATE = ?, RETURN_VALUE= ? WHERE PROCESS_ID = ?")
         ) {
             ps.setLong(1, (new Date()).getTime());
-            ps.setInt(2, Process.FINISH);
+            ps.setInt(2, Process.FINISHED);
             ps.setString(3, returnValue);
             ps.setString(4, processId.toString());
             ps.executeUpdate();
@@ -104,7 +104,7 @@ public class OraProcessService extends AbstractHzProcessService implements Proce
             ps.setString(2, task.getTaskId().toString());
             ps.setString(3, TransportUtils.getCustomId(task));
             ps.setLong(4, (new Date()).getTime());
-            ps.setInt(5, Process.START);
+            ps.setInt(5, Process.ACTIVE);
             ps.setString(6, (String) taskSerializer.serialize(task));
             ps.setString(7, task.getActorId());
             ps.setString(8, TransportUtils.getTaskList(task));
@@ -166,7 +166,7 @@ public class OraProcessService extends AbstractHzProcessService implements Proce
 
     @Override
     public void markProcessAsStarted(UUID processId) {
-        setProcessState(processId, Process.START);
+        setProcessState(processId, Process.ACTIVE);
     }
 
     @Override
@@ -298,7 +298,7 @@ public class OraProcessService extends AbstractHzProcessService implements Proce
         try (Connection connection = dataSource.getConnection();
              PreparedStatement ps = connection.prepareStatement(sql)) {
 
-            ps.setInt(1, Process.FINISH);
+            ps.setInt(1, Process.FINISHED);
             if (customId != null) {
                 ps.setString(2, customId);
             }
@@ -344,7 +344,7 @@ public class OraProcessService extends AbstractHzProcessService implements Proce
                 connection = dataSource.getConnection();
                 preparedStatement = connection.prepareStatement(SQL_FIND_INCOMPLETE_PROCESSES);
 
-                preparedStatement.setInt(1, Process.START);
+                preparedStatement.setInt(1, Process.ACTIVE);
                 preparedStatement.setLong(2, recoveryTime);
                 preparedStatement.setFetchSize(limit);
 
@@ -410,7 +410,7 @@ public class OraProcessService extends AbstractHzProcessService implements Proce
 
                 preparedStatement.setInt(1, Process.ABORTED);
                 preparedStatement.setLong(2, lastAbortedProcessDeleteTime);
-                preparedStatement.setInt(3, Process.FINISH);
+                preparedStatement.setInt(3, Process.FINISHED);
                 preparedStatement.setLong(4, lastFinishedProcessDeleteTime);
                 preparedStatement.setFetchSize(batchSize);
 
@@ -488,7 +488,7 @@ public class OraProcessService extends AbstractHzProcessService implements Proce
             String sql = taskList!=null? SQL_GET_PROCESS_CNT_BY_STATE_AND_STARTER_ID + " AND TASK_LIST = ?" : SQL_GET_PROCESS_CNT_BY_STATE_AND_STARTER_ID;
             try (Connection connection = dataSource.getConnection();
                  PreparedStatement ps = connection.prepareStatement(sql)) {
-                ps.setInt(1, Process.START);
+                ps.setInt(1, Process.ACTIVE);
                 ps.setString(2, actorId);
                 if (taskList != null) {
                     ps.setString(3, taskList);

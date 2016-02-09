@@ -108,7 +108,7 @@ public class RecoveryServiceImpl implements RecoveryService {
 
         // skip broken and already finished process
         Process process = processService.getProcess(processId);
-        if (process == null || process.getState() == Process.FINISH || process.getState() == Process.BROKEN) {
+        if (process == null || process.getState() == Process.FINISHED || process.getState() == Process.BROKEN) {
             return false;
         }
 
@@ -130,7 +130,7 @@ public class RecoveryServiceImpl implements RecoveryService {
 
             // check if Process is finished because Graph are marked as finished before Process
 
-            if (process.getState() == Process.FINISH) {
+            if (process.getState() == Process.FINISHED) {
                 logger.debug("#[{}]: is finished, just skip it", processId);
                 return false;
             }
