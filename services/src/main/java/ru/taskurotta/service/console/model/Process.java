@@ -12,8 +12,8 @@ import java.util.UUID;
  */
 public class Process implements Serializable {
 
-    public static final int START = 0;
-    public static final int FINISH = 1;
+    public static final int ACTIVE = 0;
+    public static final int FINISHED = 1;
     public static final int BROKEN = 2;
     public static final int ABORTED = 3;
 
@@ -28,11 +28,22 @@ public class Process implements Serializable {
 
     public Process() {}
 
+    public static String stateToString(int state) {
+        switch (state) {
+            case Process.ACTIVE: return "Active";
+            case Process.FINISHED: return "Finished";
+            case Process.BROKEN: return "Broken";
+            case Process.ABORTED: return "Aborted";
+        }
+
+        return "Unknown state " + state;
+    }
+
     public Process(TaskContainer startTask) {
         this.processId = startTask.getProcessId();
         this.startTaskId = startTask.getTaskId();
         this.startTime = System.currentTimeMillis();
-        this.state = START;
+        this.state = ACTIVE;
         this.startTask = startTask;
         this.customId = TransportUtils.getCustomId(startTask);
     }
@@ -152,7 +163,7 @@ public class Process implements Serializable {
                 ", customId='" + customId + '\'' +
                 ", startTime=" + startTime +
                 ", endTime=" + endTime +
-                ", state=" + state +
+                ", state=" + stateToString(state) +
                 ", returnValue='" + returnValue + '\'' +
                 ", startTask=" + startTask +
                 '}';

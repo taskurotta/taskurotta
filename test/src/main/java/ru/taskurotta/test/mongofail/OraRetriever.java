@@ -33,7 +33,7 @@ public class OraRetriever implements FinishedCountRetriever {
         try (Connection connection = dataSource.getConnection();
             PreparedStatement ps = connection.prepareStatement(sql)) {
 
-            ps.setInt(1, ru.taskurotta.service.console.model.Process.FINISH);
+            ps.setInt(1, ru.taskurotta.service.console.model.Process.FINISHED);
             if (customId!=null) {
                 ps.setString(2, customId);
             }
