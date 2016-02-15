@@ -87,6 +87,12 @@ do_stop()
     docker-compose -f docker-compose.yml -f docker-compose_dev.yml stop
 }
 
+do_e2e() {
+    docker run --name=tsk_e2e -it --rm --net=taskurotta -v /dev/shm:/dev/shm \
+        -v $(cd "../dropwizard/src/main/e2e/"; pwd):/protractor \
+        -v $(pwd)/data/e2e:/tmp/e2e taskurotta/protractor conf.js --report-dir=/tmp/e2e/report
+}
+
 for var in "$@"
 do
     case "$var" in
@@ -107,6 +113,9 @@ do
         ;;
         stop)
             do_stop
+        ;;
+        e2e)
+            do_e2e
         ;;
         *)
             echo "Usage: $0 {clean-data|clean-docker|clean|up|stop}" >&2
