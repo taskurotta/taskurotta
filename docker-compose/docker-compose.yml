@@ -1,50 +1,62 @@
-tsk_mongodb:
-  container_name: tsk_mongodb
-  net: taskurotta
-  image: mongo:3.2.0
-  volumes:
-    - ./data/mongo:/data/db
-    - ./etc/mongo:/etc/mongo
-  command: -f /etc/mongo/mongodb.conf
+version: "2"
 
-tsk_node1: &tsk_node
-  container_name: tsk_node1
-  hostname: tsk_node1
-  net: taskurotta
-  labels:
-    untto-dep: tsk_mongodb
-  image: taskurotta/server
-  volumes: 
-    - ./data/node1:/tmp/javadumps
-    - ./data/node1:/var/log/taskurotta
-    - ./etc/node:/etc/taskurotta/server
-#  expose:
-#    - "8811"
-#    - "7777"
-  command: |
-    java -Xmx512m -Xms512m -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp/javadumps
-    -Dhazelcast.health.monitoring.level=OFF -server -jar /opt/taskurotta/taskurotta.jar server
-    /etc/taskurotta/server/config.yml
+services:
+  tsk_mongodb:
+    container_name: tsk_mongodb
+    networks:
+      - taskurotta
+    image: mongo:3.2.0
+    volumes:
+      - ./data/mongo:/data/db
+      - ./etc/mongo:/etc/mongo
+    command: -f /etc/mongo/mongodb.conf
 
-tsk_node2:
-  <<: *tsk_node
-  container_name: tsk_node2
-  hostname: tsk_node2
-  volumes:
-    - ./data/node2:/tmp/javadumps
-    - ./data/node2:/var/log/taskurotta
-    - ./etc/node:/etc/taskurotta/server
+  tsk_node1: &tsk_node
+    container_name: tsk_node1
+    hostname: tsk_node1
+    networks:
+      - taskurotta
+    labels:
+      untto-dep: tsk_mongodb
+    image: taskurotta/server
+    volumes:
+      - ./data/node1:/tmp/javadumps
+      - ./data/node1:/var/log/taskurotta
+      - ./etc/node:/etc/taskurotta/server
+    links:
+      - tsk_mongodb
+    command: |
+      java -Xmx512m -Xms512m -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp/javadumps
+      -Dhazelcast.health.monitoring.level=OFF -server -jar /opt/taskurotta/taskurotta.jar server
+      /etc/taskurotta/server/config.yml
 
-tsk_http:
-  container_name: tsk_http
-  net: taskurotta
-  labels:
-    untto-dep: tsk_node1, tsk_node2
-  image: haproxy:1.6.2
-  volumes:
-    - ./etc/haproxy/haproxy.conf:/usr/local/etc/haproxy/haproxy.cfg
-    - ./data/haproxy:/var/log/haproxy
-  expose:
-    - 80
-  ports:
-    - "80:80"
+  tsk_node2:
+    <<: *tsk_node
+    container_name: tsk_node2
+    hostname: tsk_node2
+    volumes:
+      - ./data/node2:/tmp/javadumps
+      - ./data/node2:/var/log/taskurotta
+      - ./etc/node:/etc/taskurotta/server
+
+  tsk_http:
+    container_name: tsk_http
+    networks:
+      - taskurotta
+    labels:
+      untto-dep: tsk_node1, tsk_node2
+    image: haproxy:1.6.2
+    volumes:
+      - ./etc/haproxy/haproxy.conf:/usr/local/etc/haproxy/haproxy.cfg
+      - ./data/haproxy:/var/log/haproxy
+    links:
+      - tsk_node1
+      - tsk_node2
+    expose:
+      - 80
+    ports:
+      - "80:80"
+
+networks:
+  taskurotta:
+    driver: bridge

@@ -24,9 +24,6 @@ do_clean_docker()
         else echo ">> no images found"
     fi
 
-    if [ -n "$(docker network ls| grep taskurotta)" ];
-        then docker network rm taskurotta
-    fi
 }
 
 # $1 - file path
@@ -45,34 +42,7 @@ f_wait_log_message()
 
 do_up()
 {
-    if [ ! -n "$(docker network ls| grep taskurotta)" ];
-        then docker network create taskurotta
-    fi
-
-    docker-compose up -d --no-deps tsk_mongodb
-    echo "Waiting tsk_mongodb..."
-    f_wait_log_message data/mongo/mongodb.log "waiting for connections on port"
-    echo ">> done"
-
-    docker-compose up -d --no-deps tsk_node1
-    echo "Waiting tsk_node1..."
-    f_wait_log_message data/node1/service.log "Members \[1\] {"
-    echo ">> done. Member is started"
-    f_wait_log_message data/node1/service.log "POST    /tasks/gc"
-    echo ">> done. And ready for connections"
-
-    docker-compose up -d --no-deps tsk_node2
-    echo "Waiting tsk_node2..."
-    f_wait_log_message data/node1/service.log "Members \[2\] {"
-    echo ">> done. Member is started and connected to cluster"
-    f_wait_log_message data/node1/service.log "POST    /tasks/gc"
-    echo ">> done. And ready for connections"
-
-    docker-compose up -d --no-deps tsk_http
-    echo "Waiting tsk_http..."
-#    f_wait_log_message data/nginx/access.log
-    echo ">> done."
-
+    docker-compose up -d
 }
 
 do_stop()

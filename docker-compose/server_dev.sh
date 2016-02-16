@@ -27,10 +27,6 @@ do_clean_docker()
         else echo ">> no images found"
     fi
 
-    if [ -n "$(docker network ls| grep taskurotta)" ];
-        then docker network rm taskurotta
-    fi
-}
 
 # $1 - file path
 # $2 - log string
@@ -48,38 +44,7 @@ f_wait_log_message()
 
 do_up()
 {
-    if [ ! -n "$(docker network ls| grep taskurotta)" ];
-        then docker network create taskurotta
-    fi
-
-    docker-compose -f docker-compose.yml -f docker-compose_dev.yml up -d --no-deps tsk_mongodb
-    echo "Waiting tsk_mongodb..."
-    f_wait_log_message data/mongo/mongodb.log "waiting for connections on port"
-    echo ">> done"
-
-    docker-compose -f docker-compose.yml -f docker-compose_dev.yml up -d --no-deps tsk_node1
-    echo "Waiting tsk_node1..."
-    f_wait_log_message data/node1/service.log "Members \[1\] {"
-    echo ">> done. Member is started"
-    f_wait_log_message data/node1/service.log "POST    /tasks/gc"
-    echo ">> done. And ready for connections"
-
-    docker-compose -f docker-compose.yml -f docker-compose_dev.yml up -d --no-deps tsk_node2
-    echo "Waiting tsk_node2..."
-    f_wait_log_message data/node1/service.log "Members \[2\] {"
-    echo ">> done. Member is started and connected to cluster"
-    f_wait_log_message data/node1/service.log "POST    /tasks/gc"
-    echo ">> done. And ready for connections"
-
-    docker-compose -f docker-compose.yml -f docker-compose_dev.yml up -d --no-deps tsk_web_dev
-    echo "Python web server started for static web files"
-
-    docker-compose -f docker-compose.yml -f docker-compose_dev.yml up -d --no-deps tsk_web_doc_dev
-    echo "Python web server started for documentation files"
-
-    docker-compose -f docker-compose.yml -f docker-compose_dev.yml up -d --no-deps tsk_http
-    echo "HA proxy started on 80 port"
-
+    docker-compose -f docker-compose.yml -f docker-compose_dev.yml up -d
 }
 
 do_stop()
