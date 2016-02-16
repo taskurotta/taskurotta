@@ -26,7 +26,7 @@ do_clean_docker()
         then docker rmi $UNTAGGED_IMAGES && echo ">> done"
         else echo ">> no images found"
     fi
-
+}
 
 # $1 - file path
 # $2 - log string
@@ -53,9 +53,10 @@ do_stop()
 }
 
 do_e2e() {
-    docker run --name=tsk_e2e -it --rm --net=taskurotta -v /dev/shm:/dev/shm \
+    docker run --name=tsk_e2e -it --rm --net=dockercompose_default -v /dev/shm:/dev/shm \
         -v $(cd "../dropwizard/src/main/e2e/"; pwd):/protractor \
-        -v $(pwd)/data/e2e:/tmp/e2e taskurotta/protractor conf.js --report-dir=/tmp/e2e/report
+        -v $(pwd)/data/e2e:/tmp/e2e \
+        taskurotta/protractor conf.js --report-dir=/tmp/e2e/report
 }
 
 for var in "$@"
