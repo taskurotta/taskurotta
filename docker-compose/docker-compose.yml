@@ -16,8 +16,6 @@ services:
     hostname: tsk_node1
     networks:
       - taskurotta
-    labels:
-      untto-dep: tsk_mongodb
     image: taskurotta/server
     volumes:
       - ./data/node1:/tmp/javadumps
@@ -43,8 +41,6 @@ services:
     container_name: tsk_http
     networks:
       - taskurotta
-    labels:
-      untto-dep: tsk_node1, tsk_node2
     image: haproxy:1.6.2
     volumes:
       - ./etc/haproxy/haproxy.conf:/usr/local/etc/haproxy/haproxy.cfg
