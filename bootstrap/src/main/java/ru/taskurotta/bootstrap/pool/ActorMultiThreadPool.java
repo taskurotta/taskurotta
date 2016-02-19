@@ -9,12 +9,11 @@ import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Actor execution thread pool abstraction.
  * Contains thread pooling/shrinking/expanding logic for a given actor
- *
+ * <p>
  * User: dimadin, stukushin
  * Date: 24.04.13
  * Time: 16:14
@@ -28,7 +27,6 @@ public class ActorMultiThreadPool implements ActorThreadPool {
     private long shutdownTimeoutMillis;
 
     private ActorExecutor actorExecutor; //ActorExecutor task instance for the pool
-    private AtomicInteger activeActorExecutorThreadCount = new AtomicInteger();
 
     private ConcurrentHashMap<String, Thread> threadMap;
 
@@ -52,28 +50,26 @@ public class ActorMultiThreadPool implements ActorThreadPool {
     /**
      * Shuts current thread of ActorExecutor if there are active others in pool.
      * Should always leave at least one active thread for polling taskServer.
-     *
+     * <p>
      * Return false if already muted
      *
      * @return boolean
      */
     public synchronized boolean mute() {
-        if (logger.isTraceEnabled()) {
-            logger.trace("Try to stop actor [{}]'s thread [{}]", actorClassName, Thread.currentThread().getName());
-        }
+        String threadName = Thread.currentThread().getName();
 
-        if (activeActorExecutorThreadCount.get() == 1) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Only one active actor [{}]'s thread [{}]", actorClassName, Thread.currentThread().getName());
-            }
+        logger.trace("Try to stop actor [{}]'s thread [{}]", actorClassName, threadName);
 
+        int poolSize = threadMap.size();
+        if (threadMap.size() == 1) {
+            logger.debug("Only one active actor [{}]'s thread [{}]", actorClassName, threadName);
             return false;
         }
 
-        destroyActorExecutorThread();
+        destroyActorExecutorThread(threadName);
 
         if (logger.isTraceEnabled()) {
-            logger.trace("Actor [{}]'s has [{}] active threads", actorClassName, activeActorExecutorThreadCount.get());
+            logger.trace("Actor [{}]'s has [{}] active threads", actorClassName, poolSize);
         }
 
         return true;
@@ -83,28 +79,21 @@ public class ActorMultiThreadPool implements ActorThreadPool {
      * Submits new task to the pool, expanding it to max size. (meaning task server is now active and actors ready for full scale execution).
      */
     public synchronized void wake() {
-
-        int threadsToStart = size - activeActorExecutorThreadCount.get();
+        int poolSize = threadMap.size();
+        int threadsToStart = size - poolSize;
 
         if (threadsToStart == 0) {
-            if (logger.isTraceEnabled()) {
-                logger.trace("All actor [{}]'s threads [{}] already started", actorClassName, activeActorExecutorThreadCount.get());
-            }
-
+            logger.trace("All actor [{}]'s threads [{}] already started", actorClassName, poolSize);
             return;
-        } else {
-            if (logger.isTraceEnabled()) {
-                logger.trace("Try to start [{}] actor [{}]'s threads. Now active [{}]", threadsToStart, actorClassName, activeActorExecutorThreadCount.get());
-            }
         }
+
+        logger.trace("Try to start [{}] actor [{}]'s threads. Now active [{}]", threadsToStart, actorClassName, poolSize);
 
         for (int i = 0; i < threadsToStart; i++) {
             createActorExecutorThread();
         }
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("Actor [{}]'s [{}] threads started, [{}] active now", actorClassName, threadsToStart, activeActorExecutorThreadCount.get());
-        }
+        logger.debug("Actor [{}]'s [{}] threads started, [{}] active now", actorClassName, threadsToStart, poolSize);
     }
 
     /**
@@ -116,7 +105,6 @@ public class ActorMultiThreadPool implements ActorThreadPool {
         }
 
         actorExecutor.stopInstance();
-        actorExecutor.stopThread();
 
         long stopTime = System.currentTimeMillis();
 
@@ -169,7 +157,7 @@ public class ActorMultiThreadPool implements ActorThreadPool {
                     }
                 }
 
-                TimeUnit.SECONDS.sleep(10);
+                TimeUnit.SECONDS.sleep(1);
             }
 
             if (logger.isInfoEnabled()) {
@@ -183,15 +171,15 @@ public class ActorMultiThreadPool implements ActorThreadPool {
     }
 
     public int getCurrentSize() {
-        return activeActorExecutorThreadCount.get();
+        return threadMap.size();
     }
 
     private void createActorExecutorThread() {
-
-        int counter = activeActorExecutorThreadCount.getAndIncrement();
-
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss:SSS");
-        String threadName = actorClassName + (taskList == null ? "" : "[" + taskList + "]") + "-(" + simpleDateFormat.format(new Date()) + ")-" + counter;
+        String threadName = actorClassName +
+                (taskList == null ? "" : "[" + taskList + "]") +
+                "-(" + simpleDateFormat.format(new Date()) + ")-" +
+                (threadMap.size() + 1);
 
         Thread thread = new Thread(actorExecutor, threadName);
         thread.start();
@@ -203,15 +191,12 @@ public class ActorMultiThreadPool implements ActorThreadPool {
         }
     }
 
-    private void destroyActorExecutorThread() {
-
-        String threadName = Thread.currentThread().getName();
-
+    private void destroyActorExecutorThread(String threadName) {
         if (logger.isTraceEnabled()) {
             logger.trace("Try to destroy actor's [{}] thread [{}]", actorClassName, threadName);
         }
 
-        activeActorExecutorThreadCount.decrementAndGet();
+        threadMap.remove(threadName);
         actorExecutor.stopThread();
     }
 }
