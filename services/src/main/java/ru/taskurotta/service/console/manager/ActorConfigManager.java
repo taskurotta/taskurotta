@@ -22,4 +22,6 @@ public interface ActorConfigManager {
 
     Map<String, Collection<MetricsStatDataVO>> getMetricsData(Collection<String> metrics, Collection<String> actorIds);
 
+    Collection<MetricsStatDataVO> getAllMetrics(String actorId);
+
 }

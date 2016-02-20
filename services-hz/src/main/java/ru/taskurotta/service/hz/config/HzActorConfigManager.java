@@ -119,6 +119,24 @@ public class HzActorConfigManager implements ActorConfigManager {
         return result;
     }
 
+    public Collection<MetricsStatDataVO> getAllMetrics(String actorId) {
+        IExecutorService executorService = hzInstance.getExecutorService(ACTOR_CONFIG_EXECUTOR_SERVICE);
+        Collection<MetricsStatDataVO> result = new ArrayList<>();
+
+        Map <Member, Future <Collection<MetricsStatDataVO>>> futures = executorService.submitToMembers(
+                new AllActorMetricsTask(actorId), hzInstance.getCluster().getMembers());
+        for (Map.Entry<Member, Future<Collection<MetricsStatDataVO>>> entry : futures.entrySet()) {
+            try {
+                Future<Collection<MetricsStatDataVO>> future = entry.getValue();
+                result.addAll(future.get(5, TimeUnit.SECONDS));
+            } catch (Exception e) {
+                logger.error("Cannot get all metrics stat data for actorId[" + actorId + "]", e);
+            }
+        }
+
+        return result;
+    }
+
     public void setMetricsDataRetriever(MetricsMethodDataRetriever metricsDataRetriever) {
         this.metricsDataRetriever = metricsDataRetriever;
     }

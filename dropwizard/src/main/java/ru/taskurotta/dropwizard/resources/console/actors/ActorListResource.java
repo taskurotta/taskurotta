@@ -207,6 +207,11 @@ public class ActorListResource {
         }
     }
 
+    @GET
+    @Path("/info")
+    public Collection<MetricsStatDataVO> getInfo(@QueryParam("actorId") String actorId) {
+        return actorConfigManager.getAllMetrics(actorId);
+    }
 
     @Required
     public void setActorConfigManager(ActorConfigManager actorConfigManager) {
