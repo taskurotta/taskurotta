@@ -21,7 +21,7 @@ spreader:
           mongo.port: 27017
           gc.enabled: true
           gc.pool-size: 8
-          gc.time-before-delete-finished-process: 20 seconds
+          gc.process.finished.wait-before-delete: 20 seconds
           recovery.enabled: true
           recovery.process.incomplete-timeout: 30 seconds
           recovery.find-incomplete-process-period: 5 seconds

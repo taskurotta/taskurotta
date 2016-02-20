@@ -247,7 +247,7 @@
         <constructor-arg name="poolSize" value="${gc.pool-size}"/>
         <constructor-arg name="timeBeforeDelete">
             <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
-                <constructor-arg name="duration" value="${gc.time-before-delete-finished-process}"/>
+                <constructor-arg name="duration" value="${gc.process.finished.wait-before-delete}"/>
             </bean>
         </constructor-arg>
         <constructor-arg name="enabled" value="${gc.enabled}"/>
