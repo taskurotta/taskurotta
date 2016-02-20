@@ -40,9 +40,9 @@ public class NoWaitTest extends AbstractTestStub {
         assertTaskInProgress(taskAId);
 
         // create B, C, D tasks
-        Task deciderTaskB = deciderTask(taskBId, TaskType.DECIDER_ASYNCHRONOUS, "startB");
-        Task deciderTaskC = deciderTask(taskCId, TaskType.DECIDER_ASYNCHRONOUS, "startC");
-        Task deciderTaskD = deciderTask(taskDId, TaskType.DECIDER_ASYNCHRONOUS, "startD", null,
+        Task deciderTaskB = deciderTask(taskBId, TaskType.DECIDER, "startB");
+        Task deciderTaskC = deciderTask(taskCId, TaskType.DECIDER, "startC");
+        Task deciderTaskD = deciderTask(taskDId, TaskType.DECIDER, "startD", null,
                 new Object[]{promise(deciderTaskB), promise(deciderTaskC)},
                 new TaskOptions().setArgTypes(new ArgType[]{ArgType.NO_WAIT, ArgType.NONE}));
 
@@ -62,7 +62,7 @@ public class NoWaitTest extends AbstractTestStub {
         pollDeciderTask(taskDId);
 
         // release task D = create task E(B)
-        Task taskE = deciderTask(taskEId, TaskType.DECIDER_ASYNCHRONOUS, "startE", promise(deciderTaskB));
+        Task taskE = deciderTask(taskEId, TaskType.DECIDER, "startE", promise(deciderTaskB));
         release(taskDId, null, taskE);
         assertEmptyQueue();
 
@@ -99,9 +99,9 @@ public class NoWaitTest extends AbstractTestStub {
         assertTaskInProgress(taskAId);
 
         // create B, C
-        Task deciderTaskB = deciderTask(taskBId, TaskType.DECIDER_ASYNCHRONOUS, "startB");
-        Task deciderTaskE = deciderTask(taskEId, TaskType.DECIDER_ASYNCHRONOUS, "startE");
-        Task deciderTaskC = deciderTask(taskCId, TaskType.DECIDER_ASYNCHRONOUS, "startC", null,
+        Task deciderTaskB = deciderTask(taskBId, TaskType.DECIDER, "startB");
+        Task deciderTaskE = deciderTask(taskEId, TaskType.DECIDER, "startE");
+        Task deciderTaskC = deciderTask(taskCId, TaskType.DECIDER, "startC", null,
                 new Object[]{promise(deciderTaskB), promise(deciderTaskE)},
                 new TaskOptions().setArgTypes(new ArgType[]{ArgType.NO_WAIT, ArgType.NONE}));
 
@@ -112,7 +112,7 @@ public class NoWaitTest extends AbstractTestStub {
         pollDeciderTask(taskBId, taskEId);
 
         // release task B = create task D
-        Task taskD = deciderTask(taskDId, TaskType.DECIDER_ASYNCHRONOUS, "startD", null);
+        Task taskD = deciderTask(taskDId, TaskType.DECIDER, "startD", null);
         release(taskBId, promise(taskD), taskD);
 
         // poll task D

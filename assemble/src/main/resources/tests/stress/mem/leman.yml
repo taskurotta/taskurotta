@@ -16,7 +16,7 @@ spreader:
           duration: 10 hours
           timeout: 2 seconds
           threads: 25
-          gc.time-before-delete: 1 minutes
+          gc.time-before-delete-finished-process: 1 minutes
           hz.jmx.detailed: true
           hz.jmx: true
 

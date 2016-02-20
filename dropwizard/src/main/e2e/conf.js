@@ -17,8 +17,8 @@ var reporter = new HtmlScreenshotReporter({
 
 exports.config = {
     specs: [
-        'interrupted_tsk_list.js',
-        'should_be_last_spec.js'],
+        'interrupted-tsk-list.js',
+        'should-be-last-spec.js'],
 
     // Setup the report before any tests start
     beforeLaunch: function () {

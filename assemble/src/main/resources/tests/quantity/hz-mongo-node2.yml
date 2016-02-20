@@ -16,7 +16,7 @@ actorConfig:
 properties:
   server.poll-delay: 1 seconds
   gc.pool-size: 8
-  gc.time-before-delete: 20 seconds
+  gc.time-before-delete-finished-process: 20 seconds
   recovery.process.incomplete-timeout: 30 seconds
   recovery.find-incomplete-process-period: 5 seconds
   recovery.process.change-timeout: 30 seconds

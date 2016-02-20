@@ -106,7 +106,7 @@ public class AsynchronousDeciderProxyFactory extends CachedProxyFactory {
                     throw new IncorrectAsynchronousMethodDefinition("Asynchronous method must be public", target);
                 }
 
-                TaskTarget taskTarget = new TaskTargetImpl(TaskType.DECIDER_ASYNCHRONOUS, deciderName, deciderVersion, method.getName());
+                TaskTarget taskTarget = new TaskTargetImpl(TaskType.DECIDER, deciderName, deciderVersion, method.getName());
 /*              ToDo: ActorSchedulingOptions and Wait list is not supported for asynchronous decider methods
                 Class<?>[] parameterTypes = method.getParameterTypes();
                 int positionActorSchedulingOptions = positionParameter(parameterTypes, ActorSchedulingOptions.class);
