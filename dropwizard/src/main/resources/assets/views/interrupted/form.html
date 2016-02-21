@@ -1,0 +1,61 @@
+<div class="control-group">
+    <label class="control-label">
+        Date period <a ng-click="formParams.withTime = !formParams.withTime">(with time)</a>:
+    </label>
+    <table class="controls">
+        <tr>
+            <td class="inline-label">From:<span input-date="formParams.dateFrom"></span></td>
+            <td ng-if="formParams.withTime"><span input-time="formParams.dateFrom"></span></td>
+            <td class="inline-label">To:<span input-date="formParams.dateTo"></span></td>
+            <td ng-if="formParams.withTime"><span input-time="formParams.dateTo"></span></td>
+        </tr>
+    </table>
+</div>
+<fieldset class="scheduler-border">
+    <!--<legend class="scheduler-border">Filtered by:</legend>-->
+    <div class="control-group">
+        <label class="control-label" for="starter">{{ groups.starter.label }}:</label>
+        <div class="controls">
+            <input class="input-xlarge" type="text" id="starter" placeholder="ru.taskurotta.Example#1.0"
+                   ng-model="formParams.starterId" on-enter="search()"/>
+            <i icon-info="{{ groups.starter.desc }}" model="formParams.starterId"
+               remove="formParams.starterId = null"></i>
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label" for="actor">{{ groups.actor.label }}:</label>
+        <div class="controls">
+            <input class="input-xlarge" type="text" id="actor" placeholder="ru.taskurotta.Example#1.0"
+                   ng-model="formParams.actorId" on-enter="search()"/>
+            <i icon-info="{{ groups.actor.desc }}" model="formParams.actorId"
+               remove="formParams.actorId = null"></i>
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label" for="exception">{{ groups.exception.label }}:</label>
+        <div class="controls">
+            <input class="input-xlarge" type="text" id="exception" placeholder="ru.taskurotta.ExampleException"
+                   ng-model="formParams.exception" on-enter="search()"/>
+            <i icon-info="{{ groups.exception.desc }}" model="formParams.exception"
+               remove="formParams.exception = null"></i>
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label">Grouped by:</label>
+        <div class="controls">
+            <label class="radio inline" style="padding-top:0px">
+                <input type="radio" ng-model="formParams.group" value="starter">
+                {{ groups.starter.label }}
+            </label>
+            <label class="radio inline" style="padding-top:0px">
+                <input type="radio" ng-model="formParams.group" value="actor">
+                {{ groups.actor.label }}
+            </label>
+            <label class="radio inline" style="padding-top:0px">
+                <input type="radio" ng-model="formParams.group" value="exception">
+                {{ groups.exception.label }}
+            </label>
+            <button style="margin-left: 10px" class="btn" ng-click="search()">Search</button>
+        </div>
+    </div>
+</fieldset>

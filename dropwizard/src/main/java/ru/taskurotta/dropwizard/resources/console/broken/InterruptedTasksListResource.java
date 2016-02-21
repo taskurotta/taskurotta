@@ -66,8 +66,8 @@ public class InterruptedTasksListResource {
     @GET
     @Path("/list")
     public Response getInterruptedTasksList(@QueryParam("dateFrom") Optional<String> dateFromOpt, @QueryParam("dateTo") Optional<String> dateToOpt,
-                                     @QueryParam("starterId") Optional<String> starterIdOpt, @QueryParam("actorId") Optional<String> actorIdOpt, @QueryParam("exception") Optional<String> exceptionOpt,
-                                     @QueryParam("group") Optional<String> groupOpt) {
+                                            @QueryParam("starterId") Optional<String> starterIdOpt, @QueryParam("actorId") Optional<String> actorIdOpt, @QueryParam("exception") Optional<String> exceptionOpt,
+                                            @QueryParam("group") Optional<String> groupOpt) {
         GroupCommand command = convertToCommand(starterIdOpt.or(""), actorIdOpt.or(""), exceptionOpt.or(""), dateFromOpt.or(""), dateToOpt.or(""), groupOpt.or(GroupCommand.GROUP_STARTER));
         Collection<InterruptedTask> tasks = interruptedTasksService.find(command);
         logger.debug("Tasks got by command [{}] are [{}]", command, tasks);
@@ -85,7 +85,7 @@ public class InterruptedTasksListResource {
                 taskRecoveryOperationExecutor.enqueue(new RestartTaskOperation(UUID.fromString(ti.getProcessId()), UUID.fromString(ti.getTaskId())));
             }
         }
-        logger.debug("Task group restart [{}] submitted for [{}] tasks", command, restartIds!=null? restartIds.size() : 0);
+        logger.debug("Task group restart [{}] submitted for [{}] tasks", command, restartIds != null ? restartIds.size() : 0);
         return Response.ok().build();
     }
 
@@ -105,7 +105,7 @@ public class InterruptedTasksListResource {
         logger.debug("Executing group abortion with command [{}]", command);
         Set<UUID> processes = interruptedTasksService.getProcessIds(command);
         int size = 0;
-        if (processes!=null && !processes.isEmpty()) {
+        if (processes != null && !processes.isEmpty()) {
             for (UUID processId : processes) {
                 long tasks = interruptedTasksService.deleteTasksForProcess(processId);
                 recoveryService.abortProcess(processId);
@@ -114,31 +114,31 @@ public class InterruptedTasksListResource {
             }
         }
         logger.debug("Aborted [{}] processes. UUID list [{}]", size, processes);
-        return new Status(HttpStatus.OK_200, "Aborted ["+size+"] processes");
+        return new Status(HttpStatus.OK_200, "Aborted [" + size + "] processes");
     }
 
     @GET
     @Path("/stacktrace")
     public Status getStacktrace(@QueryParam("processId") Optional<String> processIdOpt, @QueryParam("taskId") Optional<String> taskIdOpt) {
         String result = "";
-        UUID processId = processIdOpt.isPresent()? UUID.fromString(processIdOpt.get()) : null;
-        UUID taskId = taskIdOpt.isPresent()? UUID.fromString(taskIdOpt.get()) : null;
-        if (processId!=null && taskId != null) {
+        UUID processId = processIdOpt.isPresent() ? UUID.fromString(processIdOpt.get()) : null;
+        UUID taskId = taskIdOpt.isPresent() ? UUID.fromString(taskIdOpt.get()) : null;
+        if (processId != null && taskId != null) {
             result = interruptedTasksService.getStackTrace(processId, taskId);
         }
-        return new Status(result!=null?HttpStatus.OK_200 : HttpStatus.NO_CONTENT_204, result);
+        return new Status(result != null ? HttpStatus.OK_200 : HttpStatus.NO_CONTENT_204, result);
     }
 
     @GET
     @Path("/message")
     public Status getMessage(@QueryParam("processId") Optional<String> processIdOpt, @QueryParam("taskId") Optional<String> taskIdOpt) {
         String result = "";
-        UUID processId = processIdOpt.isPresent()? UUID.fromString(processIdOpt.get()) : null;
-        UUID taskId = taskIdOpt.isPresent()? UUID.fromString(taskIdOpt.get()) : null;
-        if (processId!=null && taskId != null) {
+        UUID processId = processIdOpt.isPresent() ? UUID.fromString(processIdOpt.get()) : null;
+        UUID taskId = taskIdOpt.isPresent() ? UUID.fromString(taskIdOpt.get()) : null;
+        if (processId != null && taskId != null) {
             result = interruptedTasksService.getFullMessage(processId, taskId);
         }
-        return new Status(result!=null?HttpStatus.OK_200 : HttpStatus.NO_CONTENT_204, result);
+        return new Status(result != null ? HttpStatus.OK_200 : HttpStatus.NO_CONTENT_204, result);
     }
 
     public static class GroupAction {
