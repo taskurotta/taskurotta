@@ -98,7 +98,7 @@ angular.module('interruptedModule', ['taskModule', 'coreApp'])
         $scope.showStackTrace = function (task) {
             interruptedRest.getStacktrace({taskId:task.taskId,processId:task.processId},
                 function success(value) {
-                    coreApp.openStacktraceModal(value.msg, 'StackTrace');
+                    coreApp.openStacktraceModal("<pre>" + value.msg + "</pre>", 'StackTrace');
                 }, function error(reason) {
                     coreApp.error('Interrupted tasks StackTrace not found',reason);
                 });
