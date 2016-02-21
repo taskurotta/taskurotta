@@ -14,11 +14,9 @@ public class MockTask extends TaskImpl {
 
         // default values
 
-        processId = UUID.randomUUID();
-        id = UUID.randomUUID();
         TaskType taskType = TaskType.DECIDER;
 
-        // parse task tagret from actorId
+        // parse task target from actorId
 
         String[] parts = actorId.split("#");
         if (parts.length < 3) {
@@ -37,6 +35,11 @@ public class MockTask extends TaskImpl {
     public MockTask setType(TaskType type) {
         target = new TaskTargetImpl(type, target.getName(), target.getVersion(), target.getMethod());
         return this;
+    }
+
+    public void generateNewIds() {
+        processId = UUID.randomUUID();
+        id = UUID.randomUUID();
     }
 
 }

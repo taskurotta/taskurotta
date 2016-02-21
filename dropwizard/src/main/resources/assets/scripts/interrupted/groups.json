@@ -10,7 +10,7 @@
   },
   {
     "id": "actor",
-    "name": "Actor ID's",
+    "name": "Actor types",
     "label": "Failing actor id",
     "desc": "Actor id of the task which cause the process fail.",
     "regroup": "Regroup by broken actor type",
@@ -18,12 +18,12 @@
     "order" : 2
   },
   {
-    "id": "errorClassName",
-    "name": "Exceptions",
+    "id": "exception",
+    "name": "Exceptions types",
     "label": "Fail cause exception class",
     "desc": "Exception class for the error causing process fail.",
     "regroup": "Regroup by broke cause exception class",
-    "param" : "errorClassName",
+    "param" : "exception",
     "order" : 3
   }
 ]

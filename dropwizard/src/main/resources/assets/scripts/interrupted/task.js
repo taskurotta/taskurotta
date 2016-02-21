@@ -53,7 +53,7 @@ angular.module('interruptedModule', ['taskModule', 'coreApp'])
             $scope.groups = coreApp.toObject(groups);
             $scope.groups.starter.selected = $stateParams.starterId || $stateParams.group === 'starter';
             $scope.groups.actor.selected = $stateParams.actorId || $stateParams.group === 'actor';
-            $scope.groups.errorClassName.selected = $stateParams.errorClassName || $stateParams.group === 'errorClassName';
+            $scope.groups.exception.selected = $stateParams.exception || $stateParams.group === 'exception';
 
             function getRestDateFormat(date, withTime) {
                 return (angular.isDate(date) ? moment(date) : moment(date, moment.ISO_8601))

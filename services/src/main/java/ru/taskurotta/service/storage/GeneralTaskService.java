@@ -216,7 +216,7 @@ public class GeneralTaskService implements TaskService, TaskInfoRetriever {
     @Override
     public TaskContainer getTask(UUID taskId, UUID processId) {
         TaskContainer task = taskDao.getTask(taskId, processId);
-        logger.debug("Task received by uuid[{}], is[{}]", taskId, task);
+        logger.debug("Task received by taskId[{}], is[{}]", taskId, task);
         return task;
     }
 

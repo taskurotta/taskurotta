@@ -53,7 +53,7 @@ public class InterruptedTasksListResource {
     @GET
     @Path("/group")
     public Response getProcessesGroup(@QueryParam("dateFrom") Optional<String> dateFromOpt, @QueryParam("dateTo") Optional<String> dateToOpt,
-                                      @QueryParam("starterId") Optional<String> starterIdOpt, @QueryParam("actorId") Optional<String> actorIdOpt, @QueryParam("errorClassName") Optional<String> exceptionOpt,
+                                      @QueryParam("starterId") Optional<String> starterIdOpt, @QueryParam("actorId") Optional<String> actorIdOpt, @QueryParam("exception") Optional<String> exceptionOpt,
                                       @QueryParam("group") Optional<String> groupOpt) {
         long startTime = System.currentTimeMillis();
         GroupCommand command = convertToCommand(starterIdOpt.or(""), actorIdOpt.or(""), exceptionOpt.or(""), dateFromOpt.or(""), dateToOpt.or(""), groupOpt.or(GroupCommand.GROUP_STARTER));
@@ -66,7 +66,7 @@ public class InterruptedTasksListResource {
     @GET
     @Path("/list")
     public Response getInterruptedTasksList(@QueryParam("dateFrom") Optional<String> dateFromOpt, @QueryParam("dateTo") Optional<String> dateToOpt,
-                                     @QueryParam("starterId") Optional<String> starterIdOpt, @QueryParam("actorId") Optional<String> actorIdOpt, @QueryParam("errorClassName") Optional<String> exceptionOpt,
+                                     @QueryParam("starterId") Optional<String> starterIdOpt, @QueryParam("actorId") Optional<String> actorIdOpt, @QueryParam("exception") Optional<String> exceptionOpt,
                                      @QueryParam("group") Optional<String> groupOpt) {
         GroupCommand command = convertToCommand(starterIdOpt.or(""), actorIdOpt.or(""), exceptionOpt.or(""), dateFromOpt.or(""), dateToOpt.or(""), groupOpt.or(GroupCommand.GROUP_STARTER));
         Collection<InterruptedTask> tasks = interruptedTasksService.find(command);
@@ -77,7 +77,7 @@ public class InterruptedTasksListResource {
     @POST
     @Path("/restart/group")
     public Response executeGroupRestart(GroupAction action) {
-        GroupCommand command = convertToCommand(action.starterId, action.actorId, action.errorClassName, action.dateFrom, action.dateTo, action.group);
+        GroupCommand command = convertToCommand(action.starterId, action.actorId, action.exception, action.dateFrom, action.dateTo, action.group);
         logger.debug("Executing group recovery with command [{}]", command);
         Collection<TaskIdentifier> restartIds = interruptedTasksService.getTaskIdentifiers(command);
         if (restartIds != null && !restartIds.isEmpty()) {
@@ -101,7 +101,7 @@ public class InterruptedTasksListResource {
     @POST
     @Path("/abort/group")
     public Status deleteGroup(GroupAction action) {
-        GroupCommand command = convertToCommand(action.starterId, action.actorId, action.errorClassName, action.dateFrom, action.dateTo, action.group);
+        GroupCommand command = convertToCommand(action.starterId, action.actorId, action.exception, action.dateFrom, action.dateTo, action.group);
         logger.debug("Executing group abortion with command [{}]", command);
         Set<UUID> processes = interruptedTasksService.getProcessIds(command);
         int size = 0;
@@ -146,7 +146,7 @@ public class InterruptedTasksListResource {
         public String actorId;
         public String starterId;
         public String errorMessage;
-        public String errorClassName;
+        public String exception;
         public String dateFrom;
         public String dateTo;
     }

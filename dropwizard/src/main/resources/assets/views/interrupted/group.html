@@ -39,11 +39,11 @@
             </div>
         </div>
         <div class="control-group">
-            <label class="control-label" for="errorClassName">{{ groups.errorClassName.label }}:</label>
+            <label class="control-label" for="exception">{{ groups.exception.label }}:</label>
             <div class="controls">
-                <input class="input-xlarge" type="text" id="errorClassName" placeholder="ru.taskurotta.ExampleException"
-                       ng-model="formParams.errorClassName" on-enter="search()"/>
-                <i icon-info="{{ groups.errorClassName.desc }}" model="formParams.errorClassName" remove="formParams.errorClassName = null"></i>
+                <input class="input-xlarge" type="text" id="exception" placeholder="ru.taskurotta.ExampleException"
+                       ng-model="formParams.exception" on-enter="search()"/>
+                <i icon-info="{{ groups.exception.desc }}" model="formParams.exception" remove="formParams.exception = null"></i>
             </div>
         </div>
     </fieldset>
@@ -81,16 +81,19 @@
                 {{ groups[resourceParams.group].label }}
             </th>
             <th ng-hide="groups.starter.selected"  style="width: 200px;">
-                {{ groups.starter.name }}:
+                <a ui-sref="interrupted({group:'starter'})" popover="{{ groups.starter.regroup }}" popover-trigger="mouseenter" class="btn-link">
+                    {{ groups.starter.name }}</a>
             </th>
             <th ng-hide="groups.actor.selected" style="width: 200px;">
-                {{ groups.actor.name }}:
+                <a ui-sref="interrupted({group:'actor'})" popover="{{ groups.actor.regroup }}" popover-trigger="mouseenter" class="btn-link">
+                    {{ groups.actor.name }}</a>
             </th>
-            <th ng-hide="groups.errorClassName.selected" style="width: 200px;">
-                {{ groups.errorClassName.name }}:
+            <th ng-hide="groups.exception.selected" style="width: 200px;">
+                <a ui-sref="interrupted({group:'exception'})" popover="{{ groups.exception.regroup }}" popover-trigger="mouseenter" class="btn-link">
+                    {{ groups.exception.name }}</a>
             </th>
             <th style="width: 100px;">
-                Total count:
+                Tasks in group:
             </th>
             <th style="width: 100px; text-align:center;">
                 Action
@@ -108,29 +111,20 @@
                 </th>
 
                 <th ng-hide="groups.starter.selected" style="width: 200px;">
-                    <a ui-sref="interrupted({group:'starter'})" popover="{{ groups.starter.regroup }}" popover-trigger="mouseenter" class="btn-link">
-                        <i class="icon-random" style="cursor: pointer;margin-right:5px;"></i>
-                        {{ groups.starter.name }}</a> in group:
                     <a ui-sref="interrupted(joinFilterParam({group:'starter'},group.name))" class="btn-link" popover="Add filter and show groups" popover-trigger="mouseenter">
                         <b>{{group.startersCount}}</b></a>
                 </th>
                 <th ng-hide="groups.actor.selected" style="width: 200px;">
-                    <a ui-sref="interrupted({group:'actor'})" popover="{{ groups.actor.regroup }}" popover-trigger="mouseenter" class="btn-link">
-                        <i class="icon-random" style="cursor: pointer;margin-right:5px;"></i>
-                        {{ groups.actor.name }}</a> in group:
                     <a ui-sref="interrupted(joinFilterParam({group:'actor'},group.name))" class="btn-link" popover="Add filter and show groups" popover-trigger="mouseenter">
                         <b>{{group.actorsCount}}</b></a>
                 </th>
-                <th ng-hide="groups.errorClassName.selected" style="width: 200px;">
-                    <a ui-sref="interrupted({group:'errorClassName'})" popover="{{ groups.errorClassName.regroup }}" popover-trigger="mouseenter" class="btn-link">
-                        <i class="icon-random" style="cursor: pointer;margin-right:5px;"></i>
-                        {{ groups.errorClassName.name }}</a> in group:
-                    <a ui-sref="interrupted(joinFilterParam({group:'errorClassName'},group.name))" class="btn-link" popover="Add filter and show groups" popover-trigger="mouseenter">
+                <th ng-hide="groups.exception.selected" style="width: 200px;">
+                    <a ui-sref="interrupted(joinFilterParam({group:'exception'},group.name))" class="btn-link" popover="Add filter and show groups" popover-trigger="mouseenter">
                         <b>{{group.exceptionsCount}}</b></a>
 
                 </th>
                 <th style="width: 100px;">
-                    Total: <a ui-sref="interrupted_list(joinFilterParam($stateParams,group.name))" popover="List all tasks in the group" popover-trigger="mouseenter">
+                    <a ui-sref="interrupted_list(joinFilterParam($stateParams,group.name))" popover="List all tasks in the group" popover-trigger="mouseenter">
                     <b>{{group.total}}</b></a>
                 </th>
                 <td style="width: 100px; text-align:center;">

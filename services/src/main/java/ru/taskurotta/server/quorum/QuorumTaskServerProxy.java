@@ -20,7 +20,7 @@ public class QuorumTaskServerProxy implements TaskServer {
     @Override
     public void startProcess(TaskContainer task) {
         int needToQuorum = clusterQuorum.needToQuorum();
-        if (needToQuorum == 0) {
+        if (needToQuorum <= 0) {
             original.startProcess(task);
             return;
         }
@@ -31,7 +31,7 @@ public class QuorumTaskServerProxy implements TaskServer {
     @Override
     public TaskContainer poll(ActorDefinition actorDefinition) {
         int needToQuorum = clusterQuorum.needToQuorum();
-        if (needToQuorum == 0) {
+        if (needToQuorum <= 0) {
             return original.poll(actorDefinition);
         }
 
@@ -42,7 +42,7 @@ public class QuorumTaskServerProxy implements TaskServer {
     @Override
     public void release(DecisionContainer taskResult) {
         int needToQuorum = clusterQuorum.needToQuorum();
-        if (needToQuorum == 0) {
+        if (needToQuorum <= 0) {
             original.release(taskResult);
             return;
         }
