@@ -17,7 +17,7 @@ spreader:
           threads: 50
           thredhold: 1000
           bundleSize: 5000
-          gc.time-before-delete: 1 minutes
+          gc.process.finished.wait-before-delete: 1 minutes
           hz.jmx.detailed: true
           hz.jmx: true
 

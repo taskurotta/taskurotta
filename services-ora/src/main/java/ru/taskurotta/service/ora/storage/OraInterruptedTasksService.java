@@ -130,8 +130,8 @@ public class OraInterruptedTasksService extends JdbcDaoSupport implements Interr
                     new CallableStatementCallback<Long>() {
 
                         public Long doInCallableStatement(CallableStatement ps) throws SQLException, DataAccessException {
-                            String taskId = itdTask.getTaskId()!=null? itdTask.getTaskId().toString(): null;
-                            String processId = itdTask.getProcessId()!=null? itdTask.getProcessId().toString(): null;
+                            String taskId = itdTask.getTaskId() != null ? itdTask.getTaskId().toString() : null;
+                            String processId = itdTask.getProcessId() != null ? itdTask.getProcessId().toString() : null;
                             LobCreator lobCreator = lobHandler.getLobCreator();
                             ps.setString(1, processId);
                             ps.setString(2, taskId);
@@ -264,7 +264,7 @@ public class OraInterruptedTasksService extends JdbcDaoSupport implements Interr
     @Override
     public void delete(UUID processId, UUID taskId) {
 
-        if (processId == null || taskId==null) {
+        if (processId == null || taskId == null) {
             return;
         }
 
@@ -274,14 +274,14 @@ public class OraInterruptedTasksService extends JdbcDaoSupport implements Interr
 
     @Override
     public String getFullMessage(UUID processId, UUID taskId) {
-        List<String> result = getJdbcTemplate().query(SQL_GET_MESSAGE, clobMapper, processId!=null? processId.toString(): null, taskId!=null? taskId.toString(): null);//TODO: migrate to some interrupted task unique identifier
-        return result!=null&&!result.isEmpty()? result.get(0) : null;
+        List<String> result = getJdbcTemplate().query(SQL_GET_MESSAGE, clobMapper, processId != null ? processId.toString() : null, taskId != null ? taskId.toString() : null);//TODO: migrate to some interrupted task unique identifier
+        return result != null && !result.isEmpty() ? result.get(0) : null;
     }
 
     @Override
     public String getStackTrace(UUID processId, UUID taskId) {
-        List<String> result = getJdbcTemplate().query(SQL_GET_STACK_TRACE, clobMapper, processId!=null? processId.toString(): null, taskId!=null? taskId.toString(): null);//TODO: migrate to some interrupted task unique identifier
-        return result!=null&&!result.isEmpty()? result.get(0) : null;
+        List<String> result = getJdbcTemplate().query(SQL_GET_STACK_TRACE, clobMapper, processId != null ? processId.toString() : null, taskId != null ? taskId.toString() : null);//TODO: migrate to some interrupted task unique identifier
+        return result != null && !result.isEmpty() ? result.get(0) : null;
     }
 
     @Override
@@ -367,12 +367,12 @@ public class OraInterruptedTasksService extends JdbcDaoSupport implements Interr
         logger.trace("Process ids SQL got is[{}], params are[{}]", sql, parameters);
         logger.debug("Found [{}] process UUIDs by command[{}] in [{}]ms", result.size(), command, (System.currentTimeMillis() - startTime));
 
-        return result.isEmpty()? null : result;
+        return result.isEmpty() ? null : result;
     }
 
     @Override
     public long deleteTasksForProcess(UUID processId) {
-        if (processId==null) {
+        if (processId == null) {
             return 0l;
         }
         return getJdbcTemplate().update(SQL_DELETE_BY_PROCESS_ID, processId.toString());

@@ -14,29 +14,32 @@ import java.util.UUID;
 public class TaskDecisionImpl implements TaskDecision {
 
 
-    private UUID uuid;
-    private UUID processId;
-    private UUID pass;
-    private Object value;
-    private Task[] tasks;
-    private Throwable exception;
-    private boolean error;
-    private long restartTime = NO_RESTART;
-    private long executionTime;
+    protected UUID taskId;
+    protected UUID processId;
+    protected UUID pass;
+    protected Object value;
+    protected Task[] tasks;
+    protected Throwable exception;
+    protected boolean error;
+    protected long restartTime = NO_RESTART;
+    protected long executionTime;
 
-    public TaskDecisionImpl(UUID uuid, UUID processId, UUID pass, Object value, Task[] tasks, long executionTime) {
-        this.uuid = uuid;
+    protected TaskDecisionImpl() {
+    }
+
+    public TaskDecisionImpl(UUID taskId, UUID processId, UUID pass, Object value, Task[] tasks, long executionTime) {
+        this.taskId = taskId;
         this.processId = processId;
         this.pass = pass;
-        this.uuid = uuid;
+        this.taskId = taskId;
         this.value = value;
         this.tasks = tasks;
         this.error = false;
         this.executionTime = executionTime;
     }
 
-    public TaskDecisionImpl(UUID uuid, UUID processId, UUID pass, Throwable exception, Task[] tasks) {
-        this.uuid = uuid;
+    public TaskDecisionImpl(UUID taskId, UUID processId, UUID pass, Throwable exception, Task[] tasks) {
+        this.taskId = taskId;
         this.processId = processId;
         this.pass = pass;
         this.exception = exception;
@@ -44,8 +47,8 @@ public class TaskDecisionImpl implements TaskDecision {
         this.error = exception != null;
     }
 
-    public TaskDecisionImpl(UUID uuid, UUID processId, UUID pass, Throwable exception, Task[] tasks, long restartTime) {
-        this.uuid = uuid;
+    public TaskDecisionImpl(UUID taskId, UUID processId, UUID pass, Throwable exception, Task[] tasks, long restartTime) {
+        this.taskId = taskId;
         this.processId = processId;
         this.pass = pass;
         this.exception = exception;
@@ -64,7 +67,7 @@ public class TaskDecisionImpl implements TaskDecision {
 
     @Override
     public UUID getId() {
-        return uuid;
+        return taskId;
     }
 
     @Override
@@ -110,7 +113,7 @@ public class TaskDecisionImpl implements TaskDecision {
         if (pass != null ? !pass.equals(that.pass) : that.pass != null) return false;
         if (processId != null ? !processId.equals(that.processId) : that.processId != null) return false;
         if (!Arrays.equals(tasks, that.tasks)) return false;
-        if (uuid != null ? !uuid.equals(that.uuid) : that.uuid != null) return false;
+        if (taskId != null ? !taskId.equals(that.taskId) : that.taskId != null) return false;
         if (value != null ? !value.equals(that.value) : that.value != null) return false;
 
         return true;
@@ -118,7 +121,7 @@ public class TaskDecisionImpl implements TaskDecision {
 
     @Override
     public int hashCode() {
-        int result = uuid != null ? uuid.hashCode() : 0;
+        int result = taskId != null ? taskId.hashCode() : 0;
         result = 31 * result + (processId != null ? processId.hashCode() : 0);
         result = 31 * result + (pass != null ? pass.hashCode() : 0);
         result = 31 * result + (value != null ? value.hashCode() : 0);
@@ -132,7 +135,7 @@ public class TaskDecisionImpl implements TaskDecision {
     @Override
     public String toString() {
         return "TaskDecisionImpl{" +
-                "uuid=" + uuid +
+                "taskId=" + taskId +
                 ", processId=" + processId +
                 ", pass=" + pass +
                 ", value=" + value +

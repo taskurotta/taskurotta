@@ -14,16 +14,16 @@ import java.util.UUID;
  */
 public class TaskImpl implements Task {
 
-    private UUID id;
-    private UUID processId;
-    private UUID pass;
-    private TaskTarget target;
-    private long startTime;
-    private int errorAttempts = 0;
-    private Object[] args;
-	private TaskOptions taskOptions;
-    private boolean unsafe;
-    private String[] failTypes;
+    protected UUID id;
+    protected UUID processId;
+    protected UUID pass;
+    protected TaskTarget target;
+    protected long startTime = 0;
+    protected int errorAttempts = 0;
+    protected Object[] args;
+    protected TaskOptions taskOptions;
+    protected boolean unsafe;
+    protected String[] failTypes;
 
     public TaskImpl(){}
 
