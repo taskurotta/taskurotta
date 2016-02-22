@@ -24,4 +24,6 @@ public interface ActorConfigManager {
 
     Collection<MetricsStatDataVO> getAllMetrics(String actorId);
 
+    ActorVO getActorVo(String actorId);
+
 }

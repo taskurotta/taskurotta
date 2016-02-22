@@ -61,15 +61,7 @@ public class HzActorConfigManager implements ActorConfigManager {
             List<ActorPreferences> subList = allPreferences.subList(fromIndex, toIndex);
             List<ActorVO> pageItems = new ArrayList<>();
             for (ActorPreferences ap : subList) {
-                ActorVO actorVO = new ActorVO();
-                actorVO.setId(ap.getId());
-                actorVO.setBlocked(ap.isBlocked());
-                actorVO.setQueueName(ap.getQueueName());
-                if (metricsDataRetriever!=null) {
-                    actorVO.setLastPoll(metricsDataRetriever.getLastActivityTime(MetricName.POLL.getValue(), ap.getId()));
-                    actorVO.setLastRelease(metricsDataRetriever.getLastActivityTime(MetricName.RELEASE.getValue(), ap.getId()));
-                }
-                pageItems.add(actorVO);
+                pageItems.add(createActorVO(ap));
             }
             result = new GenericPage<ActorVO>(pageItems, pageNum, pageSize, allPreferences.size());
         }
@@ -135,6 +127,25 @@ public class HzActorConfigManager implements ActorConfigManager {
         }
 
         return result;
+    }
+
+    @Override
+    public ActorVO getActorVo(String actorId) {
+        IMap<String, ActorPreferences> actorsConfigs = hzInstance.getMap(actorConfigName);
+        ActorPreferences actorPreferences = actorsConfigs.get(actorId);
+        return createActorVO(actorPreferences);
+    }
+
+    private ActorVO createActorVO(ActorPreferences actorPreferences) {
+        ActorVO actorVO = new ActorVO();
+        actorVO.setId(actorPreferences.getId());
+        actorVO.setBlocked(actorPreferences.isBlocked());
+        actorVO.setQueueName(actorPreferences.getQueueName());
+        if (metricsDataRetriever != null) {
+            actorVO.setLastPoll(metricsDataRetriever.getLastActivityTime(MetricName.POLL.getValue(), actorPreferences.getId()));
+            actorVO.setLastRelease(metricsDataRetriever.getLastActivityTime(MetricName.RELEASE.getValue(), actorPreferences.getId()));
+        }
+        return actorVO;
     }
 
     public void setMetricsDataRetriever(MetricsMethodDataRetriever metricsDataRetriever) {

@@ -1,18 +1,96 @@
 <style>
     .modal-actor {
         max-width: 80%;
-        min-width: 50%;
+        min-width: 70%;
     }
 </style>
 
 <div class="modal-content">
     <div class="modal-header">
         <h4 class="modal-title">
-            Информация по {{actorId}}
+            Информация по {{info.id}}
         </h4>
     </div>
     <div class="modal-body">
-        {{info | json}}
+        <div class="row">
+            <div class="span12">
+                lastPoll : {{info.lastPoll | date: 'HH:mm:ss dd.MM.yyyy'}}
+            </div>
+        </div>
+        <div class="row">
+            <div class="span12">
+                lastRelease : {{info.lastRelease | date: 'HH:mm:ss dd.MM.yyyy'}}
+            </div>
+        </div>
+        <div class="row">
+            <div class="span12">
+                hourRate : {{info.hourRate}}
+            </div>
+        </div>
+        <div class="row">
+            <div class="span12">
+                dayRate : {{info.dayRate}}
+            </div>
+        </div>
+        <div class="row">
+            <div class="span12">
+                <h3>Queue</h3>
+            </div>
+        </div>
+        <div class="row">
+            <div class="span12">
+                queueName : {{info.queueName}}
+            </div>
+        </div>
+        <div class="row">
+            <div class="span12">
+                totalInHour : {{info.queueState.totalInHour}}
+            </div>
+        </div>
+        <div class="row">
+            <div class="span12">
+                inHourPeriod : {{info.queueState.inHourPeriod[0] | date: 'HH:mm:ss dd.MM.yyyy'}} -
+                {{info.queueState.inHourPeriod[1] | date: 'HH:mm:ss dd.MM.yyyy'}}
+            </div>
+        </div>
+        <div class="row">
+            <div class="span12">
+                totalOutHour : {{info.queueState.totalOutHour}}
+            </div>
+        </div>
+        <div class="row">
+            <div class="span12">
+                outHourPeriod : {{info.queueState.outHourPeriod[0] | date: 'HH:mm:ss dd.MM.yyyy'}} -
+                {{info.queueState.outHourPeriod[1] | date: 'HH:mm:ss dd.MM.yyyy'}}
+            </div>
+        </div>
+        <div class="row">
+            <div class="span12">
+                totalInDay : {{info.queueState.totalInDay}}
+            </div>
+        </div>
+        <div class="row">
+            <div class="span12">
+                inDayPeriod : {{info.queueState.inDayPeriod[0] | date: 'HH:mm:ss dd.MM.yyyy'}} -
+                {{info.queueState.inDayPeriod[1] | date: 'HH:mm:ss dd.MM.yyyy'}}
+            </div>
+        </div>
+        <div class="row">
+            <div class="span12">
+                totalOutDay : {{info.queueState.totalOutDay}}
+            </div>
+        </div>
+        <div class="row">
+            <div class="span12">
+                outDayPeriod : {{info.queueState.outDayPeriod[0] | date: 'HH:mm:ss dd.MM.yyyy'}} -
+                {{info.queueState.outDayPeriod[1] | date: 'HH:mm:ss dd.MM.yyyy'}}
+            </div>
+        </div>
+        <div class="row">
+            <div class="span12">
+                nodes : {{info.queueState.nodes}}
+            </div>
+        </div>
     </div>
     <div class="modal-footer">
         <button class="btn btn-success" type="button" ng-click="ok();">OK</button>

@@ -7,7 +7,7 @@ angular.module('actorModule', ['coreApp'])
             //list
             query: {url: restActorUrl + 'list/', params: {}},
             loadMetrics: {url: restActorUrl + 'metrics/compare', method: 'POST', params: {}},
-            info: {url: restActorUrl + 'info', method: 'GET', isArray: true},
+            info: {url: restActorUrl + 'info', method: 'GET'},
             //actions
             unblock: {url: restActorUrl + 'unblock/', method: 'POST'},
             block: {url: restActorUrl + 'block/', method: 'POST'},
