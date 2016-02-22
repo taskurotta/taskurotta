@@ -95,14 +95,7 @@ public class ActorListResource {
             List<ActorExtVO> items = new ArrayList<>();
             if (actors.getItems()!=null && !actors.getItems().isEmpty()) {
                 for (ActorVO actor: actors.getItems()) {
-                    ActorExtVO extActor = new ActorExtVO(actor);
-                    extActor.queueState = actorConfigManager.getQueueState(actor.getId());
-                    if (extActor.queueState != null) {
-                        extActor.dayRate = RateUtils.getOverallRate(extActor.queueState.getTotalInDay(), extActor.queueState.getInDayPeriod(), extActor.queueState.getTotalOutDay(), extActor.queueState.getOutDayPeriod());
-                        extActor.hourRate = RateUtils.getOverallRate(extActor.queueState.getTotalInHour(), extActor.queueState.getInHourPeriod(), extActor.queueState.getTotalOutHour(), extActor.queueState.getOutHourPeriod());
-                    }
-
-                    items.add(extActor);
+                    items.add(createActorExtVO(actor));
                 }
             }
             result = new GenericPage<ActorExtVO>(items, actors.getPageNumber(), actors.getPageSize(), actors.getTotalCount());
@@ -207,6 +200,21 @@ public class ActorListResource {
         }
     }
 
+    @GET
+    @Path("/info")
+    public Response getInfo(@QueryParam("actorId") String actorId) {
+        return Response.ok(createActorExtVO(actorConfigManager.getActorVo(actorId)), MediaType.APPLICATION_JSON).build();
+    }
+
+    private ActorExtVO createActorExtVO(ActorVO actorVO) {
+        ActorExtVO extActor = new ActorExtVO(actorVO);
+        extActor.queueState = actorConfigManager.getQueueState(actorVO.getId());
+        if (extActor.queueState != null) {
+            extActor.dayRate = RateUtils.getOverallRate(extActor.queueState.getTotalInDay(), extActor.queueState.getInDayPeriod(), extActor.queueState.getTotalOutDay(), extActor.queueState.getOutDayPeriod());
+            extActor.hourRate = RateUtils.getOverallRate(extActor.queueState.getTotalInHour(), extActor.queueState.getInHourPeriod(), extActor.queueState.getTotalOutHour(), extActor.queueState.getOutHourPeriod());
+        }
+        return extActor;
+    }
 
     @Required
     public void setActorConfigManager(ActorConfigManager actorConfigManager) {
