@@ -6,66 +6,68 @@
 </div>
 
 <div page-form="Interrupted tasks search form">
-    <ng-include src="'views/interrupted/form.html'" />
+    <ng-include src="'views/interrupted/form.html'"/>
 </div>
 
 <page-message></page-message>
 
-<div class="well" >
+<div class="well">
     <list-reload model="interruptedResource">
     </list-reload>
 
     <table class="table table-striped table-condensed table-bordered table-items">
         <thead>
-            <tr>
-                <th>Task id</th>
-                <th>Decider</th>
-                <th>Worker</th>
-                <th>Fail time</th>
-                <th>Exception</th>
-                <th>Actions</th>
-            </tr>
+        <tr>
+            <th>Task id</th>
+            <th>Decider</th>
+            <th>Worker</th>
+            <th>Fail time</th>
+            <th>Exception</th>
+            <th>Actions</th>
+        </tr>
         </thead>
         <tbody>
-            <tr ng-repeat="task in interruptedModel.items">
-                <td nowrap>
-                        <a class="btn-link" ui-sref="task({processId: task.processId, taskId:task.taskId })">
-                            <b>{{ task.taskId }}</b></a>
-                </td>
-                <td>
-                    <span ng-bind-html="task.starterId | lineWrap"></span>
-                </td>
-                <td>
-                    <span ng-bind-html="task.actorId | lineWrap"></span>
-                </td>
-                <td style="min-width:120px">
-                    {{task.time | dateTime }}
-                </td>
-                <td style="max-width: 300px;">
-                    <div class="muted" ng-bind-html="task.errorClassName | lineWrap"></div>
-                    <div ng-if="task.errorMessage">
-                        <span ng-bind-html="task.errorMessage.substring(0,120) | lineWrap:':'"></span>
-                        <a ng-if="task.errorMessage.length>120" ng-click="showMessage(task)">
-                            More...
-                        </a>
-                    </div>
-                    <a class="btn-link" ng-click="showStackTrace(task)">
-                        <i class="icon-list"></i><b>Stack trace</b>
+        <tr ng-repeat="task in interruptedModel.items">
+            <td nowrap>
+                <a class="btn-link" ui-sref="task({processId: task.processId, taskId:task.taskId })">
+                    <b>{{ task.taskId }}</b></a>
+            </td>
+            <td>
+                <span ng-bind-html="task.starterId | lineWrap"></span>
+            </td>
+            <td>
+                <span ng-bind-html="task.actorId | lineWrap"></span>
+            </td>
+            <td style="min-width:120px">
+                {{task.time | dateTime }}
+            </td>
+            <td style="max-width: 300px;">
+                <div class="muted" ng-bind-html="task.errorClassName | lineWrap"></div>
+                <div ng-if="task.errorMessage">
+                    <span ng-bind-html="task.errorMessage.substring(0,120) | lineWrap:':'"></span>
+                    <a ng-if="task.errorMessage.length>120" ng-click="showMessage(task)">
+                        More...
                     </a>
-                </td>
-                <td>
-                    <button ng-click="restart(task)" popover="Try to restart the task" popover-trigger="mouseenter"><i class="icon-retweet"></i></button>
-                </td>
-            </tr>
+                </div>
+                <a class="btn-link" ng-click="showStackTrace(task)">
+                    <i class="icon-list"></i><b>Stack trace</b>
+                </a>
+            </td>
+            <td>
+                <button ng-click="restart(task)" popover="Try to restart the task" popover-trigger="mouseenter">
+                    <i class="icon-retweet"></i>
+                </button>
+            </td>
+        </tr>
         </tbody>
 
         <tfoot>
-            <tr>
-                <td colspan="7">
-                    <list-paginator model="interruptedModel">
-                    </list-paginator>
-                </td>
-            </tr>
+        <tr>
+            <td colspan="7">
+                <list-paginator model="interruptedModel">
+                </list-paginator>
+            </td>
+        </tr>
         </tfoot>
     </table>
 

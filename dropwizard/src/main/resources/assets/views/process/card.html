@@ -1,5 +1,12 @@
-<div page-header>
-    <h4>Process id: <i>{{processParams.processId}}</i></h4>
+<div page-header="Process: {{process.startTask.actorId}} - {{ process.processId}}" ng-dblclick="$debug = !$debug">
+    <div ng-if="$debug" style="width: 100%">
+        <pre>
+formParams = {{ formParams | json }}
+resourceParams = {{ resourceParams | json}}
+process= {{ process | json}}
+processParams= {{ processParams | json}}
+        </pre>
+    </div>
 </div>
 
 <page-message></page-message>

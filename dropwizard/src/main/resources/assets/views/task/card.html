@@ -1,5 +1,12 @@
-<div page-header>
-    <h4>Task id: <em>{{ taskParams.taskId}}</em></h4>
+<div page-header="Task: {{task.actorId}} - {{ taskParams.taskId}}" ng-dblclick="$debug = !$debug">
+    <div ng-if="$debug" style="width: 100%">
+        <pre>
+formParams = {{ formParams | json }}
+resourceParams = {{ resourceParams | json}}
+task= {{ task | json}}
+taskDecision= {{ taskDecision | json}}
+        </pre>
+    </div>
 </div>
 
 <page-message></page-message>
@@ -7,8 +14,16 @@
 <div ng-show="task.taskId">
 
     <div class="well">
-        <h5>Properties:</h5>
-        <table class="table table-striped">
+        <div>
+            <div style="float: left;">
+                <h5>Properties:</h5>
+            </div>
+            <div style="float: right; margin-bottom: 5px;" ng-show="taskDecision.errorContainer.fatalError">
+                <button ng-click="restart(task)" popover="Try to restart the task" popover-trigger="mouseenter">
+                    <i class="icon-retweet"></i>
+                </button>
+            </div>
+        </div>        <table class="table table-striped">
             <tr>
                 <td class="form-header">Process id:</td>
                 <td><a ui-sref="process({processId:task.processId})">{{task.processId}}</a></td>
@@ -27,7 +42,7 @@
             </tr>
             <tr>
                 <td class="form-header">Type:</td>
-                <td>{{task.taskType}}</td>
+                <td>{{task.type}}</td>
             </tr>
             <tr>
                 <td class="form-header">Start time:</td>
@@ -59,12 +74,28 @@
     </div>
 
     <div class="well">
-        <h5>Decision properties:</h5>
+        <h5>Decision:</h5>
         <div ng-hide="taskDecision.taskId" class="alert alert-warning">Task have not been released.</div>
         <table ng-show="taskDecision.taskId" class="table table-striped">
             <tr>
                 <td class="form-header" style="width: 100px">Released with exception:</td>
-                <td>{{taskDecision.errorContainer || "false"}}</td>
+                <td>
+                    <div ng-hide="taskDecision.errorContainer">false</div>
+                    <table ng-show="taskDecision.errorContainer" class="table table-striped">
+                        <tr>
+                            <td class="form-header" style="width: 100px">Fatal error:</td>
+                            <td>{{ taskDecision.errorContainer.fatalError }}</td>
+                        </tr>
+                        <tr>
+                            <td class="form-header" style="width: 100px">Message:</td>
+                            <td>{{ taskDecision.errorContainer.message }}</td>
+                        </tr>
+                        <tr>
+                            <td class="form-header" style="width: 100px">Stack trace:</td>
+                            <td><pre>{{ taskDecision.errorContainer.stackTrace }}</pre></td>
+                        </tr>
+                    </table>
+                </td>
             </tr>
             <tr ng-if="taskDecision.restartTime > 0">
                 <td class="form-header">Restart time:</td>
@@ -77,7 +108,8 @@
             <tr>
                 <td class="form-header">Value:</td>
                 <td tree-properties="taskDecision.value"><pre>
-                </pre></td>
+                </pre>
+                </td>
             </tr>
         </table>
     </div>
