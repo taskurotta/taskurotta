@@ -38,8 +38,8 @@ public class DeepTaskTree extends AbstractTestStub {
         pollDeciderTask(taskIdA);
 
         // release task A
-        Task taskB = deciderTask(taskIdB, TaskType.DECIDER, "B");
-        Task taskC = deciderTask(taskIdC, TaskType.DECIDER, "C", promise(taskB));
+        Task taskB = deciderTask(taskIdB, TaskType.DECIDER_ASYNCHRONOUS, "B");
+        Task taskC = deciderTask(taskIdC, TaskType.DECIDER_ASYNCHRONOUS, "C", promise(taskB));
 
         release(taskIdA, null, taskB, taskC);
 
@@ -50,7 +50,7 @@ public class DeepTaskTree extends AbstractTestStub {
         assertEmptyQueue();
 
         // release task B
-        Task deciderTaskD = deciderTask(taskIdD, TaskType.DECIDER, "D");
+        Task deciderTaskD = deciderTask(taskIdD, TaskType.DECIDER_ASYNCHRONOUS, "D");
 
         release(taskIdB, promise(deciderTaskD), deciderTaskD);
 
@@ -61,7 +61,7 @@ public class DeepTaskTree extends AbstractTestStub {
 		assertEmptyQueue();
 
         // release task D
-        Task deciderTaskE = deciderTask(taskIdE, TaskType.DECIDER, "E");
+        Task deciderTaskE = deciderTask(taskIdE, TaskType.DECIDER_ASYNCHRONOUS, "E");
         release(taskIdD, promise(deciderTaskE), deciderTaskE);
 
 
@@ -105,9 +105,9 @@ public class DeepTaskTree extends AbstractTestStub {
 		pollDeciderTask(taskIdA);
 
 		// release task A
-		Task taskB = deciderTask(taskIdB, TaskType.DECIDER, "B");
-		Task taskC = deciderTask(taskIdC, TaskType.DECIDER, "C");
-		Task taskE = deciderTask(taskIdE, TaskType.DECIDER, "E", promise(taskB), promise(taskC));
+		Task taskB = deciderTask(taskIdB, TaskType.DECIDER_ASYNCHRONOUS, "B");
+		Task taskC = deciderTask(taskIdC, TaskType.DECIDER_ASYNCHRONOUS, "C");
+		Task taskE = deciderTask(taskIdE, TaskType.DECIDER_ASYNCHRONOUS, "E", promise(taskB), promise(taskC));
 		// release decision with taskB and taskС and taskE
 		release(taskIdA, null, taskB, taskC, taskE);
 
@@ -118,7 +118,7 @@ public class DeepTaskTree extends AbstractTestStub {
 		assertEmptyQueue();
 
 		// release task B
-		Task taskD = deciderTask(taskIdD, TaskType.DECIDER, "D");
+		Task taskD = deciderTask(taskIdD, TaskType.DECIDER_ASYNCHRONOUS, "D");
 		// release decision with taskD and return taskD as promise
 		release(taskIdB, promise(taskD), taskD);
 

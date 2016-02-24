@@ -45,7 +45,7 @@ public class ProxyInvocationHandlerTest {
         Method[] methods = clazz.getMethods();
         Map<Method, MethodDescriptor> method2TaskTargetCache = new HashMap<Method, MethodDescriptor>();
         for (Method method : methods) {
-            method2TaskTargetCache.put(method, new MethodDescriptor(TaskType.DECIDER, "testActorName", "1.0", method.getName()));
+            method2TaskTargetCache.put(method, new MethodDescriptor(TaskType.DECIDER_ASYNCHRONOUS, "testActorName", "1.0", method.getName()));
         }
 
         proxyInvocationHandler = new ProxyInvocationHandler(method2TaskTargetCache, null);

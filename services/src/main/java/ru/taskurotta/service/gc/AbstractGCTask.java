@@ -41,6 +41,7 @@ public abstract class AbstractGCTask implements Runnable {
         processService.lock(processId);
         try {
             Process process = processService.getProcess(processId);
+
             int processState = process.getState();
             if (processState != Process.ABORTED && processState != Process.FINISHED) {
                 logger.error("Process [{}] isn't broken or finished. State is [{}]" +

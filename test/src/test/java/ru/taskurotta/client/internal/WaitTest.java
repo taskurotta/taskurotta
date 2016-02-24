@@ -27,7 +27,7 @@ public class WaitTest extends AbstractTestStub {
 		pollDeciderTask(taskIdA);
 
 		// release task A
-		Task taskB = deciderTask(taskIdB, TaskType.DECIDER, "B");
+		Task taskB = deciderTask(taskIdB, TaskType.DECIDER_ASYNCHRONOUS, "B");
 		Task taskC = deciderTask(taskIdC, TaskType.DECIDER_START, "C", null,
 				new Object[]{},
 				new TaskOptions()

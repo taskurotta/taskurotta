@@ -32,8 +32,8 @@ public class GraphTest extends AbstractTestStub {
         pollDeciderTask(taskIdA);
 
         // release task A
-        Task taskB = deciderTask(taskIdB, TaskType.DECIDER, "B");
-        Task taskBDuplicate = deciderTask(taskIdBDuplicate, TaskType.DECIDER, "B");
+        Task taskB = deciderTask(taskIdB, TaskType.DECIDER_ASYNCHRONOUS, "B");
+        Task taskBDuplicate = deciderTask(taskIdBDuplicate, TaskType.DECIDER_ASYNCHRONOUS, "B");
 
         // release decision with taskB
         release(taskIdA, null, taskB);
