@@ -14,7 +14,7 @@ public class MockTask extends TaskImpl {
 
         // default values
 
-        TaskType taskType = TaskType.DECIDER;
+        TaskType taskType = TaskType.DECIDER_ASYNCHRONOUS;
 
         // parse task target from actorId
 

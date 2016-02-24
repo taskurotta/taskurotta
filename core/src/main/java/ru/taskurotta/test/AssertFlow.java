@@ -67,9 +67,9 @@ public abstract class AssertFlow {
         Task startTask = startTasks[0];
 
         if (startTask.getTarget().getType() != TaskType.DECIDER_START &&
-                startTask.getTarget().getType() != TaskType.DECIDER) {
+                startTask.getTarget().getType() != TaskType.DECIDER_ASYNCHRONOUS) {
 
-            throw new TestFailedError("Only DECIDER_START and DECIDER types of Task supported!");
+            throw new TestFailedError("Only DECIDER_START and DECIDER_ASYNCHRONOUS types of Task supported!");
         }
 
         TaskDecision taskDecision = runtimeProcessor.execute(startTasks[0]);

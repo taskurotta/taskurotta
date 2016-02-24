@@ -6,7 +6,7 @@ package ru.taskurotta.internal.core;
  * Time: 16:24
  */
 public enum TaskType {
-    DECIDER_START(0), DECIDER(1), WORKER(2), WORKER_SCHEDULED(3);
+    DECIDER_START(0), DECIDER_ASYNCHRONOUS(1), WORKER(2), WORKER_SCHEDULED(3);
 
     int value;
 
@@ -21,7 +21,7 @@ public enum TaskType {
 
     public static TaskType fromInt(int i) {
         if (i == 0) return TaskType.DECIDER_START;
-        if (i == 1) return TaskType.DECIDER;
+        if (i == 1) return TaskType.DECIDER_ASYNCHRONOUS;
         if (i == 2) return TaskType.WORKER;
         if (i == 3) return TaskType.WORKER_SCHEDULED;
         return null;

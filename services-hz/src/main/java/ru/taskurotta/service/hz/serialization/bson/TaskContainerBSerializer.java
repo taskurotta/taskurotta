@@ -58,7 +58,7 @@ public class TaskContainerBSerializer implements StreamBSerializer<TaskContainer
 
         out.writeString(METHOD, object.getMethod());
         out.writeString(ACTOR_ID, object.getActorId());
-        out.writeInt(TYPE, object.getType().getValue(), TaskType.DECIDER.getValue());
+        out.writeInt(TYPE, object.getType().getValue(), TaskType.DECIDER_ASYNCHRONOUS.getValue());
         out.writeLong(START_TIME, object.getStartTime(), -1l);
         writeArrayOfObjectsIfNotEmpty(ARGS, object.getArgs(), argContainerBSerializer, out);
         writeObjectIfNotNull(TASK_OPTIONS, object.getOptions(), taskOptionsContainerBSerializer, out);
@@ -75,7 +75,7 @@ public class TaskContainerBSerializer implements StreamBSerializer<TaskContainer
 
         String method = in.readString(METHOD);
         String actorId = in.readString(ACTOR_ID);
-        TaskType type = TaskType.fromInt(in.readInt(TYPE, TaskType.DECIDER.getValue()));
+        TaskType type = TaskType.fromInt(in.readInt(TYPE, TaskType.DECIDER_ASYNCHRONOUS.getValue()));
         long startTime = in.readLong(START_TIME, -1l);
         ArgContainer[] argContainers = readArrayOfObjects(ARGS, ArgContainerBSerializer.arrayFactory,
                 argContainerBSerializer, in);

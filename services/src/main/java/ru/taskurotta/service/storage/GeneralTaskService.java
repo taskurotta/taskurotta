@@ -171,7 +171,7 @@ public class GeneralTaskService implements TaskService, TaskInfoRetriever {
     }
 
     private static boolean isDeciderAsynchronousTaskType(TaskType taskType) {
-        return TaskType.DECIDER.equals(taskType);
+        return TaskType.DECIDER_ASYNCHRONOUS.equals(taskType);
     }
 
     /**
