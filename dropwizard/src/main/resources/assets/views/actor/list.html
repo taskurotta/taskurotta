@@ -64,7 +64,9 @@
                         <i class="icon-ban-circle" ng-if="actor.blocked" style="width:25px; height:25px;cursor:help;" popover="Blocked: 'poll' and 'release' requests for this actor are rejected." popover-trigger="mouseenter"></i>
                     </td>
                     <td>
-                        <span ng-bind-html="actor.id | lineWrap"></span> <button type="button" ng-click="showInfo(actor.id)">info</button>
+                        <a class="btn-link"ng-click="showInfo(actor.id)">
+                            <span ng-bind-html="actor.id | lineWrap"></span>
+                        </a>
                     </td>
                     <td ng-show="resourceParams.metrics[metric]" ng-repeat="metric in metrics" >
                         <div ng-repeat="(nodeName, nodeItem) in metricsModel">

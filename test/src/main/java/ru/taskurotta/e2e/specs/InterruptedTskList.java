@@ -21,7 +21,7 @@ public class InterruptedTskList implements SpecSuite {
     @Override
     public void init() {
 
-        actorEngine.startProcess(new MockStartTask(DECIDER), 3);
+        actorEngine.startProcess(new MockStartTask(DECIDER), 4);
         actorEngine.executeActor(
                 new MockDecision(DECIDER)
                         .setException(new IllegalAccessError("Permission deny")));
