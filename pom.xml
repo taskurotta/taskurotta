@@ -67,7 +67,7 @@
         <module>server</module>
         <module>recipes</module>
         <module>dropwizard</module>
-        <module>assemble</module>
+        <module>taskurotta</module>
         <module>services</module>
         <module>services-ora</module>
         <module>services-hz</module>
