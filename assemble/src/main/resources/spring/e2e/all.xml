@@ -13,7 +13,7 @@
     </bean>
 
     <bean id="actorEngine" class="ru.taskurotta.server.test.ActorEngine">
-        <constructor-arg name="taskServer" ref="realTaskServer" />
+        <constructor-arg name="taskServer" ref="taskServer" />
     </bean>
 
     <!--spec suit helpers-->

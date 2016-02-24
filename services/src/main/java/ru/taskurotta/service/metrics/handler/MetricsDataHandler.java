@@ -173,6 +173,7 @@ public class MetricsDataHandler implements DataListener, MetricsMethodDataRetrie
 
     @Override
     public Date getLastActivityTime(String metricName, String datasetName) {
+
         Date result = null;
         String key = MetricsDataUtils.getKey(metricName, datasetName);
         DataRowVO row = lastHourDataHolder.get(key);

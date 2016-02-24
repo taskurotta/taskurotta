@@ -1,96 +1,71 @@
-<style>
-    .modal-actor {
-        max-width: 80%;
-        min-width: 70%;
-    }
-</style>
-
 <div class="modal-content">
-    <div class="modal-header">
+    <div class="modal-header" ng-dblclick="$debug = !$debug">
         <h4 class="modal-title">
-            Actor {{info.id}}
+            Actor {{ info.id }}
         </h4>
+        <div ng-if="$debug" style="width: 100%">
+        <pre>
+formParams = {{ formParams | json }}
+resourceParams = {{ resourceParams | json}}
+info= {{ info | json}}
+        </pre>
+        </div>
     </div>
+
     <div class="modal-body">
-        <div class="row">
+        <div class="row-fluid">
             <div class="span12">
-                lastPoll : {{info.lastPoll | date: 'HH:mm:ss dd.MM.yyyy'}}
+                Last task poll: {{info.lastPoll | date: 'HH:mm:ss dd.MM.yyyy'}}
             </div>
         </div>
-        <div class="row">
+        <div class="row-fluid">
             <div class="span12">
-                lastRelease : {{info.lastRelease | date: 'HH:mm:ss dd.MM.yyyy'}}
+                Last task release: {{info.lastRelease | date: 'HH:mm:ss dd.MM.yyyy'}}
             </div>
         </div>
-        <div class="row">
-            <div class="span12">
-                hourRate : {{info.hourRate}}
-            </div>
-        </div>
-        <div class="row">
-            <div class="span12">
-                dayRate : {{info.dayRate}}
-            </div>
-        </div>
-        <div class="row">
-            <div class="span12">
-                <h3>Queue</h3>
-            </div>
-        </div>
-        <div class="row">
-            <div class="span12">
-                queueName : {{info.queueName}}
-            </div>
-        </div>
-        <div class="row">
-            <div class="span12">
-                totalInHour : {{info.queueState.totalInHour}}
-            </div>
-        </div>
-        <div class="row">
-            <div class="span12">
-                inHourPeriod : {{info.queueState.inHourPeriod[0] | date: 'HH:mm:ss dd.MM.yyyy'}} -
-                {{info.queueState.inHourPeriod[1] | date: 'HH:mm:ss dd.MM.yyyy'}}
-            </div>
-        </div>
-        <div class="row">
-            <div class="span12">
-                totalOutHour : {{info.queueState.totalOutHour}}
-            </div>
-        </div>
-        <div class="row">
-            <div class="span12">
-                outHourPeriod : {{info.queueState.outHourPeriod[0] | date: 'HH:mm:ss dd.MM.yyyy'}} -
-                {{info.queueState.outHourPeriod[1] | date: 'HH:mm:ss dd.MM.yyyy'}}
-            </div>
-        </div>
-        <div class="row">
-            <div class="span12">
-                totalInDay : {{info.queueState.totalInDay}}
-            </div>
-        </div>
-        <div class="row">
-            <div class="span12">
-                inDayPeriod : {{info.queueState.inDayPeriod[0] | date: 'HH:mm:ss dd.MM.yyyy'}} -
-                {{info.queueState.inDayPeriod[1] | date: 'HH:mm:ss dd.MM.yyyy'}}
-            </div>
-        </div>
-        <div class="row">
-            <div class="span12">
-                totalOutDay : {{info.queueState.totalOutDay}}
-            </div>
-        </div>
-        <div class="row">
-            <div class="span12">
-                outDayPeriod : {{info.queueState.outDayPeriod[0] | date: 'HH:mm:ss dd.MM.yyyy'}} -
-                {{info.queueState.outDayPeriod[1] | date: 'HH:mm:ss dd.MM.yyyy'}}
-            </div>
-        </div>
-        <div class="row">
-            <div class="span12">
-                nodes : {{info.queueState.nodes}}
-            </div>
-        </div>
+
+        <h5>Statistics:</h5>
+        <table class="table table-striped table-bordered table-items">
+            <thead>
+            <tr>
+                <th>
+                </th>
+                <th>
+                    <div popover="from {{info.queueState.outHourPeriod[0] | date: 'HH:mm:ss dd.MM.yyyy'}} to {{info.queueState.outHourPeriod[1] | date: 'HH:mm:ss dd.MM.yyyy'}}"
+                         popover-trigger="mouseenter">Hour
+                    </div>
+                </th>
+                <th>
+                    <div popover="from {{info.queueState.outDayPeriod[0] | date: 'HH:mm:ss dd.MM.yyyy'}} to {{info.queueState.outDayPeriod[1] | date: 'HH:mm:ss dd.MM.yyyy'}}"
+                         popover-trigger="mouseenter">Day
+                    </div>
+                </th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td><b>New tasks</b></td>
+                <td ui-sref="metrics({metric: 'enqueue', scope: 'local', type: 'rate', period: '1hour', dataset: quotes(info.id), showDataset: 1, legend: 'nw', points: 1 })"
+                    class="btn-link" ng-click="ok();">{{info.queueState.totalInHour}}</td>
+                <td ui-sref="metrics({metric: 'enqueue', scope: 'local', type: 'rate', period: '24hours', dataset: quotes(info.id), showDataset: 1, legend: 'nw', points: 1 })"
+                    class="btn-link" ng-click="ok();">{{info.queueState.totalInDay}}</td>
+            </tr>
+            <tr>
+                <td><b>Released tasks</b></td>
+                <td ui-sref="metrics({metric: 'release', scope: 'local', type: 'rate', period: '1hour', dataset: quotes(info.id), showDataset: 1, legend: 'nw', points: 1 })"
+                    class="btn-link" ng-click="ok();">{{info.queueState.totalOutHour}}
+                </td>
+                <td ui-sref="metrics({metric: 'release', scope: 'local', type: 'rate', period: '24hours', dataset: quotes(info.id), showDataset: 1, legend: 'nw', points: 1 })"
+                    class="btn-link" ng-click="ok();">{{info.queueState.totalOutDay}}
+                </td>
+            </tr>
+            <tr>
+                <td><b>Rate</b></td>
+                <td>{{info.hourRate}} per second</td>
+                <td>{{info.dayRate}} per minute</td>
+            </tr>
+            </tbody>
+        </table>
     </div>
     <div class="modal-footer">
         <button class="btn btn-success" type="button" ng-click="ok();">OK</button>

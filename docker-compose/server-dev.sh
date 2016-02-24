@@ -59,6 +59,13 @@ do_e2e() {
         taskurotta/protractor conf.js --report-dir=/tmp/e2e/report
 }
 
+do_errors() {
+    set +e
+    if [ -f data/node1/service.log ]; then grep "ERROR" data/node1/service.log; fi
+    if [ -f data/node2/service.log ]; then grep "ERROR" data/node2/service.log; fi
+    set -e
+}
+
 for var in "$@"
 do
     case "$var" in
@@ -89,8 +96,11 @@ do
         e2e)
             do_e2e
         ;;
+        errors)
+            do_errors
+        ;;
         *)
-            echo "Usage: $0 {clean-data|clean-docker|clean|up|stop}" >&2
+            echo "Usage: $0 {clean-data|clean-docker|clean|start|restart|stop|errors}" >&2
             exit 3
         ;;
 

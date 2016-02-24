@@ -56,7 +56,7 @@ interruptedModel = {{ interruptedModel | json }}
             <td style="width: 25px;">
                 {{ interruptedModel.$startIndex + $index }}
             </td>
-            <td ui-sref="interrupted(joinFilterParam({},group.name))" class="btn-link">
+            <td>
                 <div ng-bind-html="group.name | lineWrap"></div>
             </td>
 

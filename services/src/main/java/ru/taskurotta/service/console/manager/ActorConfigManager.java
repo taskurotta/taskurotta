@@ -1,5 +1,6 @@
 package ru.taskurotta.service.console.manager;
 
+import ru.taskurotta.service.console.model.ActorExtVO;
 import ru.taskurotta.service.console.model.ActorVO;
 import ru.taskurotta.service.console.model.GenericPage;
 import ru.taskurotta.service.console.model.MetricsStatDataVO;
@@ -25,5 +26,7 @@ public interface ActorConfigManager {
     Collection<MetricsStatDataVO> getAllMetrics(String actorId);
 
     ActorVO getActorVo(String actorId);
+
+    ActorExtVO getActorExtVo(String actorId);
 
 }

@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 import ru.taskurotta.service.config.ConfigService;
 import ru.taskurotta.service.console.manager.ActorConfigManager;
+import ru.taskurotta.service.console.model.ActorExtVO;
 import ru.taskurotta.service.console.model.ActorVO;
 import ru.taskurotta.service.console.model.GenericPage;
 import ru.taskurotta.service.console.model.MetricsStatDataVO;
@@ -53,7 +54,7 @@ public class ActorListResource {
 
             return Response.ok().build();
         } catch (Throwable e) {
-            logger.error("Catch exception while blocking actor [" + actorId +"]", e);
+            logger.error("Catch exception while blocking actor [" + actorId + "]", e);
             return Response.serverError().build();
         }
     }
@@ -67,7 +68,7 @@ public class ActorListResource {
 
             return Response.ok().build();
         } catch (Throwable e) {
-            logger.error("Catch exception while unblocking actor [" + actorId +"]", e);
+            logger.error("Catch exception while unblocking actor [" + actorId + "]", e);
             return Response.serverError().build();
         }
     }
@@ -77,7 +78,8 @@ public class ActorListResource {
     public Response listActors(@QueryParam("pageNum") Optional<Integer> pageNum, @QueryParam("pageSize") Optional<Integer> pageSize, @QueryParam("filter") Optional<String> oFilter) {
 
         try {
-            GenericPage<ActorExtVO> extActors = extendActorFeatures(actorConfigManager.getActorList(pageNum.or(1), pageSize.or(10), oFilter.orNull()));
+            GenericPage<ActorExtVO> extActors = extendActorFeatures(actorConfigManager.getActorList(
+                    pageNum.or(1), pageSize.or(10), oFilter.orNull()));
             logger.debug("Actor list (ext) got is [{}]", extActors);
 
             return Response.ok(extActors, MediaType.APPLICATION_JSON).build();
@@ -93,8 +95,8 @@ public class ActorListResource {
         GenericPage<ActorExtVO> result = null;
         if (actors != null) {
             List<ActorExtVO> items = new ArrayList<>();
-            if (actors.getItems()!=null && !actors.getItems().isEmpty()) {
-                for (ActorVO actor: actors.getItems()) {
+            if (actors.getItems() != null && !actors.getItems().isEmpty()) {
+                for (ActorVO actor : actors.getItems()) {
                     items.add(createActorExtVO(actor));
                 }
             }
@@ -104,48 +106,11 @@ public class ActorListResource {
         return result;
     }
 
-    //ActorVO with extended features for console UI
-    protected static class ActorExtVO extends ActorVO implements Serializable {
-
-        protected QueueBalanceVO queueState;
-        protected double hourRate = 0d;
-        protected double dayRate = 0d;
-
-        public ActorExtVO(ActorVO actor) {
-            this.id = actor.getId();
-            this.blocked = actor.isBlocked();
-            this.queueName = actor.getQueueName();
-            this.lastPoll = actor.getLastPoll();
-            this.lastRelease = actor.getLastRelease();
-        }
-
-        public QueueBalanceVO getQueueState() {
-            return queueState;
-        }
-
-        public double getHourRate() {
-            return hourRate;
-        }
-
-        public double getDayRate() {
-            return dayRate;
-        }
-
-        @Override
-        public String toString() {
-            return "ActorExtVO {" +
-                    "queueState=" + queueState +
-                    ", hourRate=" + hourRate +
-                    ", dayRate=" + dayRate +
-                    "}";
-        }
-    }
-
     @POST
     @Path("/metrics/compare")
     public Map<String, Collection<MetricsStatDataVO>> getMetricsDataOnActors(CompareCommand command) {
 
-        Map<String, Collection<MetricsStatDataVO>>  result = null;
+        Map<String, Collection<MetricsStatDataVO>> result = null;
 
         if (isContainsData(command)) {
             result = actorConfigManager.getMetricsData(command.getMetrics(), command.getActorIds());
@@ -157,7 +122,7 @@ public class ActorListResource {
     }
 
     private boolean isContainsData(CompareCommand command) {
-        return command!=null
+        return command != null
                 && command.getActorIds() != null
                 && command.getMetrics() != null
                 && !command.getActorIds().isEmpty() && !command.getMetrics().isEmpty();
@@ -203,15 +168,20 @@ public class ActorListResource {
     @GET
     @Path("/info")
     public Response getInfo(@QueryParam("actorId") String actorId) {
-        return Response.ok(createActorExtVO(actorConfigManager.getActorVo(actorId)), MediaType.APPLICATION_JSON).build();
+        return Response.ok(actorConfigManager.getActorExtVo(actorId), MediaType.APPLICATION_JSON).build();
     }
 
     private ActorExtVO createActorExtVO(ActorVO actorVO) {
         ActorExtVO extActor = new ActorExtVO(actorVO);
-        extActor.queueState = actorConfigManager.getQueueState(actorVO.getId());
-        if (extActor.queueState != null) {
-            extActor.dayRate = RateUtils.getOverallRate(extActor.queueState.getTotalInDay(), extActor.queueState.getInDayPeriod(), extActor.queueState.getTotalOutDay(), extActor.queueState.getOutDayPeriod());
-            extActor.hourRate = RateUtils.getOverallRate(extActor.queueState.getTotalInHour(), extActor.queueState.getInHourPeriod(), extActor.queueState.getTotalOutHour(), extActor.queueState.getOutHourPeriod());
+        QueueBalanceVO queueBalanceVO = actorConfigManager.getQueueState(actorVO.getId());
+        extActor.setQueueState(queueBalanceVO);
+        if (queueBalanceVO != null) {
+            extActor.setDayRate(RateUtils.getOverallRate(queueBalanceVO.getTotalInDay(),
+                    queueBalanceVO.getInDayPeriod(), queueBalanceVO.getTotalOutDay(),
+                    queueBalanceVO.getOutDayPeriod()));
+            extActor.setHourRate(RateUtils.getOverallRate(queueBalanceVO.getTotalInHour(),
+                    queueBalanceVO.getInHourPeriod(), queueBalanceVO.getTotalOutHour(),
+                    queueBalanceVO.getOutHourPeriod()));
         }
         return extActor;
     }

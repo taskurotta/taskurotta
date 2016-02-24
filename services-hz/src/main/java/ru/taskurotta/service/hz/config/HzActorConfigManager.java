@@ -9,11 +9,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.service.config.model.ActorPreferences;
 import ru.taskurotta.service.console.manager.ActorConfigManager;
+import ru.taskurotta.service.console.model.ActorExtVO;
 import ru.taskurotta.service.console.model.ActorVO;
 import ru.taskurotta.service.console.model.GenericPage;
 import ru.taskurotta.service.console.model.MetricsStatDataVO;
 import ru.taskurotta.service.console.retriever.metrics.MetricsMethodDataRetriever;
 import ru.taskurotta.service.metrics.MetricName;
+import ru.taskurotta.service.metrics.RateUtils;
 import ru.taskurotta.service.metrics.model.QueueBalanceVO;
 
 import java.util.ArrayList;
@@ -135,6 +137,26 @@ public class HzActorConfigManager implements ActorConfigManager {
         ActorPreferences actorPreferences = actorsConfigs.get(actorId);
         return createActorVO(actorPreferences);
     }
+
+    @Override
+    public ActorExtVO getActorExtVo(String actorId) {
+
+        ActorExtVO extActor = new ActorExtVO(getActorVo(actorId));
+        QueueBalanceVO queueBalanceVO = getQueueState(actorId);
+        extActor.setQueueState(queueBalanceVO);
+
+        if (queueBalanceVO != null) {
+            extActor.setDayRate(RateUtils.getOverallRate(queueBalanceVO.getTotalInDay(),
+                    queueBalanceVO.getInDayPeriod(), queueBalanceVO.getTotalOutDay(),
+                    queueBalanceVO.getOutDayPeriod()));
+            extActor.setHourRate(RateUtils.getOverallRate(queueBalanceVO.getTotalInHour(),
+                    queueBalanceVO.getInHourPeriod(), queueBalanceVO.getTotalOutHour(),
+                    queueBalanceVO.getOutHourPeriod()));
+        }
+
+        return extActor;
+    }
+
 
     private ActorVO createActorVO(ActorPreferences actorPreferences) {
         ActorVO actorVO = new ActorVO();

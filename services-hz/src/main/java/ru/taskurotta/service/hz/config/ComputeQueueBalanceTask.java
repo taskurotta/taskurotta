@@ -57,13 +57,13 @@ public class ComputeQueueBalanceTask implements Callable<QueueBalanceVO>, Serial
         long[] result = getInitialValue(target);
 
         if (target != null && target.length > 0) {
-            for (DataPointVO<Long> dp: target) {
-                if (dp!=null && dp.getTime()>0) {
+            for (DataPointVO<Long> dp : target) {
+                if (dp != null && dp.getTime() > 0) {
                     long time = dp.getTime();
-                    if(time<result[0]) {
+                    if (time < result[0]) {
                         result[0] = time;
                     }
-                    if (time>result[1]) {
+                    if (time > result[1]) {
                         result[1] = time;
                     }
                 }
@@ -73,11 +73,11 @@ public class ComputeQueueBalanceTask implements Callable<QueueBalanceVO>, Serial
         return result;
     }
 
-    private long[] getInitialValue(DataPointVO <Long>[] target) {
+    private long[] getInitialValue(DataPointVO<Long>[] target) {
         long[] result = {-1l, -1l};
         if (target != null && target.length > 0) {
-            for (DataPointVO<Long> dp: target) {
-                if (dp!=null && dp.getTime()>0) {
+            for (DataPointVO<Long> dp : target) {
+                if (dp != null && dp.getTime() > 0) {
                     result[0] = dp.getTime();
                     result[1] = dp.getTime();
                     break;
@@ -93,8 +93,8 @@ public class ComputeQueueBalanceTask implements Callable<QueueBalanceVO>, Serial
 
         if (target != null && target.length > 0) {
             result = 0;
-            for (DataPointVO<Long> dp: target) {
-                if (dp!=null && dp.getValue()>0) {
+            for (DataPointVO<Long> dp : target) {
+                if (dp != null && dp.getValue() > 0) {
                     result += dp.getValue();
                 }
             }

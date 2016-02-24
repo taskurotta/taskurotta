@@ -146,6 +146,9 @@ angular.module('actorModule', ['coreApp'])
                 $uibModalInstance.close();
             };
 
+            $scope.quotes = function(str) {
+                return '{"' + str + '":true}';
+            }
         }])
 
 ;
