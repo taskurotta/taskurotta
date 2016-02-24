@@ -47,8 +47,10 @@ public class ProcessOperationsResource {
                 TaskContainer sTask = process.getStartTask();
                 UUID newProcessId = UUID.randomUUID();
                 taskServer.startProcess(new TaskContainer(newProcessId, newProcessId, null, sTask.getMethod(),
-                        sTask.getActorId(), sTask.getType(), sTask.getStartTime(), 0, sTask.getArgs(), sTask.getOptions(),
+                        sTask.getActorId(), sTask.getType(), sTask.getStartTime(), 0, sTask.getArgs(),
+                        sTask.getOptions(),
                         sTask.isUnsafe(), sTask.getFailTypes()));
+                abortProcessOperationExecutor.enqueue(new AbortProcessOperation(UUID.fromString(processId)));
                 result = mapper.writeValueAsString(newProcessId.toString());
                 logger.debug("Started new process with id[{}] (cloned from [{}])", result, processId);
             }

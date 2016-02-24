@@ -17,13 +17,13 @@ processParams= {{ processParams | json}}
             <h5>Properties:</h5>
         </div>
         <div style="float: right; margin-bottom: 5px;">
-            <button class="btn btn-small" ng-click="recovery(process)"
-                    popover="Submit process to recovery service" popover-trigger="mouseenter">
+            <button class="btn btn-small" ng-click="clone(process)"
+                    popover="Restart process" popover-trigger="mouseenter">
                 <i class="icon-retweet"></i>
             </button>
-            <button class="btn btn-small" ng-click="clone(process)"
-                    popover="Clone process" popover-trigger="mouseenter">
-                <i class="icon-tags"></i>
+            <button class="btn btn-small" ng-click="recovery(process)"
+                    popover="Submit process to recovery service" popover-trigger="mouseenter">
+                <i class="icon-wrench"></i>
             </button>
             <button class="btn btn-small" ng-click="abort(process)"
                     popover="Abort process" popover-trigger="mouseenter" ng-disabled = "process.state == 3">
