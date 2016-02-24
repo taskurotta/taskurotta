@@ -72,7 +72,13 @@ do
             do_clean_docker
             do_clean_data
             ;;
-        up)
+        start)
+            do_clean_docker
+            do_clean_data
+            do_up
+        ;;
+        restart)
+            do_stop
             do_clean_docker
             do_clean_data
             do_up
