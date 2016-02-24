@@ -7,6 +7,7 @@ angular.module('actorModule', ['coreApp'])
             //list
             query: {url: restActorUrl + 'list/', params: {}},
             loadMetrics: {url: restActorUrl + 'metrics/compare', method: 'POST', params: {}},
+            info: {url: restActorUrl + 'info', method: 'GET'},
             //actions
             unblock: {url: restActorUrl + 'unblock/', method: 'POST'},
             block: {url: restActorUrl + 'block/', method: 'POST'},
@@ -15,7 +16,7 @@ angular.module('actorModule', ['coreApp'])
         });
     })
 
-    .controller('actorListController', function ($log, $scope, actorRest, coreApp) {
+    .controller('actorListController', function ($log, $scope, $modal, actorRest, coreApp) {
         $log.info('actorListController');
 
         function loadModel(params) {
@@ -111,4 +112,40 @@ angular.module('actorModule', ['coreApp'])
                 });
         };
 
-    });
+        $scope.showInfo = function (actorId) {
+            $modal.open({
+                size: 'actor',
+                backdrop: false,
+                templateUrl: 'views/actor/modal.html',
+                controller: 'ActorModalCtrl',
+                resolve: {
+                    actorId: function () {
+                        return actorId;
+                    }
+                }
+            });
+        }
+
+    })
+
+    .controller('ActorModalCtrl', ['$scope', '$modalInstance', 'actorRest', 'actorId',
+        function ($scope, $uibModalInstance, actorRest, actorId) {
+
+            $scope.actorId = actorId;
+            actorRest.info(
+                {actorId: actorId},
+                function success(value) {
+                    $scope.info = value;
+                },
+                function error(reason) {
+                    console.error(reason);
+                }
+            );
+
+            $scope.ok = function (form) {
+                $uibModalInstance.close();
+            };
+
+        }])
+
+;
