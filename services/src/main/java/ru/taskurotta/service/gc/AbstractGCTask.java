@@ -54,7 +54,7 @@ public abstract class AbstractGCTask implements Runnable {
 
             Graph graph = graphDao.getGraph(processId);
 
-            if (process.getState() != Process.ABORTED && graph != null && !graph.isFinished()) {
+            if (process != null && process.getState() != Process.ABORTED && graph != null && !graph.isFinished()) {
                 logger.error("Process [{}] isn't broken and its graph isn't finished. " +
                         "Stop garbage collector for this process", processId);
                 return;
