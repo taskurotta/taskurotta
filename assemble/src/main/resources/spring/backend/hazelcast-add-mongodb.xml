@@ -105,12 +105,12 @@
         <constructor-arg name="batchSize" value="${gc.lost-process.batch-size}"/>
         <constructor-arg name="timeBeforeDeleteFinishedProcess">
             <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
-                <constructor-arg name="duration" value="${gc.time-before-delete-finished-process}"/>
+                <constructor-arg name="duration" value="${gc.process.finished.wait-before-delete}"/>
             </bean>
         </constructor-arg>
         <constructor-arg name="timeBeforeDeleteAbortedProcess">
             <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
-                <constructor-arg name="duration" value="${gc.time-before-manual-delete-process}"/>
+                <constructor-arg name="duration" value="${gc.process.aborted.wait-before-delete}"/>
             </bean>
         </constructor-arg>
         <constructor-arg name="enabled" value="${gc.lost-process.enabled}"/>

@@ -18,7 +18,7 @@
         <constructor-arg name="serviceBundle" ref="serviceBundle"/>
         <constructor-arg name="timeBeforeDeleteFinishedProcess">
             <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
-                <constructor-arg name="duration" value="${gc.time-before-delete-finished-process}"/>
+                <constructor-arg name="duration" value="${gc.process.finished.wait-before-delete}"/>
             </bean>
         </constructor-arg>
     </bean>

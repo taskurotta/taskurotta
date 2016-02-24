@@ -1,126 +1,76 @@
 <div page-header="Interrupted tasks" ng-dblclick="$debug = !$debug">
-    <div ng-if="$debug">
-        <h6>{{ formParams }}</h6>
-        <h6>{{ resourceParams }}</h6>
+    <div ng-if="$debug" style="width: 100%">
+        <pre>
+formParams = {{ formParams | json }}
+resourceParams = {{ resourceParams | json}}
+interruptedModel= {{ interruptedModel | json}}
+        </pre>
     </div>
 </div>
 
 <div page-form="Interrupted tasks search form">
-    <div class="control-group">
-        <label class="control-label">
-            Date period <a ng-click="formParams.withTime = !formParams.withTime">(with time)</a>:
-        </label>
-        <table class="controls">
-            <tr>
-                <td class="inline-label">From:<span input-date="formParams.dateFrom"></span></td>
-                <td ng-if="formParams.withTime"><span input-time="formParams.dateFrom"></span></td>
-                <td class="inline-label">To:<span input-date="formParams.dateTo"></span></td>
-                <td ng-if="formParams.withTime"><span input-time="formParams.dateTo"></span></td>
-            </tr>
-        </table>
-    </div>
-    <fieldset class="scheduler-border">
-        <!--<legend class="scheduler-border">Filtered by:</legend>-->
-        <div class="control-group">
-            <label class="control-label" for="starter">{{ groups.starter.label }}:</label>
-            <div class="controls">
-                <input class="input-xlarge" type="text" id="starter" placeholder="ru.taskurotta.Example#1.0"
-                       ng-model="formParams.starterId" on-enter="search()"/>
-                <i icon-info="{{ groups.starter.desc }}" model="formParams.starterId" remove="formParams.starterId = null"></i>
-
-            </div>
-        </div>
-        <div class="control-group">
-            <label class="control-label" for="actor">{{ groups.actor.label }}:</label>
-            <div class="controls">
-                <input class="input-xlarge" type="text" id="actor" placeholder="ru.taskurotta.Example#1.0"
-                       ng-model="formParams.actorId" on-enter="search()"/>
-                <i icon-info="{{ groups.actor.desc }}" model="formParams.actorId" remove="formParams.actorId = null"></i>
-            </div>
-        </div>
-        <div class="control-group">
-            <label class="control-label" for="exception">{{ groups.exception.label }}:</label>
-            <div class="controls">
-                <input class="input-xlarge" type="text" id="exception" placeholder="ru.taskurotta.ExampleException"
-                       ng-model="formParams.exception" on-enter="search()"/>
-                <i icon-info="{{ groups.exception.desc }}" model="formParams.exception" remove="formParams.exception = null"></i>
-           </div>
-        </div>
-    </fieldset>
-    <div class="control-group">
-        <label class="control-label">Grouped by:</label>
-        <div class="controls">
-            <!--<select class="input-mini" id="group" ng-model="formParams.group" style="width: 150px"-->
-            <!--ng-options="key as key for (key , group) in (groups | orderBy:'+order')">-->
-
-            <!--</select>-->
-            <label class="radio inline" ng-repeat="(key , group) in (groups | orderBy:'+order')">
-                <input type="radio" ng-model="formParams.group" ng-value="key">
-                {{ key }}
-            </label>
-            <button style="margin-left: 10px" class="btn" ng-click="search()">Search</button>
-        </div>
-
-    </div>
+    <ng-include src="'views/interrupted/form.html'"/>
 </div>
 
 <page-message></page-message>
 
-<div class="well" >
+<div class="well">
     <list-reload model="interruptedResource">
     </list-reload>
 
     <table class="table table-striped table-condensed table-bordered table-items">
         <thead>
-            <tr>
-                <th>Task id</th>
-                <th>Starter Actor id</th>
-                <th>Task Actor id</th>
-                <th>Fail time</th>
-                <th>Error</th>
-                <th>Actions</th>
-            </tr>
+        <tr>
+            <th>Task id</th>
+            <th>Decider</th>
+            <th>Worker</th>
+            <th>Fail time</th>
+            <th>Exception</th>
+            <th>Actions</th>
+        </tr>
         </thead>
         <tbody>
-            <tr ng-repeat="task in interruptedModel.items">
-                <td nowrap>
-                        <a class="btn-link" ui-sref="task({processId: task.processId, taskId:task.taskId })">
-                            <b>{{ task.taskId }}</b></a>
-                </td>
-                <td>
-                    <span ng-bind-html="task.starterId | lineWrap"></span>
-                </td>
-                <td>
-                    <span ng-bind-html="task.actorId | lineWrap"></span>
-                </td>
-                <td style="min-width:120px">
-                    {{task.time | dateTime }}
-                </td>
-                <td style="max-width: 300px;">
-                    <div class="muted" ng-bind-html="task.errorClassName | lineWrap"></div>
-                    <div ng-if="task.errorMessage">
-                        <span ng-bind-html="task.errorMessage.substring(0,120) | lineWrap:':'"></span>
-                        <a ng-if="task.errorMessage.length>120" ng-click="showMessage(task)">
-                            More...
-                        </a>
-                    </div>
-                    <a class="btn-link" ng-click="showStackTrace(task)">
-                        <i class="icon-list"></i><b>Stack trace</b>
+        <tr ng-repeat="task in interruptedModel.items">
+            <td nowrap>
+                <a class="btn-link" ui-sref="task({processId: task.processId, taskId:task.taskId })">
+                    <b>{{ task.taskId }}</b></a>
+            </td>
+            <td>
+                <span ng-bind-html="task.starterId | lineWrap"></span>
+            </td>
+            <td>
+                <span ng-bind-html="task.actorId | lineWrap"></span>
+            </td>
+            <td style="min-width:120px">
+                {{task.time | dateTime }}
+            </td>
+            <td style="max-width: 300px;">
+                <div class="muted" ng-bind-html="task.errorClassName | lineWrap"></div>
+                <div ng-if="task.errorMessage">
+                    <span ng-bind-html="task.errorMessage.substring(0,120) | lineWrap:':'"></span>
+                    <a ng-if="task.errorMessage.length>120" ng-click="showMessage(task)">
+                        More...
                     </a>
-                </td>
-                <td>
-                    <button ng-click="restart(task)" popover="Try to restart the task" popover-trigger="mouseenter"><i class="icon-retweet"></i></button>
-                </td>
-            </tr>
+                </div>
+                <a class="btn-link" ng-click="showStackTrace(task)">
+                    <i class="icon-list"></i><b>Stack trace</b>
+                </a>
+            </td>
+            <td>
+                <button ng-click="restart(task)" popover="Try to restart the task" popover-trigger="mouseenter">
+                    <i class="icon-retweet"></i>
+                </button>
+            </td>
+        </tr>
         </tbody>
 
         <tfoot>
-            <tr>
-                <td colspan="7">
-                    <list-paginator model="interruptedModel">
-                    </list-paginator>
-                </td>
-            </tr>
+        <tr>
+            <td colspan="7">
+                <list-paginator model="interruptedModel">
+                </list-paginator>
+            </td>
+        </tr>
         </tfoot>
     </table>
 

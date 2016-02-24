@@ -158,15 +158,27 @@ angular.module('processModule', ['taskModule', 'coreApp'])
         };
 
         $scope.clone = function (process) {
-            coreApp.openConfirmModal('A new process with the same start task arguments would be created.',
+            coreApp.openConfirmModal('A new process with the same start task arguments would be created and this process would be aborted',
                 function confirmed() {
                     processRest.clone(process.processId,
                         function success(value) {
-                            $log.log('Process clone success', value);
+                            $log.log('Process restart success', value);
                             $state.go('process', {processId: value});
                         }, function error(reason) {
-                            coreApp.error('Process clone error',reason);
+                            coreApp.error('Process restart error',reason);
                         });
+                });
+        };
+
+        $scope.abort = function (process) {
+            coreApp.openConfirmModal('Current process, it\'s graph, all tasks and decisions will be deleted.',
+                function confirmed() {
+                    processRest.abort(process.processId, function success(value) {
+                        $log.log('Process abort success', value);
+                        loadModel();
+                    }, function error(reason) {
+                        coreApp.error('Process abort error',reason);
+                    });
                 });
         };
 

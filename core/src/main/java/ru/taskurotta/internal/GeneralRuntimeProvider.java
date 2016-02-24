@@ -154,7 +154,7 @@ public class GeneralRuntimeProvider implements RuntimeProvider {
                 continue;
             }
 
-            TaskTarget key = createTaskTarget(TaskType.DECIDER_ASYNCHRONOUS, actorName, actorVersion, method.getName());
+            TaskTarget key = createTaskTarget(TaskType.DECIDER, actorName, actorVersion, method.getName());
 
             if (taskTargetsMap == null) {
                 taskTargetsMap = new HashMap<TaskTarget, TargetReference>();

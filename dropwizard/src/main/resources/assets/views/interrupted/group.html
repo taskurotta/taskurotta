@@ -1,73 +1,21 @@
-<div page-header="Interrupted tasksgroups" ng-dblclick="$debug = !$debug">
-    <div ng-if="$debug">
-        <h6>{{ formParams }}</h6>
-        <h6>{{ resourceParams }}</h6>
-        <h6>{{ groups }}</h6>
+<div page-header="Interrupted tasks groups" ng-dblclick="$debug = !$debug">
+    <div ng-if="$debug" style="width: 100%">
+        <pre>
+formParams = {{ formParams | json }}
+resourceParams = {{ resourceParams | json}}
+groups= {{ groups | json}}
+interruptedModel = {{ interruptedModel | json }}
+        </pre>
     </div>
 </div>
 
 <div page-form="Interrupted task groups search form">
-    <div class="control-group">
-        <label class="control-label">
-            Date period <a ng-click="formParams.withTime = !formParams.withTime">(with time)</a>:
-        </label>
-        <table class="controls">
-            <tr>
-                <td class="inline-label">From:<span input-date="formParams.dateFrom"></span></td>
-                <td ng-if="formParams.withTime"><span input-time="formParams.dateFrom"></span></td>
-                <td class="inline-label">To:<span input-date="formParams.dateTo"></span></td>
-                <td ng-if="formParams.withTime"><span input-time="formParams.dateTo"></span></td>
-            </tr>
-        </table>
-    </div>
-    <fieldset class="scheduler-border">
-        <!--<legend class="scheduler-border">Filtered by:</legend>-->
-        <div class="control-group">
-            <label class="control-label" for="starter">{{ groups.starter.label }}:</label>
-            <div class="controls">
-                <input class="input-xlarge" type="text" id="starter" placeholder="ru.taskurotta.Example#1.0"
-                       ng-model="formParams.starterId" on-enter="search()"/>
-                <i icon-info="{{ groups.starter.desc }}" model="formParams.starterId" remove="formParams.starterId = null"></i>
-            </div>
-        </div>
-        <div class="control-group">
-            <label class="control-label" for="actor">{{ groups.actor.label }}:</label>
-            <div class="controls">
-                <input class="input-xlarge" type="text" id="actor" placeholder="ru.taskurotta.Example#1.0"
-                       ng-model="formParams.actorId" on-enter="search()"/>
-                <i icon-info="{{ groups.actor.desc }}" model="formParams.actorId" remove="formParams.actorId = null"></i>
-            </div>
-        </div>
-        <div class="control-group">
-            <label class="control-label" for="errorClassName">{{ groups.errorClassName.label }}:</label>
-            <div class="controls">
-                <input class="input-xlarge" type="text" id="errorClassName" placeholder="ru.taskurotta.ExampleException"
-                       ng-model="formParams.errorClassName" on-enter="search()"/>
-                <i icon-info="{{ groups.errorClassName.desc }}" model="formParams.errorClassName" remove="formParams.errorClassName = null"></i>
-            </div>
-        </div>
-    </fieldset>
-    <div class="control-group">
-        <label class="control-label">Grouped by:</label>
-        <div class="controls">
-            <!--<select class="input-mini" id="group" ng-model="formParams.group" style="width: 150px"-->
-            <!--ng-options="key as key for (key , group) in (groups | orderBy:'+order')">-->
-
-            <!--</select>-->
-            <label class="radio inline" ng-repeat="(key , group) in (groups | orderBy:'+order')">
-                <input type="radio" ng-model="formParams.group" ng-value="key">
-                {{ key }}
-            </label>
-            <button style="margin-left: 10px" class="btn" ng-click="search()">Search</button>
-        </div>
-
-    </div>
-
+    <ng-include src="'views/interrupted/form.html'"/>
 </div>
 
 <page-message></page-message>
 
-<div class="well" >
+<div class="well">
     <list-reload model="interruptedResource">
     </list-reload>
 
@@ -80,17 +28,23 @@
             <th>
                 {{ groups[resourceParams.group].label }}
             </th>
-            <th ng-hide="groups.starter.selected"  style="width: 200px;">
-                {{ groups.starter.name }}:
+            <th ng-hide="groups.starter.selected" style="width: 200px;">
+                <a ui-sref="interrupted({group:'starter'})" popover="{{ groups.starter.regroup }}"
+                   popover-trigger="mouseenter" class="btn-link">
+                    {{ groups.starter.name }}</a>
             </th>
             <th ng-hide="groups.actor.selected" style="width: 200px;">
-                {{ groups.actor.name }}:
+                <a ui-sref="interrupted({group:'actor'})" popover="{{ groups.actor.regroup }}"
+                   popover-trigger="mouseenter" class="btn-link">
+                    {{ groups.actor.name }}</a>
             </th>
-            <th ng-hide="groups.errorClassName.selected" style="width: 200px;">
-                {{ groups.errorClassName.name }}:
+            <th ng-hide="groups.exception.selected" style="width: 200px;">
+                <a ui-sref="interrupted({group:'exception'})" popover="{{ groups.exception.regroup }}"
+                   popover-trigger="mouseenter" class="btn-link">
+                    {{ groups.exception.name }}</a>
             </th>
             <th style="width: 100px;">
-                Total count:
+                Tasks in group:
             </th>
             <th style="width: 100px; text-align:center;">
                 Action
@@ -98,61 +52,57 @@
         </tr>
         </thead>
         <tbody>
-             <tr ng-repeat="group in interruptedModel.items">
-                <td style="width: 25px;">
-                    {{ interruptedModel.$startIndex + $index }}
-                </td>
-                <th>
-                    <a ui-sref="interrupted(joinFilterParam({},group.name))" class="btn-link">
-                        <span ng-bind-html="group.name | lineWrap"></span></a>
-                </th>
+        <tr ng-repeat="group in interruptedModel.items">
+            <td style="width: 25px;">
+                {{ interruptedModel.$startIndex + $index }}
+            </td>
+            <td>
+                <div ng-bind-html="group.name | lineWrap"></div>
+            </td>
 
-                <th ng-hide="groups.starter.selected" style="width: 200px;">
-                    <a ui-sref="interrupted({group:'starter'})" popover="{{ groups.starter.regroup }}" popover-trigger="mouseenter" class="btn-link">
-                        <i class="icon-random" style="cursor: pointer;margin-right:5px;"></i>
-                        {{ groups.starter.name }}</a> in group:
-                    <a ui-sref="interrupted(joinFilterParam({group:'starter'},group.name))" class="btn-link" popover="Add filter and show groups" popover-trigger="mouseenter">
-                        <b>{{group.startersCount}}</b></a>
-                </th>
-                <th ng-hide="groups.actor.selected" style="width: 200px;">
-                    <a ui-sref="interrupted({group:'actor'})" popover="{{ groups.actor.regroup }}" popover-trigger="mouseenter" class="btn-link">
-                        <i class="icon-random" style="cursor: pointer;margin-right:5px;"></i>
-                        {{ groups.actor.name }}</a> in group:
-                    <a ui-sref="interrupted(joinFilterParam({group:'actor'},group.name))" class="btn-link" popover="Add filter and show groups" popover-trigger="mouseenter">
-                        <b>{{group.actorsCount}}</b></a>
-                </th>
-                <th ng-hide="groups.errorClassName.selected" style="width: 200px;">
-                    <a ui-sref="interrupted({group:'errorClassName'})" popover="{{ groups.errorClassName.regroup }}" popover-trigger="mouseenter" class="btn-link">
-                        <i class="icon-random" style="cursor: pointer;margin-right:5px;"></i>
-                        {{ groups.errorClassName.name }}</a> in group:
-                    <a ui-sref="interrupted(joinFilterParam({group:'errorClassName'},group.name))" class="btn-link" popover="Add filter and show groups" popover-trigger="mouseenter">
-                        <b>{{group.exceptionsCount}}</b></a>
+            <td ng-hide="groups.starter.selected" style="width: 200px;"
+                ui-sref="interrupted(joinFilterParam({group:'starter'},group.name))" class="btn-link">
+                <div popover="Add filter and show groups" popover-trigger="mouseenter">
+                    <b>{{group.startersCount}}</b>
+                </div>
+            </td>
+            <td ng-hide="groups.actor.selected" style="width: 200px;"
+                ui-sref="interrupted(joinFilterParam({group:'actor'},group.name))" class="btn-link">
+                <div popover="Add filter and show groups" popover-trigger="mouseenter">
+                    <b>{{group.actorsCount}}</b></div>
+            </td>
+            <td ng-hide="groups.exception.selected" style="width: 200px;"
+                ui-sref="interrupted(joinFilterParam({group:'exception'},group.name))" class="btn-link">
+                <div popover="Add filter and show groups" popover-trigger="mouseenter">
+                    <b>{{group.exceptionsCount}}</b>
+                </div>
+            </td>
+            <td style="width: 100px;" ui-sref="interrupted_list(joinFilterParam($stateParams,group.name))" class="btn-link">
+                <div popover="List all tasks in the group" popover-trigger="mouseenter">
+                    <b>{{group.total}}</b></div>
+            </td>
+            <td style="width: 100px; text-align:center;">
+                <button ng-click="restartGroup(group)" popover="Submit restart task for all tasks in the group"
+                        popover-trigger="mouseenter">
+                    <i class="icon-retweet"></i>
+                </button>
 
-                </th>
-                <th style="width: 100px;">
-                    Total: <a ui-sref="interrupted_list(joinFilterParam($stateParams,group.name))" popover="List all tasks in the group" popover-trigger="mouseenter">
-                    <b>{{group.total}}</b></a>
-                </th>
-                <td style="width: 100px; text-align:center;">
-                    <button ng-click="restartGroup(group)" popover="Submit restart task for all tasks in the group" popover-trigger="mouseenter">
-                        <i class="icon-retweet"></i>
-                    </button>
+                <button ng-click="abortGroup(group)" popover="Abort all processes in the group"
+                        popover-trigger="mouseenter">
+                    <i class="icon-trash"></i>
+                </button>
 
-                    <button ng-click="abortGroup(group)" popover="Abort all processes in the group" popover-trigger="mouseenter">
-                        <i class="icon-trash"></i>
-                    </button>
-
-                </td>
-            </tr>
+            </td>
+        </tr>
         </tbody>
 
         <tfoot>
-            <tr>
-                <td colspan="7">
-                    <list-paginator model="interruptedModel">
-                    </list-paginator>
-                </td>
-            </tr>
+        <tr>
+            <td colspan="7">
+                <list-paginator model="interruptedModel">
+                </list-paginator>
+            </td>
+        </tr>
         </tfoot>
     </table>
 

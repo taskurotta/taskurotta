@@ -33,9 +33,9 @@ public class ErrorTest extends AbstractTestStub {
         assertTaskInProgress(taskAId);
 
         // create B, C tasks
-        Task deciderTaskB = deciderTask(taskBId, TaskType.DECIDER_ASYNCHRONOUS, "startB",
+        Task deciderTaskB = deciderTask(taskBId, TaskType.DECIDER, "startB",
                 new String[]{"java.lang.RuntimeException"}, new Object[]{}, null);
-        Task deciderTaskC = deciderTask(taskCId, TaskType.DECIDER_ASYNCHRONOUS, "startC", null,
+        Task deciderTaskC = deciderTask(taskCId, TaskType.DECIDER, "startC", null,
                 new Object[]{promise(deciderTaskB)},
                 new TaskOptions().setArgTypes(new ArgType[]{ArgType.NONE}));
 
@@ -75,9 +75,9 @@ public class ErrorTest extends AbstractTestStub {
         assertTaskInProgress(taskAId);
 
         // create B, C tasks
-        Task deciderTaskB = deciderTask(taskBId, TaskType.DECIDER_ASYNCHRONOUS, "startB",
+        Task deciderTaskB = deciderTask(taskBId, TaskType.DECIDER, "startB",
                 new String[]{}, new Object[]{}, null);   // empty array of types as restriction!
-        Task deciderTaskC = deciderTask(taskCId, TaskType.DECIDER_ASYNCHRONOUS, "startC", null,
+        Task deciderTaskC = deciderTask(taskCId, TaskType.DECIDER, "startC", null,
                 new Object[]{promise(deciderTaskB)},
                 new TaskOptions().setArgTypes(new ArgType[]{ArgType.NONE}));
 
@@ -117,9 +117,9 @@ public class ErrorTest extends AbstractTestStub {
         assertTaskInProgress(taskAId);
 
         // create B, C tasks
-        Task deciderTaskB = deciderTask(taskBId, TaskType.DECIDER_ASYNCHRONOUS, "startB",
+        Task deciderTaskB = deciderTask(taskBId, TaskType.DECIDER, "startB",
                 new String[]{"java.lang.NullPointerException"}, new Object[]{}, null);
-        Task deciderTaskC = deciderTask(taskCId, TaskType.DECIDER_ASYNCHRONOUS, "startC", null,
+        Task deciderTaskC = deciderTask(taskCId, TaskType.DECIDER, "startC", null,
                 new Object[]{promise(deciderTaskB)},
                 new TaskOptions().setArgTypes(new ArgType[]{ArgType.NONE}));
 

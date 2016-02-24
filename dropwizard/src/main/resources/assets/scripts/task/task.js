@@ -1,5 +1,15 @@
 angular.module('taskModule', ['coreApp'])
 
+    .factory('interruptedRest', function ($log, coreApp, $resource) {
+        var restTaskUrl = coreApp.getRestUrl() + 'process/tasks/interrupted/';
+
+        return $resource(restTaskUrl + 'task', {}, {
+                //actions
+                restart: {url: restTaskUrl + 'restart/task', method:'POST', params: {}},
+            }
+        );
+    })
+
     .factory('taskRest', function ($log, coreApp, $resource) {
         var restTaskUrl = coreApp.getRestUrl() + 'tasks/';
         return $resource(restTaskUrl + 'task', {}, {
@@ -15,6 +25,8 @@ angular.module('taskModule', ['coreApp'])
             }
         );
     })
+
+
 
     .filter('taskState', function (taskRest,coreApp) {
         var states;
@@ -108,29 +120,29 @@ angular.module('taskModule', ['coreApp'])
                 });
         }
 
-        //Initialization:
+        // Initialization:
         $scope.formParams = coreApp.copyStateParams();
         loadModel(angular.copy($scope.formParams));
 
-        //Submit form command:
+        // Submit form command:
         $scope.search = function () {
             $scope.formParams.pageNum = undefined;
             $scope.formParams.refreshRate = undefined;
             coreApp.reloadState($scope.formParams);
         };
 
-        //Finalization:
+        // Finalization:
         $scope.$on('$destroy', function () {
             coreApp.stopRefreshRate();
         });
 
-        //Actions
+        // Actions
         $scope.showArgs = function (task) {
             coreApp.openPropertiesModal(task.args, task.taskId);
         };
 
     })
-    .controller('taskCardController', function ($log, $scope, taskRest, coreApp) {
+    .controller('taskCardController', function ($log, $scope, taskRest, interruptedRest, coreApp) {
         $log.info('taskCardController');
         $scope.taskParams = coreApp.copyStateParams();
 
@@ -167,5 +179,22 @@ angular.module('taskModule', ['coreApp'])
 
         //Initialization:
         loadModel();
+
+        // Restart task
+        $scope.restart = function (task) {
+            coreApp.openConfirmModal('Task [' + task.taskId + '] will be restarted.',
+                function confirmed() {
+                    interruptedRest.restart({
+                        taskId: task.taskId,
+                        processId: task.processId
+                    }, function success() {
+                        $log.log('Task [' + task.taskId + '] have been restarted');
+                        loadModel($scope.resourceParams);
+                    }, function error(reason) {
+                        coreApp.error('Error task [' + task.taskId + '] restarting', reason);
+                    });
+                });
+        };
+
 
     });

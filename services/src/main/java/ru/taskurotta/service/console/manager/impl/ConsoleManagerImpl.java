@@ -92,18 +92,24 @@ public class ConsoleManagerImpl implements ConsoleManager {
         if (task != null) {
             result.setDesc(task.getActorId() + " - " + task.getMethod());
         }
+        // todo: get Decision and set state about "NotReady", "InQueue", errorAttempts and recoveryTime
         DecisionContainer decision = taskInfo.getDecisionContainer(taskId, processId);
         result.setState(getTaskTreeStatus(decision));
-        if (decision != null && decision.getTasks() != null && decision.getTasks().length != 0) {
-            TaskTreeVO[] childs = new TaskTreeVO[decision.getTasks().length];
-            for (int i = 0; i < decision.getTasks().length; i++) {
-                TaskContainer childTask = decision.getTasks()[i];
-                TaskTreeVO childTree = getTreeForTask(childTask.getTaskId(), processId);
-                childTree.setParent(taskId);
-                childTree.setDesc(childTask.getActorId() + " - " + childTask.getMethod());
-                childs[i] = childTree;
+
+        if (decision != null) {
+            TaskContainer[] taskDecisions = decision.getTasks();
+
+            if (taskDecisions != null && taskDecisions.length != 0) {
+                TaskTreeVO[] childs = new TaskTreeVO[taskDecisions.length];
+                for (int i = 0; i < taskDecisions.length; i++) {
+                    TaskContainer childTask = taskDecisions[i];
+                    TaskTreeVO childTree = getTreeForTask(childTask.getTaskId(), processId);
+                    childTree.setParent(taskId);
+                    childTree.setDesc(childTask.getActorId() + " - " + childTask.getMethod());
+                    childs[i] = childTree;
+                }
+                result.setChildren(childs);
             }
-            result.setChildren(childs);
         }
 
         return result;

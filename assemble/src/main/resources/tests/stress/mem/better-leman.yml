@@ -18,7 +18,7 @@ spreader:
           threadSize: 10
           queueSizeThreshold: 1000
           speed: 4
-          gc.time-before-delete: 1 minutes
+          gc.process.finished.wait-before-delete: 1 minutes
           hz.jmx.detailed: true
           hz.jmx: true
 

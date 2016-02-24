@@ -1,6 +1,9 @@
 #Location of Spring application context:
 #Hazelcast without mongo mapstore
-contextLocation: "classpath*:spring/hz-mongo.xml, classpath*:spring/stat-monitor.xml, classpath*:spring/resurrect-broken-process.xml"
+contextLocation: |
+  classpath*:spring/hz-mongo.xml,
+  classpath*:spring/stat-monitor.xml,
+  classpath*:spring/e2e/all.xml
 
 #Used for static resource serving in development mode
 assets:
@@ -25,7 +28,7 @@ properties:
   stats.monitor.period-sec: 5
   gc.enabled: true
   gc.pool-size: 8
-  gc.time-before-delete: 20 seconds
+  gc.process.finished.wait-before-delete: 1 days
   recovery.enabled: true
   recovery.process.incomplete-timeout: 30 seconds
   recovery.find-incomplete-process-period: 5 seconds

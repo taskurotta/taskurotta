@@ -1,5 +1,12 @@
-<div page-header>
-    <h4>Process id: <i>{{processParams.processId}}</i></h4>
+<div page-header="Process: {{process.startTask.actorId}} - {{ process.processId}}" ng-dblclick="$debug = !$debug">
+    <div ng-if="$debug" style="width: 100%">
+        <pre>
+formParams = {{ formParams | json }}
+resourceParams = {{ resourceParams | json}}
+process= {{ process | json}}
+processParams= {{ processParams | json}}
+        </pre>
+    </div>
 </div>
 
 <page-message></page-message>
@@ -10,13 +17,17 @@
             <h5>Properties:</h5>
         </div>
         <div style="float: right; margin-bottom: 5px;">
-            <button class="btn btn-small" ng-click="recovery(process)"
-                    popover="Submit process to recovery service" popover-trigger="mouseenter">
+            <button class="btn btn-small" ng-click="clone(process)"
+                    popover="Restart process" popover-trigger="mouseenter">
                 <i class="icon-retweet"></i>
             </button>
-            <button class="btn btn-small" ng-click="clone(process)"
-                    popover="Clone process" popover-trigger="mouseenter">
-                <i class="icon-tags"></i>
+            <button class="btn btn-small" ng-click="recovery(process)"
+                    popover="Submit process to recovery service" popover-trigger="mouseenter">
+                <i class="icon-wrench"></i>
+            </button>
+            <button class="btn btn-small" ng-click="abort(process)"
+                    popover="Abort process" popover-trigger="mouseenter" ng-disabled = "process.state == 3">
+                <i class="icon-trash"></i>
             </button>
         </div>
     </div>

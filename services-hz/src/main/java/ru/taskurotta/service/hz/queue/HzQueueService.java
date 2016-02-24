@@ -149,7 +149,7 @@ public class HzQueueService implements QueueService, QueueInfoRetriever {
             logger.trace("getLastPolledTaskEnqueueTime(): actorId = [{}], lastPolledTaskEnqueueTimes mao size is {}",
                     ActorUtils.toPrefixed(queueName, queueNamePrefix), lastPolledTaskEnqueueTimes.size());
 
-            for (Map.Entry<String, Long> item: lastPolledTaskEnqueueTimes.entrySet()) {
+            for (Map.Entry<String, Long> item : lastPolledTaskEnqueueTimes.entrySet()) {
                 logger.trace("getLastPolledTaskEnqueueTime(): lastPolledTaskEnqueueTimes entry key {} value {}",
                         item.getKey(), item.getValue());
             }
@@ -331,14 +331,18 @@ public class HzQueueService implements QueueService, QueueInfoRetriever {
 
     @Override
     public GenericPage<QueueStatVO> getQueuesStatsPage(int pageNum, int pageSize, String filter) {
+
         GenericPage<QueueStatVO> result = null;
         List<String> fullFilteredQueueNamesList = getTaskQueueNamesByPrefix(queueNamePrefix, filter, true);
+
         if (fullFilteredQueueNamesList != null && !fullFilteredQueueNamesList.isEmpty()) {
             logger.debug("Found [{}] queues by prefixed name", fullFilteredQueueNamesList.size());
+
             int pageStart = (pageNum - 1) * pageSize;
             int pageEnd = Math.min(pageSize * pageNum, fullFilteredQueueNamesList.size());
 
             List<String> queueNames = fullFilteredQueueNamesList.subList(pageStart, pageEnd);
+
             if (!queueNames.isEmpty()) {
                 IExecutorService es = hazelcastInstance.getExecutorService(HZ_QUEUE_INFO_EXECUTOR_SERVICE);
                 Map<Member, Future<List<QueueStatVO>>> results = es.submitToAllMembers(new HzQueueStatTask(new ArrayList<>(queueNames), queueNamePrefix));
@@ -411,6 +415,7 @@ public class HzQueueService implements QueueService, QueueInfoRetriever {
             }
         }
 
+        java.util.Collections.sort(result);
         return result;
     }
 

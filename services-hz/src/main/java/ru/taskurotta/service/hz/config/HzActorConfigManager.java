@@ -9,11 +9,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.service.config.model.ActorPreferences;
 import ru.taskurotta.service.console.manager.ActorConfigManager;
+import ru.taskurotta.service.console.model.ActorExtVO;
 import ru.taskurotta.service.console.model.ActorVO;
 import ru.taskurotta.service.console.model.GenericPage;
 import ru.taskurotta.service.console.model.MetricsStatDataVO;
 import ru.taskurotta.service.console.retriever.metrics.MetricsMethodDataRetriever;
 import ru.taskurotta.service.metrics.MetricName;
+import ru.taskurotta.service.metrics.RateUtils;
 import ru.taskurotta.service.metrics.model.QueueBalanceVO;
 
 import java.util.ArrayList;
@@ -61,15 +63,7 @@ public class HzActorConfigManager implements ActorConfigManager {
             List<ActorPreferences> subList = allPreferences.subList(fromIndex, toIndex);
             List<ActorVO> pageItems = new ArrayList<>();
             for (ActorPreferences ap : subList) {
-                ActorVO actorVO = new ActorVO();
-                actorVO.setId(ap.getId());
-                actorVO.setBlocked(ap.isBlocked());
-                actorVO.setQueueName(ap.getQueueName());
-                if (metricsDataRetriever!=null) {
-                    actorVO.setLastPoll(metricsDataRetriever.getLastActivityTime(MetricName.POLL.getValue(), ap.getId()));
-                    actorVO.setLastRelease(metricsDataRetriever.getLastActivityTime(MetricName.RELEASE.getValue(), ap.getId()));
-                }
-                pageItems.add(actorVO);
+                pageItems.add(createActorVO(ap));
             }
             result = new GenericPage<ActorVO>(pageItems, pageNum, pageSize, allPreferences.size());
         }
@@ -117,6 +111,63 @@ public class HzActorConfigManager implements ActorConfigManager {
         }
 
         return result;
+    }
+
+    public Collection<MetricsStatDataVO> getAllMetrics(String actorId) {
+        IExecutorService executorService = hzInstance.getExecutorService(ACTOR_CONFIG_EXECUTOR_SERVICE);
+        Collection<MetricsStatDataVO> result = new ArrayList<>();
+
+        Map <Member, Future <Collection<MetricsStatDataVO>>> futures = executorService.submitToMembers(
+                new AllActorMetricsTask(actorId), hzInstance.getCluster().getMembers());
+        for (Map.Entry<Member, Future<Collection<MetricsStatDataVO>>> entry : futures.entrySet()) {
+            try {
+                Future<Collection<MetricsStatDataVO>> future = entry.getValue();
+                result.addAll(future.get(5, TimeUnit.SECONDS));
+            } catch (Exception e) {
+                logger.error("Cannot get all metrics stat data for actorId[" + actorId + "]", e);
+            }
+        }
+
+        return result;
+    }
+
+    @Override
+    public ActorVO getActorVo(String actorId) {
+        IMap<String, ActorPreferences> actorsConfigs = hzInstance.getMap(actorConfigName);
+        ActorPreferences actorPreferences = actorsConfigs.get(actorId);
+        return createActorVO(actorPreferences);
+    }
+
+    @Override
+    public ActorExtVO getActorExtVo(String actorId) {
+
+        ActorExtVO extActor = new ActorExtVO(getActorVo(actorId));
+        QueueBalanceVO queueBalanceVO = getQueueState(actorId);
+        extActor.setQueueState(queueBalanceVO);
+
+        if (queueBalanceVO != null) {
+            extActor.setDayRate(RateUtils.getOverallRate(queueBalanceVO.getTotalInDay(),
+                    queueBalanceVO.getInDayPeriod(), queueBalanceVO.getTotalOutDay(),
+                    queueBalanceVO.getOutDayPeriod()));
+            extActor.setHourRate(RateUtils.getOverallRate(queueBalanceVO.getTotalInHour(),
+                    queueBalanceVO.getInHourPeriod(), queueBalanceVO.getTotalOutHour(),
+                    queueBalanceVO.getOutHourPeriod()));
+        }
+
+        return extActor;
+    }
+
+
+    private ActorVO createActorVO(ActorPreferences actorPreferences) {
+        ActorVO actorVO = new ActorVO();
+        actorVO.setId(actorPreferences.getId());
+        actorVO.setBlocked(actorPreferences.isBlocked());
+        actorVO.setQueueName(actorPreferences.getQueueName());
+        if (metricsDataRetriever != null) {
+            actorVO.setLastPoll(metricsDataRetriever.getLastActivityTime(MetricName.POLL.getValue(), actorPreferences.getId()));
+            actorVO.setLastRelease(metricsDataRetriever.getLastActivityTime(MetricName.RELEASE.getValue(), actorPreferences.getId()));
+        }
+        return actorVO;
     }
 
     public void setMetricsDataRetriever(MetricsMethodDataRetriever metricsDataRetriever) {

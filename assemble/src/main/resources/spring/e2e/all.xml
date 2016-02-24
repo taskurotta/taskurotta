@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+            ">
+
+    <bean id="testResource" class="ru.taskurotta.e2e.TestResource">
+        <constructor-arg name="specSuits">
+            <map>
+                <entry key="interrupted-tsk-list" value-ref="interruptedTskList" />
+            </map>
+        </constructor-arg>
+    </bean>
+
+    <bean id="actorEngine" class="ru.taskurotta.server.test.ActorEngine">
+        <constructor-arg name="taskServer" ref="taskServer" />
+    </bean>
+
+    <!--spec suit helpers-->
+
+    <bean id="interruptedTskList" class="ru.taskurotta.e2e.specs.InterruptedTskList">
+        <constructor-arg name="actorEngine" ref="actorEngine" />
+    </bean>
+
+
+
+</beans>

@@ -19,7 +19,8 @@ public class TaskTreeResource extends BaseResource {
 
     @GET
     @Path("/task/{processId}/{taskId}")
-    public TaskTreeVO getTaskTree(@PathParam("type")String type, @PathParam("processId")String processId, @PathParam("taskId")String taskId) {
+    public TaskTreeVO getTaskTree(@PathParam("type") String type, @PathParam("processId") String processId,
+                                  @PathParam("taskId") String taskId) {
 
         try {
             TaskTreeVO result = consoleManager.getTreeForTask(UUID.fromString(taskId), UUID.fromString(processId));
@@ -27,7 +28,8 @@ public class TaskTreeResource extends BaseResource {
             return result;
 
         } catch (Throwable e) {
-            logger.error("Error at getting task tree by taskId["+taskId+"], processId["+processId+"] type["+type+"]", e);
+            logger.error("Error at getting task tree by taskId[" + taskId + "], processId[" +
+                    processId + "] type[" + type + "]", e);
             throw new WebApplicationException(Status.INTERNAL_SERVER_ERROR);
         }
 
@@ -36,15 +38,17 @@ public class TaskTreeResource extends BaseResource {
 
     @GET
     @Path("/process/{processId}/{taskId}")
-    public TaskTreeVO getProcessTree(@PathParam("type")String type, @PathParam("processId")String processId, @PathParam("taskId")String taskId) {
+    public TaskTreeVO getProcessTree(@PathParam("type") String type, @PathParam("processId") String processId,
+                                     @PathParam("taskId") String taskId) {
 
         try {
             TaskTreeVO result = consoleManager.getTreeForProcess(UUID.fromString(processId));
             logger.debug("Got TaskTree by type[{}], id[{}], processId[{}] is [{}]", type, taskId, processId, result);
             return result;
 
-        } catch(Throwable e) {
-            logger.error("Error at getting task tree by taskId["+taskId+"], processId["+processId+"] type["+type+"]", e);
+        } catch (Throwable e) {
+            logger.error("Error at getting task tree by taskId[" + taskId + "], processId[" +
+                    processId + "] type[" + type + "]", e);
             throw new WebApplicationException(Status.INTERNAL_SERVER_ERROR);
         }
 
