@@ -1,7 +1,10 @@
 <div page-header="List of processes" ng-dblclick="$debug = !$debug">
-    <div ng-if="$debug">
-        <h6>{{ formParams }}</h6>
-        <h6>{{ resourceParams }}</h6>
+    <div ng-if="$debug" style="width: 100%">
+        <pre>
+formParams = {{ formParams | json }}
+resourceParams = {{ resourceParams | json}}
+processesModel= {{ processesModel | json}}
+        </pre>
     </div>
 </div>
 
