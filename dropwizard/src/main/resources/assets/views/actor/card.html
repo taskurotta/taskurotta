@@ -59,7 +59,7 @@ info = {{ info | json}}
                              popover-trigger="mouseenter">
                             <a ui-sref="metrics({metric: metric.name, scope: 'local', type: 'rate', period: '1hour', dataset: quotes(info.id), showDataset: 1, legend: 'nw', points: 1 })"
                                class="btn-link" style="display: block; width: 100%;">
-                                {{ Math.foor(info.metrics[metric.name].hour[metric.type]) }}
+                                {{ floor(info.metrics[metric.name].hour[metric.type]) }}
                             </a>
                         </div>
                     </td>
@@ -68,7 +68,7 @@ info = {{ info | json}}
                              popover-trigger="mouseenter">
                             <a ui-sref="metrics({metric: metric.name, scope: 'local', type: 'rate', period: '24hours', dataset: quotes(info.id), showDataset: 1, legend: 'nw', points: 1 })"
                                class="btn-link" style="display: block; width: 100%;">
-                                {{ Math.foor(info.metrics[metric.name].day[metric.type]) }}
+                                {{ floor(info.metrics[metric.name].day[metric.type]) }}
                             </a>
                         </div>
                     </td>

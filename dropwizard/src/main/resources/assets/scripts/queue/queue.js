@@ -208,6 +208,10 @@ angular.module('queueModule', ['coreApp'])
             {text: "Start process", name: "startProcess", type: count}
             //{text: "Mean queue size", name: "queueSize", type: count}
 
-        ]
+        ];
+
+        $scope.floor = function (number) {
+            return Math.floor(number);
+        }
 
     });
