@@ -10,12 +10,17 @@ import org.slf4j.LoggerFactory;
 import ru.taskurotta.service.config.model.ActorPreferences;
 import ru.taskurotta.service.console.manager.ActorConfigManager;
 import ru.taskurotta.service.console.model.ActorExtVO;
+import ru.taskurotta.service.console.model.ActorFullVO;
+import ru.taskurotta.service.console.model.ActorState;
 import ru.taskurotta.service.console.model.ActorVO;
 import ru.taskurotta.service.console.model.GenericPage;
 import ru.taskurotta.service.console.model.MetricsStatDataVO;
+import ru.taskurotta.service.console.retriever.QueueInfoRetriever;
+import ru.taskurotta.service.console.retriever.TaskInfoRetriever;
 import ru.taskurotta.service.console.retriever.metrics.MetricsMethodDataRetriever;
 import ru.taskurotta.service.metrics.MetricName;
 import ru.taskurotta.service.metrics.RateUtils;
+import ru.taskurotta.service.metrics.handler.DatasetSummary;
 import ru.taskurotta.service.metrics.model.QueueBalanceVO;
 
 import java.util.ArrayList;
@@ -29,7 +34,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Implementation of ActorConfigManager for Hazelcast.
  * Addresses hazelcast map for actors preferences
- *
+ * <p>
  * Date: 27.09.13 18:03
  */
 public class HzActorConfigManager implements ActorConfigManager {
@@ -40,10 +45,20 @@ public class HzActorConfigManager implements ActorConfigManager {
     protected String actorConfigName;
     protected HazelcastInstance hzInstance;
     protected MetricsMethodDataRetriever metricsDataRetriever;
+    protected QueueInfoRetriever queueInfoRetriever;
+    protected TaskInfoRetriever taskInfoRetriever;
+    private long pollTimeout;
 
-    public HzActorConfigManager(HazelcastInstance hzInstance, String actorConfigName) {
+    public HzActorConfigManager(HazelcastInstance hzInstance, String actorConfigName,
+                                QueueInfoRetriever queueInfoRetriever, long pollTimeout,
+                                MetricsMethodDataRetriever metricsDataRetriever,
+                                TaskInfoRetriever taskInfoRetriever) {
         this.hzInstance = hzInstance;
         this.actorConfigName = actorConfigName;
+        this.queueInfoRetriever = queueInfoRetriever;
+        this.pollTimeout = pollTimeout;
+        this.metricsDataRetriever = metricsDataRetriever;
+        this.taskInfoRetriever = taskInfoRetriever;
     }
 
     @Override
@@ -75,7 +90,7 @@ public class HzActorConfigManager implements ActorConfigManager {
     public QueueBalanceVO getQueueState(final String queueName) {
         IExecutorService executorService = hzInstance.getExecutorService(ACTOR_CONFIG_EXECUTOR_SERVICE);
 
-        Map <Member, Future <QueueBalanceVO>> futures = executorService.submitToMembers(new ComputeQueueBalanceTask(queueName), hzInstance.getCluster().getMembers());
+        Map<Member, Future<QueueBalanceVO>> futures = executorService.submitToMembers(new ComputeQueueBalanceTask(queueName), hzInstance.getCluster().getMembers());
 
         QueueBalanceVO result = new QueueBalanceVO();
         for (Future<QueueBalanceVO> future : futures.values()) {
@@ -83,10 +98,10 @@ public class HzActorConfigManager implements ActorConfigManager {
                 QueueBalanceVO nodeVal = future.get(5, TimeUnit.SECONDS);
                 result = HzActorConfigUtils.sumQueueStates(result, nodeVal);
                 if (nodeVal != null) {
-                    result.setNodes(result.getNodes()+1);
+                    result.setNodes(result.getNodes() + 1);
                 }
             } catch (Exception e) {
-                logger.error("Cannot get queue state value for queue["+queueName+"]", e);
+                logger.error("Cannot get queue state value for queue[" + queueName + "]", e);
             }
         }
         logger.debug("Cluster wide queue state got is [{}]", result);
@@ -98,14 +113,14 @@ public class HzActorConfigManager implements ActorConfigManager {
         IExecutorService executorService = hzInstance.getExecutorService(ACTOR_CONFIG_EXECUTOR_SERVICE);
         Map<String, Collection<MetricsStatDataVO>> result = new HashMap<>();
 
-        Map <Member, Future <Collection<MetricsStatDataVO>>> futures = executorService.submitToMembers(new ComputeMetricsStatDataTask(metrics, actorIds), hzInstance.getCluster().getMembers());
-        if (futures!=null && !futures.isEmpty()) {
-            for (Map.Entry<Member, Future <Collection<MetricsStatDataVO>>> entry : futures.entrySet()) {
+        Map<Member, Future<Collection<MetricsStatDataVO>>> futures = executorService.submitToMembers(new ComputeMetricsStatDataTask(metrics, actorIds), hzInstance.getCluster().getMembers());
+        if (futures != null && !futures.isEmpty()) {
+            for (Map.Entry<Member, Future<Collection<MetricsStatDataVO>>> entry : futures.entrySet()) {
                 try {
-                    Future <Collection<MetricsStatDataVO>> future = entry.getValue();
+                    Future<Collection<MetricsStatDataVO>> future = entry.getValue();
                     result.put(entry.getKey().toString(), future.get(5, TimeUnit.SECONDS));
                 } catch (Exception e) {
-                    logger.error("Cannot get metrics stat data for actorIds["+actorIds+"], metrics["+metrics+"]", e);
+                    logger.error("Cannot get metrics stat data for actorIds[" + actorIds + "], metrics[" + metrics + "]", e);
                 }
             }
         }
@@ -117,7 +132,7 @@ public class HzActorConfigManager implements ActorConfigManager {
         IExecutorService executorService = hzInstance.getExecutorService(ACTOR_CONFIG_EXECUTOR_SERVICE);
         Collection<MetricsStatDataVO> result = new ArrayList<>();
 
-        Map <Member, Future <Collection<MetricsStatDataVO>>> futures = executorService.submitToMembers(
+        Map<Member, Future<Collection<MetricsStatDataVO>>> futures = executorService.submitToMembers(
                 new AllActorMetricsTask(actorId), hzInstance.getCluster().getMembers());
         for (Map.Entry<Member, Future<Collection<MetricsStatDataVO>>> entry : futures.entrySet()) {
             try {
@@ -157,6 +172,77 @@ public class HzActorConfigManager implements ActorConfigManager {
         return extActor;
     }
 
+    @Override
+    public ActorFullVO getActorFullVo(String actorId) {
+
+        ActorFullVO actorFullVO = new ActorFullVO();
+        actorFullVO.setId(actorId);
+
+        IMap<String, ActorPreferences> actorsConfigs = hzInstance.getMap(actorConfigName);
+        ActorPreferences actorPreferences = actorsConfigs.get(actorId);
+
+        if (actorPreferences == null) {
+            return null;
+        }
+
+        ActorState actorState = ActorState.ACTIVE;
+        if (actorPreferences.isBlocked()) {
+            actorState = ActorState.BLOCKED;
+        }
+
+        // queue
+        // queue size, delay queue size, wait queue time, effective time
+
+        actorFullVO.setQueueSize(queueInfoRetriever.getQueueSize(actorId));
+        actorFullVO.setQueueDelaySize(queueInfoRetriever.getQueueDelaySize(actorId));
+        actorFullVO.setLastPolledTaskEnqueueTime(queueInfoRetriever.getLastPolledTaskEnqueueTime(actorId));
+        // {{(endTime - startTime) | date: 'H:mm:ss': 'UTC'}}
+        //Date.now().
+
+        // all metrics data
+
+        Map<String, DatasetSummary> metrics = new HashMap<>();
+        addMetricsDatasetSummary(metrics, MetricName.START_PROCESS, actorId);
+        addMetricsDatasetSummary(metrics, MetricName.POLL, actorId);
+        addMetricsDatasetSummary(metrics, MetricName.SUCCESSFUL_POLL, actorId);
+        addMetricsDatasetSummary(metrics, MetricName.RELEASE, actorId);
+        addMetricsDatasetSummary(metrics, MetricName.EXECUTION_TIME, actorId);
+        addMetricsDatasetSummary(metrics, MetricName.ERROR_DECISION, actorId);
+        addMetricsDatasetSummary(metrics, MetricName.ENQUEUE, actorId);
+        // todo: this is a Number metric. We should use NumberDataHandler
+//        NumberDataHandler ndh = NumberDataHandler.getInstance();
+//        addMetricsDatasetSummary(metrics, MetricName.QUEUE_SIZE, actorId);
+
+        actorFullVO.setMetrics(metrics);
+
+        // todo: add list of in progress tasks
+
+        // set absent state
+        if (actorState != ActorState.BLOCKED &&
+                isActorInactive(actorId, metrics.get(MetricName.POLL.getValue()).getLastTime())) {
+            actorState = ActorState.INACTIVE;
+        }
+
+        actorFullVO.setState(actorState);
+        actorFullVO.setCurrentTimeMillis(System.currentTimeMillis());
+
+        return actorFullVO;
+    }
+
+    private void addMetricsDatasetSummary(Map<String, DatasetSummary> metrics, MetricName metricName,
+                                          String actorId) {
+        metrics.put(metricName.getValue(),
+                metricsDataRetriever.getDatasetSummary(metricName.getValue(), actorId));
+    }
+
+    private boolean isActorInactive(String actorId, long lastActivity) {
+        if (System.currentTimeMillis() - lastActivity > pollTimeout) {
+            return true;
+        }
+
+        return false;
+    }
+
 
     private ActorVO createActorVO(ActorPreferences actorPreferences) {
         ActorVO actorVO = new ActorVO();
@@ -168,10 +254,6 @@ public class HzActorConfigManager implements ActorConfigManager {
             actorVO.setLastRelease(metricsDataRetriever.getLastActivityTime(MetricName.RELEASE.getValue(), actorPreferences.getId()));
         }
         return actorVO;
-    }
-
-    public void setMetricsDataRetriever(MetricsMethodDataRetriever metricsDataRetriever) {
-        this.metricsDataRetriever = metricsDataRetriever;
     }
 
 }

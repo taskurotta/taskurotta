@@ -23,7 +23,7 @@ public interface TaskDao {
     /**
      * @param taskId
      * @param processId
-     * @param force restart task anyway
+     * @param force        restart task anyway
      * @param ifFatalError restart only if decision container has fatal error
      * @return
      */
@@ -59,6 +59,6 @@ public interface TaskDao {
 
     void updateTaskDecision(DecisionContainer taskDecision);
 
-    ResultSetCursor findIncompleteTasks(long lastRecoveryTime, int batchSize);
+    ResultSetCursor<TaskUID> findIncompleteTasks(long lastRecoveryTime, int batchSize);
 
 }

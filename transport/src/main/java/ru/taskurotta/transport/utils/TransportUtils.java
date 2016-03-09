@@ -42,12 +42,12 @@ public class TransportUtils {
         if (taskConfigContainer == null) {
             return null;
         }
-        return  taskConfigContainer.getCustomId();
+        return taskConfigContainer.getCustomId();
     }
 
 
     public static String createQueueName(String actorId, String taskList, String queueNamePrefix) {
-        return createQueueName((queueNamePrefix!=null? queueNamePrefix+actorId: actorId), taskList);
+        return createQueueName((queueNamePrefix != null ? queueNamePrefix + actorId : actorId), taskList);
     }
 
     public static String createQueueName(String actorId, String taskList) {
@@ -62,11 +62,11 @@ public class TransportUtils {
     }
 
     public static boolean hasFatalError(DecisionContainer decision) {
-        return decision!=null && decision.getErrorContainer()!=null && decision.getErrorContainer().isFatalError();
+        return decision != null && decision.getErrorContainer() != null && decision.getErrorContainer().isFatalError();
     }
 
     public static String trimToLength(String target, int length) {
-        if (target == null || target.length()<=length) {
+        if (target == null || target.length() <= length) {
             return target;
         } else {
             return target.substring(0, length);
@@ -74,7 +74,7 @@ public class TransportUtils {
     }
 
     public static ActorDefinition getActorDefinition(TaskContainer taskContainer) {
-        if (taskContainer!=null && taskContainer.getActorId() != null) {
+        if (taskContainer != null && taskContainer.getActorId() != null) {
             String taskList = getTaskList(taskContainer);
             String actorId = taskContainer.getActorId();
             int idx = actorId.lastIndexOf(ActorUtils.SEPARATOR);
@@ -86,6 +86,21 @@ public class TransportUtils {
         }
         return null;
 
+    }
+
+    public static String getFullActorName(TaskContainer taskContainer) {
+        if (taskContainer == null) {
+            return null;
+        }
+
+        String result = taskContainer.getActorId();
+        String taskList = getTaskList(taskContainer);
+
+        if (taskList != null) {
+            return result + ActorUtils.SEPARATOR + taskList;
+        }
+
+        return result;
     }
 
 }

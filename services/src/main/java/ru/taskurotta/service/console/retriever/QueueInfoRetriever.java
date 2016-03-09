@@ -16,7 +16,7 @@ public interface QueueInfoRetriever {
 
     GenericPage<String> getQueueList(int pageNum, int pageSize);
 
-    int getQueueTaskCount(String queueName);
+    int getQueueSize(String queueName);
 
     GenericPage<TaskQueueItem> getQueueContent(String queueName, int pageNum, int pageSize);
 
@@ -28,7 +28,7 @@ public interface QueueInfoRetriever {
 
     void removeQueue(String queueName);
 
-    long getQueueStorageCount(String queueName);
+    long getQueueDelaySize(String queueName);
 
     Map<Date, String> getNotPollingQueues(long pollTimeout);
 

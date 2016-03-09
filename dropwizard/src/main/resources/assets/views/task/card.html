@@ -23,7 +23,8 @@ taskDecision= {{ taskDecision | json}}
                     <i class="icon-retweet"></i>
                 </button>
             </div>
-        </div>        <table class="table table-striped">
+        </div>
+        <table class="table table-striped">
             <tr>
                 <td class="form-header">Process id:</td>
                 <td><a ui-sref="process({processId:task.processId})">{{task.processId}}</a></td>
@@ -34,7 +35,10 @@ taskDecision= {{ taskDecision | json}}
             </tr>
             <tr>
                 <td class="form-header">Actor id:</td>
-                <td>{{task.actorId}}</td>
+                <td>
+                    <a ui-sref="actor({actorId: getFullActorId(task)})" class="btn-link"
+                       style="display: block; width: 100%;">{{getFullActorId(task)}}</a>
+                </td>
             </tr>
             <tr ng-if="task.pass">
                 <td class="form-header">Pass:</td>
@@ -92,7 +96,9 @@ taskDecision= {{ taskDecision | json}}
                         </tr>
                         <tr>
                             <td class="form-header" style="width: 100px">Stack trace:</td>
-                            <td><pre>{{ taskDecision.errorContainer.stackTrace }}</pre></td>
+                            <td>
+                                <pre>{{ taskDecision.errorContainer.stackTrace }}</pre>
+                            </td>
                         </tr>
                     </table>
                 </td>

@@ -145,10 +145,16 @@
     </bean>
 
     <bean id="consoleManager" class="ru.taskurotta.service.console.manager.impl.ConsoleManagerImpl">
-        <property name="queueInfo" ref="realQueueBackend"/>
-        <property name="taskInfo" ref="taskService"/>
-        <property name="processInfo" ref="processService"/>
-        <property name="graphInfo" ref="dependencyService"/>
+        <constructor-arg name="configInfo" ref="configService" />
+        <constructor-arg name="graphInfo" ref="dependencyService" />
+        <constructor-arg name="pollTimeout">
+            <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
+                <constructor-arg name="duration" value="${monitoring.queue.poll-timeout}"/>
+            </bean>
+        </constructor-arg>
+        <constructor-arg name="processInfo" ref="processService" />
+        <constructor-arg name="queueInfo" ref="realQueueBackend" />
+        <constructor-arg name="taskInfo" ref="taskService" />
     </bean>
 
     <bean id="manifestResource" class="ru.taskurotta.dropwizard.resources.console.meta.ManifestInfoResource"/>

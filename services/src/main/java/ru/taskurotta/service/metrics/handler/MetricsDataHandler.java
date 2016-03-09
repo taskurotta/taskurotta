@@ -8,6 +8,7 @@ import ru.taskurotta.service.console.retriever.metrics.MetricsMethodDataRetrieve
 import ru.taskurotta.service.metrics.MetricsDataUtils;
 import ru.taskurotta.service.metrics.TimeConstants;
 import ru.taskurotta.service.metrics.model.DataPointVO;
+import ru.taskurotta.service.metrics.model.DataRowSummary;
 import ru.taskurotta.service.metrics.model.DataRowVO;
 
 import javax.annotation.PostConstruct;
@@ -174,7 +175,20 @@ public class MetricsDataHandler implements DataListener, MetricsMethodDataRetrie
     @Override
     public Date getLastActivityTime(String metricName, String datasetName) {
 
-        Date result = null;
+        long latestActivity = getLastActivityTimeMillis(metricName, datasetName);
+
+        if (latestActivity == -1) {
+            return null;
+        }
+
+        return new Date(latestActivity);
+    }
+
+
+    @Override
+    public long getLastActivityTimeMillis(String metricName, String datasetName) {
+
+        long result = -1;
         String key = MetricsDataUtils.getKey(metricName, datasetName);
         DataRowVO row = lastHourDataHolder.get(key);
 
@@ -185,11 +199,47 @@ public class MetricsDataHandler implements DataListener, MetricsMethodDataRetrie
         if (row != null) {
             long latestActivity = row.getLatestActivity();
             if (latestActivity > 0) {
-                result = new Date(latestActivity);
+                result = latestActivity;
             }
         }
 
         return result;
+    }
+
+    @Override
+    public DatasetSummary getDatasetSummary(String metricName, String datasetName) {
+
+        DatasetSummary summary = new DatasetSummary(metricName, datasetName);
+
+        String key = MetricsDataUtils.getKey(metricName, datasetName);
+
+        DataRowVO hourData = lastHourDataHolder.get(key);
+        DataRowVO dayData = lastDayDataHolder.get(key);
+
+        // calculate last time cause of simplification javascript logic
+        long lastTime = 0;
+
+        if (hourData != null) {
+            DataRowSummary hourSummary = hourData.getSummary();
+            summary.setHour(hourSummary);
+
+            if (hourSummary.getTimeMax() > 0) {
+                lastTime = hourSummary.getTimeMax();
+            }
+        }
+
+        if (dayData != null) {
+            DataRowSummary daySummary = dayData.getSummary();
+            summary.setDay(daySummary);
+
+            if (lastTime == 0 && daySummary.getTimeMax() > 0) {
+                lastTime = daySummary.getTimeMax();
+            }
+        }
+
+        summary.setLastTime(getLastActivityTimeMillis(metricName, datasetName));
+
+        return summary;
     }
 
 }

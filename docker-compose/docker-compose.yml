@@ -28,14 +28,14 @@ services:
       -Dhazelcast.health.monitoring.level=OFF -server -jar /opt/taskurotta/taskurotta.jar server
       /etc/taskurotta/server/config.yml
 
-  tsk_node2:
-    <<: *tsk_node
-    container_name: tsk_node2
-    hostname: tsk_node2
-    volumes:
-      - ./data/node2:/tmp/javadumps
-      - ./data/node2:/var/log/taskurotta
-      - ./etc/node:/etc/taskurotta/server
+#  tsk_node2:
+#    <<: *tsk_node
+#    container_name: tsk_node2
+#    hostname: tsk_node2
+#    volumes:
+#      - ./data/node2:/tmp/javadumps
+#      - ./data/node2:/var/log/taskurotta
+#      - ./etc/node:/etc/taskurotta/server
 
   tsk_http:
     container_name: tsk_http
@@ -47,7 +47,7 @@ services:
       - ./data/haproxy:/var/log/haproxy
     links:
       - tsk_node1
-      - tsk_node2
+#      - tsk_node2
     expose:
       - 80
     ports:

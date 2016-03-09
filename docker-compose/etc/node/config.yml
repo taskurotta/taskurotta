@@ -30,9 +30,9 @@ properties:
   gc.pool-size: 8
   gc.process.finished.wait-before-delete: 1 days
   recovery.enabled: true
-  recovery.process.incomplete-timeout: 30 seconds
-  recovery.find-incomplete-process-period: 5 seconds
-  recovery.process.change-timeout: 30 seconds
+#  recovery.process.incomplete-timeout: 30 seconds
+#  recovery.find-incomplete-process-period: 5 seconds
+#  recovery.process.change-timeout: 30 seconds
   hz.queue.task.batch-load-size: 10000
   hz.queue.delay.batch-load-size: 10000
   taskurotta.memory.auto: true

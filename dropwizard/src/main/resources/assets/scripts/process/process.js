@@ -32,8 +32,10 @@ angular.module('processModule', ['taskModule', 'coreApp'])
         };
     })
 
-    .controller('processListController', function ($log, $scope, processRest, coreApp) {
+    .controller('processListController', function ($log, $scope, processRest, coreApp, util) {
         $log.info('processListController');
+
+        $scope.getFullActorId = util.getFullActorId;
 
         function getRest(params) {
             return (params.processId || params.customId) ? processRest.query : processRest.queryList;
@@ -105,9 +107,11 @@ angular.module('processModule', ['taskModule', 'coreApp'])
 
     })
 
-    .controller('processCardController', function ($log, $scope, processRest, coreApp, coreTree, $state, $stateParams) {
+    .controller('processCardController', function ($log, $scope, processRest, coreApp, coreTree, $state, $stateParams, util) {
         $scope.processParams = angular.copy($stateParams);
         $log.info('processCardController',$scope.processParams);
+
+        $scope.getFullActorId = util.getFullActorId;
 
         function loadModel() {
             $scope.process = processRest.get($scope.processParams,

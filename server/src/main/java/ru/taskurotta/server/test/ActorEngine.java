@@ -1,13 +1,18 @@
 package ru.taskurotta.server.test;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.taskurotta.internal.core.TaskType;
 import ru.taskurotta.server.TaskServer;
 import ru.taskurotta.server.json.ObjectFactory;
 import ru.taskurotta.transport.model.TaskContainer;
+import ru.taskurotta.util.ActorUtils;
 
 /**
  */
 public class ActorEngine {
+
+    private static final Logger logger = LoggerFactory.getLogger(ActorEngine.class);
 
     TaskServer taskServer;
     ObjectFactory objectFactory  = new ObjectFactory();
@@ -33,7 +38,14 @@ public class ActorEngine {
         executeActor(decision, 1);
     }
 
+    public TaskContainer pollTask(MockDecision decision) {
+        return taskServer.poll(decision.getActorDefinition());
+    }
+
+
     public void executeActor(MockDecision decision, int howManyTimes) {
+
+        String actorId = ActorUtils.getFullActorName(decision.getActorDefinition());
 
         for (int i = 0; i < howManyTimes; i++) {
 
@@ -43,7 +55,7 @@ public class ActorEngine {
             }
 
             decision.correspondsTo(taskContainer);
-            taskServer.release(objectFactory.dumpResult(decision, decision.getActorId()));
+            taskServer.release(objectFactory.dumpResult(decision, actorId));
 
         }
     }

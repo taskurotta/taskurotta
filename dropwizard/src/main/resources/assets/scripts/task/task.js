@@ -5,7 +5,7 @@ angular.module('taskModule', ['coreApp'])
 
         return $resource(restTaskUrl + 'task', {}, {
                 //actions
-                restart: {url: restTaskUrl + 'restart/task', method:'POST', params: {}},
+                restart: {url: restTaskUrl + 'restart/task', method: 'POST', params: {}},
             }
         );
     })
@@ -27,14 +27,15 @@ angular.module('taskModule', ['coreApp'])
     })
 
 
-
-    .filter('taskState', function (taskRest,coreApp) {
+    .filter('taskState', function (taskRest, coreApp) {
         var states;
-        taskRest.dictionaryState(function(list){
+        taskRest.dictionaryState(function (list) {
             states = coreApp.toObject(list);
         });
-        return function (id,field) {
-            if(!states){ return '...'; }
+        return function (id, field) {
+            if (!states) {
+                return '...';
+            }
             return states[id] ? states[id][field] : states.unknown[field];
         };
     })
@@ -51,7 +52,7 @@ angular.module('taskModule', ['coreApp'])
             replace: false,
             link: function (scope, element, attrs) {
                 scope.taskTreeItems = null;
-                scope.range = function(n) {
+                scope.range = function (n) {
                     return new Array(n);
                 };
                 scope.$watch('taskTreeTable', function (value) {
@@ -95,11 +96,12 @@ angular.module('taskModule', ['coreApp'])
         };
     })
 
-    .controller('taskListController', function ($log, $scope, taskRest, coreApp) {
+    .controller('taskListController', function ($log, $scope, taskRest, coreApp, util) {
         $log.info('taskListController');
+        $scope.getFullActorId = util.getFullActorId;
 
         function getRest(params) {
-            return params.iterationCount ? taskRest.queryRepeated:
+            return params.iterationCount ? taskRest.queryRepeated :
                 ((params.taskId || params.processId) ?
                     taskRest.query : taskRest.queryList );
         }
@@ -108,10 +110,10 @@ angular.module('taskModule', ['coreApp'])
             $log.info('Load model', $scope.resourceParams = params);
             $scope.tasksResource = getRest(params)(params,
                 function success(value) {
-                    $scope.tasksModel =  coreApp.parseListModel(value); //cause array or object
-                    if($scope.tasksModel){
+                    $scope.tasksModel = coreApp.parseListModel(value); //cause array or object
+                    if ($scope.tasksModel) {
                         $log.info('Successfully updated tasks page');
-                    }else{
+                    } else {
                         coreApp.info('Tasks not found');
                     }
                     coreApp.refreshRate(params, loadModel);
@@ -142,9 +144,12 @@ angular.module('taskModule', ['coreApp'])
         };
 
     })
-    .controller('taskCardController', function ($log, $scope, taskRest, interruptedRest, coreApp) {
+
+    .controller('taskCardController', function ($log, $scope, taskRest, interruptedRest, coreApp, util) {
         $log.info('taskCardController');
         $scope.taskParams = coreApp.copyStateParams();
+
+        $scope.getFullActorId = util.getFullActorId;
 
         //Updates tasks  by polling REST resource
         function loadModel() {
@@ -153,10 +158,10 @@ angular.module('taskModule', ['coreApp'])
 
             $scope.task = taskRest.get($scope.taskParams,
                 function success(value) {
-                    if(value.taskId) {
+                    if (value.taskId) {
                         $log.info('taskCardController: successfully updated task page');
-                    }else{
-                        coreApp.info('Task not found by id',$scope.taskParams.taskId);
+                    } else {
+                        coreApp.info('Task not found by id', $scope.taskParams.taskId);
                     }
                 }, function error(reason) {
                     coreApp.error('Task page update failed', reason);

@@ -1,5 +1,6 @@
 package ru.taskurotta.service.console.retriever.metrics;
 
+import ru.taskurotta.service.metrics.handler.DatasetSummary;
 import ru.taskurotta.service.metrics.model.DataPointVO;
 
 import java.util.Collection;
@@ -46,5 +47,9 @@ public interface MetricsMethodDataRetriever {
      * @return last update date
      */
     public Date getLastActivityTime(String metricName, String datasetName);
+
+    long getLastActivityTimeMillis(String metricName, String datasetName);
+
+    DatasetSummary getDatasetSummary(String metricName, String datasetName);
 
 }

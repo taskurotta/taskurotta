@@ -42,7 +42,7 @@ public class TaskSpreaderCommon implements TaskSpreader {
     @Override
     public void release(TaskDecision taskDecision) {
         logger.debug("Release decision[{}]", taskDecision);
-        DecisionContainer decisionContainer = objectFactory.dumpResult(taskDecision, ActorUtils.getActorId(actorDefinition));
+        DecisionContainer decisionContainer = objectFactory.dumpResult(taskDecision, ActorUtils.getFullActorName(actorDefinition));
         logger.debug("Release decisionContainer[{}]", decisionContainer);
         taskServer.release(decisionContainer);
     }

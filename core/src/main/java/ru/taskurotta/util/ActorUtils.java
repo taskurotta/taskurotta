@@ -10,6 +10,19 @@ public class ActorUtils {
         return actorDefinition.getName() + SEPARATOR + actorDefinition.getVersion();
     }
 
+    public static String getFullActorName(ActorDefinition actorDefinition) {
+        String taskList = actorDefinition.getTaskList();
+
+        if (taskList != null) {
+            return actorDefinition.getName() + SEPARATOR +
+                    actorDefinition.getVersion() + SEPARATOR +
+                    actorDefinition.getTaskList();
+        }
+
+        return actorDefinition.getName() + SEPARATOR +
+                actorDefinition.getVersion();
+    }
+
     public static ActorDefinition getActorDefinition(String actorId) {
         int firstSeparatorIndex = actorId.indexOf(SEPARATOR);
         return ActorDefinition.valueOf(actorId.substring(0, firstSeparatorIndex),

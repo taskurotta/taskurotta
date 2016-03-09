@@ -5,7 +5,7 @@
 
     <groupId>ru.taskurotta</groupId>
     <artifactId>ru.taskurotta</artifactId>
-    <version>10.8.2</version>
+    <version>10.9</version>
     <packaging>pom</packaging>
 
     <name>Taskurotta :: Parent module</name>
@@ -67,7 +67,7 @@
         <module>server</module>
         <module>recipes</module>
         <module>dropwizard</module>
-        <module>assemble</module>
+        <module>taskurotta</module>
         <module>services</module>
         <module>services-ora</module>
         <module>services-hz</module>

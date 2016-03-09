@@ -26,19 +26,19 @@ processParams= {{ processParams | json}}
                 <i class="icon-wrench"></i>
             </button>
             <button class="btn btn-small" ng-click="abort(process)"
-                    popover="Abort process" popover-trigger="mouseenter" ng-disabled = "process.state == 3">
+                    popover="Abort process" popover-trigger="mouseenter" ng-disabled="process.state == 3">
                 <i class="icon-trash"></i>
             </button>
         </div>
     </div>
     <table class="table table-striped">
         <!--<tr>-->
-            <!--<td class="form-header" style="width: 100px">-->
-                <!--<a ui-sref="task({processId:process.processId,taskId:process.startTaskId})" class="btn-link">-->
-                    <!--Start task:-->
-                <!--</a>-->
-            <!--</td>-->
-            <!--<td tree-properties="process.startTask" tree-level="{{ false }}"></td>-->
+        <!--<td class="form-header" style="width: 100px">-->
+        <!--<a ui-sref="task({processId:process.processId,taskId:process.startTaskId})" class="btn-link">-->
+        <!--Start task:-->
+        <!--</a>-->
+        <!--</td>-->
+        <!--<td tree-properties="process.startTask" tree-level="{{ false }}"></td>-->
         <!--</tr>-->
         <tr>
             <td class="form-header">Start task id:</td>
@@ -50,7 +50,10 @@ processParams= {{ processParams | json}}
         </tr>
         <tr>
             <td class="form-header">Start task actor:</td>
-            <td>{{process.startTask.actorId}}</td>
+            <td>
+                <a ui-sref="actor({actorId: getFullActorId(process.startTask)})" class="btn-link"
+                   style="display: block; width: 100%;">{{getFullActorId(process.startTask)}}</a>
+            </td>
         </tr>
         <tr>
             <td class="form-header">Start task method:</td>
@@ -129,13 +132,14 @@ processParams= {{ processParams | json}}
 
 <div class="well">
     <div>
-        <i class="icon-question-sign" popover="Navigate to find tasks view for the process" popover-trigger="mouseenter"></i>
+        <i class="icon-question-sign" popover="Navigate to find tasks view for the process"
+           popover-trigger="mouseenter"></i>
         <a class="btn btn-link" ui-sref="tasks({processId:process.processId})">List tasks for this process <span>({{ taskTree.tasksCount }})</span></a>
     </div>
 </div>
 
 <div class="well">
     <h5>Process tree: </h5>
-    <div task-tree-table="taskTree"  process-task="process"></div>
+    <div task-tree-table="taskTree" process-task="process"></div>
 </div>
 

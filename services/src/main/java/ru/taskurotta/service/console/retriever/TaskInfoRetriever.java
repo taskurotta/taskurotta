@@ -2,6 +2,7 @@ package ru.taskurotta.service.console.retriever;
 
 import ru.taskurotta.service.console.model.GenericPage;
 import ru.taskurotta.service.console.retriever.command.TaskSearchCommand;
+import ru.taskurotta.service.storage.TaskUID;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 
@@ -16,16 +17,18 @@ import java.util.UUID;
  */
 public interface TaskInfoRetriever {
 
-    public TaskContainer getTask(UUID taskId, UUID processId);
+    TaskContainer getTask(UUID taskId, UUID processId);
 
-    public List<TaskContainer> findTasks(TaskSearchCommand command);
+    List<TaskContainer> findTasks(TaskSearchCommand command);
 
-    public Collection<TaskContainer> getProcessTasks(Collection<UUID> processTaskIds, UUID processId);
+    Collection<TaskContainer> getProcessTasks(Collection<UUID> processTaskIds, UUID processId);
 
-    public GenericPage<TaskContainer> listTasks(int pageNumber, int pageSize);
+    GenericPage<TaskContainer> listTasks(int pageNumber, int pageSize);
 
-    public DecisionContainer getDecisionContainer(UUID taskId, UUID processId);
+    DecisionContainer getDecisionContainer(UUID taskId, UUID processId);
 
-    public Collection<TaskContainer> getRepeatedTasks(int iterationCount);
+    Collection<TaskContainer> getRepeatedTasks(int iterationCount);
+
+    List<TaskUID> getInProgressTasks(int size);
 
 }

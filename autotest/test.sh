@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-
+# todo: change path to taskurotta.jar from assemvle jar
 export MVN_PROJECT_VERSION=$(cd .. && mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate \
     -Dexpression=project.version |grep -Ev '(^\[|Download\w+:)')
 
@@ -20,7 +20,7 @@ f_play()
     # fixme: we need play on dynamically created playbook
     echo "$2" > /tmp/playbook
     ansible-playbook  -i inventories/local_servers \
-        -e taskurotta_jar=$(pwd)/../assemble/target/assemble-$MVN_PROJECT_VERSION.jar \
+        -e taskurotta_jar=$(pwd)/../taskurotta/target/taskurotta-$MVN_PROJECT_VERSION.jar \
         --extra-vars "@extra_vars.json" \
         --tags $1 /tmp/playbook
 }

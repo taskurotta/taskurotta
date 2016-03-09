@@ -18,6 +18,7 @@ public interface CachedDelayQueue<E> extends CachedQueue<E> {
      * the specified waiting time elapses before space is available
      * @throws InterruptedException if interrupted while waiting
      */
-    public boolean delayOffer(E e, long delayTime, TimeUnit unit) throws InterruptedException;
+    boolean delayOffer(E e, long delayTime, TimeUnit unit) throws InterruptedException;
 
+    long delaySize();
 }

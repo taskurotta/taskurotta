@@ -1,9 +1,12 @@
 <div page-header ng-dblclick="$debug = !$debug">
     <h4 ng-hide="resourceParams.iterationCount">List of tasks</h4>
     <h4 ng-show="resourceParams.iterationCount">Tasks repeated {{ resourceParams.iterationCount }} and more times</h4>
-    <div ng-if="$debug">
-        <h6>{{ formParams }}</h6>
-        <h6>{{ resourceParams }}</h6>
+    <div ng-if="$debug" style="width: 100%">
+        <pre>
+formParams = {{ formParams | json }}
+resourceParams = {{ resourceParams | json}}
+tasksModel= {{ tasksModel | json}}
+        </pre>
     </div>
 </div>
 
@@ -47,10 +50,10 @@
         <thead>
             <tr>
                 <th style="width: 50px">№</th>
+                <th>Actor id</th>
                 <th>Task id</th>
                 <th>Process id</th>
                 <th>Type</th>
-                <th>Actor id</th>
                 <th>Method</th>
                 <th>Arguments</th>
             </tr>
@@ -62,18 +65,20 @@
                     {{ tasksModel.$startIndex + $index }}
                 </td>
                 <td>
-                    <a ui-sref="task({taskId: task.taskId, processId:task.processId})" style="cursor: pointer;" >
+                    <a ui-sref="actor({actorId: getFullActorId(task)})" class="btn-link"
+                       style="display: block; width: 100%;">{{getFullActorId(task)}}</a>
+                </td>
+                <td>
+                    <a ui-sref="task({taskId: task.taskId, processId:task.processId})"
+                       style="display: block; width: 100%;" >
                             {{task.taskId}}</a>
                 </td>
                 <td>
-                    <a ui-sref="process({processId:task.processId})"  style="cursor: pointer;">
+                    <a ui-sref="process({processId:task.processId})"  style="display: block; width: 100%;">
                             {{task.processId}}</a>
                 </td>
                 <td>
                     <b>{{task.taskType}}</b>
-                </td>
-                <td>
-                    <span ng-bind-html="task.actorId | lineWrap"></span>
                 </td>
                 <td>
                     <b>{{task.method}}</b>

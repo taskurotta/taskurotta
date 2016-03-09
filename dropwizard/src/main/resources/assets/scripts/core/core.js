@@ -1,15 +1,15 @@
 angular.module('coreApp', ['ngResource', 'ngSanitize', 'ui.router',
-    'ui.bootstrap' ])
+        'ui.bootstrap'])
 
     .provider('coreApp', function () {
         console.log('coreApp.provider');
         var restUrl;
         var refreshRates = [
-            { id:0,name:''}, { id:2,name:'2 sec'}, { id:5,name:'5 sec'},
-            { id:10,name:'10 sec'}, { id:30,name:'30 sec'},
-            { id:60,name:'1 min'}, { id:120,name:'2 min'}, { id:300,name:'5 min'}
+            {id: 0, name: ''}, {id: 2, name: '2 sec'}, {id: 5, name: '5 sec'},
+            {id: 10, name: '10 sec'}, {id: 30, name: '30 sec'},
+            {id: 60, name: '1 min'}, {id: 120, name: '2 min'}, {id: 300, name: '5 min'}
         ];
-        var pageSizes = [50,100];
+        var pageSizes = [50, 100];
         var argTypes = ['string', 'boolean', 'integer', 'double', 'long', 'null'];
         var dialogConfirmConfig;
         var dialogStacktraceConfig;
@@ -27,15 +27,15 @@ angular.module('coreApp', ['ngResource', 'ngSanitize', 'ui.router',
             refreshRates = rates;
         };
 
-        this.setDialogConfirmConfig = function (dialogConfig){
+        this.setDialogConfirmConfig = function (dialogConfig) {
             dialogConfirmConfig = dialogConfig;
         };
 
-        this.setDialogStacktraceConfig = function (dialogConfig){
+        this.setDialogStacktraceConfig = function (dialogConfig) {
             dialogStacktraceConfig = dialogConfig;
         };
 
-        this.setDialogPropertiesConfig = function (dialogConfig){
+        this.setDialogPropertiesConfig = function (dialogConfig) {
             dialogPropertiesConfig = dialogConfig;
         };
 
@@ -54,8 +54,8 @@ angular.module('coreApp', ['ngResource', 'ngSanitize', 'ui.router',
                 }
             };
 
-            function showMessage(level,title,reason){
-                $rootScope.$broadcast('message-event',{
+            function showMessage(level, title, reason) {
+                $rootScope.$broadcast('message-event', {
                     title: title,
                     level: level,
                     reason: reason
@@ -86,66 +86,66 @@ angular.module('coreApp', ['ngResource', 'ngSanitize', 'ui.router',
                     return rawInterceptor;
                 },
 
-                copyStateParams: function(){
-                    $log.info('$stateParams',$stateParams);
+                copyStateParams: function () {
+                    $log.info('$stateParams', $stateParams);
                     currentStateParams = $stateParams;
                     //separate form params from urlParams
                     return angular.copy($stateParams);
                 },
-                getStateParams: function(){
+                getStateParams: function () {
                     return currentStateParams || $stateParams;
                 },
 
-                reloadState: function(params){
-                   $log.debug('reload ' + $state.current.name, params || this.getStateParams() );
-                   $state.go($state.current, params || this.getStateParams(),
-                       {replace: true, inherit: false, reload: true});
+                reloadState: function (params) {
+                    $log.debug('reload ' + $state.current.name, params || this.getStateParams());
+                    $state.go($state.current, params || this.getStateParams(),
+                        {replace: true, inherit: false, reload: true});
                 },
 
-                toObject: function(list){
-                    return  _.reduce(list, function(object, item ){
+                toObject: function (list) {
+                    return _.reduce(list, function (object, item) {
                         object[item.id] = item;
                         return object;
                     }, {});
                 },
 
-                clearObject: function(list){
-                    return  _.reduce(list, function(object, value, property ){
-                        if(value) {
+                clearObject: function (list) {
+                    return _.reduce(list, function (object, value, property) {
+                        if (value) {
                             object[property] = value;
                         }
                         return object;
                     }, {});
                 },
-                parseObjectParam: function(jsonStringParam){
-                   return jsonStringParam ? this.clearObject(JSON.parse(jsonStringParam)) : {};
+                parseObjectParam: function (jsonStringParam) {
+                    return jsonStringParam ? this.clearObject(JSON.parse(jsonStringParam)) : {};
                 },
 
-                stringifyObjectParam: function(objectParam){
+                stringifyObjectParam: function (objectParam) {
                     var param = this.clearObject(objectParam);
-                    return _.size(param)>0 ? JSON.stringify(param) : null;
+                    return _.size(param) > 0 ? JSON.stringify(param) : null;
                 },
 
-                getKeys: function(list){
+                getKeys: function (list) {
                     return _.reduce(list, function (keys, value, key) {
-                        return value ? keys .concat(key) : keys;
+                        return value ? keys.concat(key) : keys;
                     }, []);
                 },
 
-                parseListModel : function(value){
-                    if(angular.isArray(value) && value.length > 0){
-                        value = { items: value, $startIndex: 1 };
-                    }else if(value && value.items && value.items.length > 0){
+                parseListModel: function (value) {
+                    if (angular.isArray(value) && value.length > 0) {
+                        value = {items: value, $startIndex: 1};
+                    } else if (value && value.items && value.items.length > 0) {
                         value.$startIndex =
                             (value.pageNumber - 1) * value.pageSize + 1;
-                    }else{
-                       return null;
+                    } else {
+                        return null;
                     }
                     return value;
                 },
 
                 stopRefreshRate: function () {
-                    if(refreshRatePromise){
+                    if (refreshRatePromise) {
                         $timeout.cancel(refreshRatePromise);
                         refreshRatePromise = null;
                     }
@@ -190,26 +190,27 @@ angular.module('coreApp', ['ngResource', 'ngSanitize', 'ui.router',
                     });
                 },
 
-                warn: function(title, reason){
+                warn: function (title, reason) {
                     $log.warn(title, reason);
-                    showMessage('warning',title, reason);
+                    showMessage('warning', title, reason);
                 },
-                info: function(title, reason){
+                info: function (title, reason) {
                     $log.info(title, reason);
-                    showMessage('info',title, reason);
+                    showMessage('info', title, reason);
                 },
-                error: function(title, reason){
+                error: function (title, reason) {
                     $log.error(title, reason);
-                    showMessage('error',title, reason);
+                    showMessage('error', title, reason);
                 }
             };
         };
-        this.$get.$inject = ['$log', '$window', '$timeout', '$modal','$filter','$rootScope','$state','$stateParams'];
+        this.$get.$inject = ['$log', '$window', '$timeout', '$modal', '$filter', '$rootScope', '$state', '$stateParams'];
     })
-    .factory('coreInterceptor', function ($log,$q) {
-       var restUrl = '/rest';
-        function parseData(response){
-            $log.info('intercept response',response.config.url, response.config);
+    .factory('coreInterceptor', function ($log, $q) {
+        var restUrl = '/rest';
+
+        function parseData(response) {
+            $log.info('intercept response', response.config.url, response.config);
             //try {
             //    var data = angular.fromJson(response.data);
             //    return data;
@@ -221,23 +222,24 @@ angular.module('coreApp', ['ngResource', 'ngSanitize', 'ui.router',
             //}
             return response;
         }
-       return {
-           'response': function (response) {
 
-               if(response.config.url.indexOf(restUrl) === 0){
-                   return parseData(response);
-               }
-               return response;
-           }
-       };
+        return {
+            'response': function (response) {
+
+                if (response.config.url.indexOf(restUrl) === 0) {
+                    return parseData(response);
+                }
+                return response;
+            }
+        };
     })
     // Config
-    .config(function (datepickerConfig,$httpProvider) {
+    .config(function (datepickerConfig, $httpProvider) {
         datepickerConfig.startingDay = 1;
         datepickerConfig.showWeeks = false;
-        datepickerConfig.minDate='2010-01-01';
-        datepickerConfig.maxDate='2100-01-01';
-      //  $httpProvider.interceptors.push('coreInterceptor');
+        datepickerConfig.minDate = '2010-01-01';
+        datepickerConfig.maxDate = '2100-01-01';
+        //  $httpProvider.interceptors.push('coreInterceptor');
     })
 
     //Services
@@ -267,7 +269,7 @@ angular.module('coreApp', ['ngResource', 'ngSanitize', 'ui.router',
 
             var contItems = baseItems.length;
             _.each(baseItems, function (baseItem, index) {
-               // $log.debug('baseItem',baseItem);
+                // $log.debug('baseItem',baseItem);
                 var item = angular.copy(baseItem);
                 item.$children = baseItem[subItemsField] ? baseItem[subItemsField].length : 0;
 
@@ -275,16 +277,16 @@ angular.module('coreApp', ['ngResource', 'ngSanitize', 'ui.router',
                 item.$num = parent ? (parent.$num + '.' + (index + 1)) : ('' + (index + 1));
                 item.$level = parent ? (parent.$level + 1 ) : 0;
                 item.$parentKey = parent ? parent.$key : null;
-                item.$expanded =  true; //(item.$children === 0 || contItems === 1);
+                item.$expanded = true; //(item.$children === 0 || contItems === 1);
                 //item.$expanded = !parent && (item.$children === 0 || contItems === 1); @if wont be collapsed
                 item[subItemsField] = null;
 
-                item.$parent = function getParent(){
+                item.$parent = function getParent() {
                     return this.$parentKey !== null ? list[this.$parentKey] : null;
                 };
 
-                item.$visible = function isVisible(){
-                    if((this.$parentKey === null)) {
+                item.$visible = function isVisible() {
+                    if ((this.$parentKey === null)) {
                         return true;
                     }
                     var parent = list[this.$parentKey];
@@ -294,7 +296,7 @@ angular.module('coreApp', ['ngResource', 'ngSanitize', 'ui.router',
                 item.$padding = getPadding;
 
 
-                item.$toggle = function toggleItem(){
+                item.$toggle = function toggleItem() {
                     this.$expanded = !this.$expanded;
                 };
 
@@ -307,34 +309,34 @@ angular.module('coreApp', ['ngResource', 'ngSanitize', 'ui.router',
 
         }
 
-        function forEach(list,callback){
-            if(angular.isArray(list)){
-                list.forEach(function (item,i) {
-                    callback(item,i);
+        function forEach(list, callback) {
+            if (angular.isArray(list)) {
+                list.forEach(function (item, i) {
+                    callback(item, i);
                 });
-            }else if(angular.isObject(list)){
-                for(var name in list){
-                    if(list.hasOwnProperty(name) && !name.startsWith('$')){
-                        callback(list[name],name);
+            } else if (angular.isObject(list)) {
+                for (var name in list) {
+                    if (list.hasOwnProperty(name) && !name.startsWith('$')) {
+                        callback(list[name], name);
                     }
                 }
-            }else{
-                callback(list,'=');
+            } else {
+                callback(list, '=');
             }
         }
 
         function walkPropertiesRecursive(list, baseItems, parent) {
             var subNum = 0;
-            forEach(baseItems,function(baseItemValue,baseItemId){
+            forEach(baseItems, function (baseItemValue, baseItemId) {
                 // $log.debug('baseItem',baseItem);
-                var item = { id:baseItemId};
-                if(angular.isArray(baseItemValue)){
+                var item = {id: baseItemId};
+                if (angular.isArray(baseItemValue)) {
                     item.$children = baseItemValue.length;
-                    item.value =  '[Array]('+item.$children +')';
-                }else if(angular.isObject(baseItemValue)){
+                    item.value = '[Array](' + item.$children + ')';
+                } else if (angular.isObject(baseItemValue)) {
                     item.$children = _.size(baseItemValue);
-                    item.value = '[Object]('+item.$children +')';
-                }else{
+                    item.value = '[Object](' + item.$children + ')';
+                } else {
                     item.value = baseItemValue !== null ? baseItemValue : 'null';
                     item.$children = 0;
                 }
@@ -345,17 +347,17 @@ angular.module('coreApp', ['ngResource', 'ngSanitize', 'ui.router',
                 item.$parentKey = parent ? parent.$key : null;
                 item.$expanded = !parent && (subNum < 2 || item.$children === 0);
 
-                item.$parent = function getParent(){
+                item.$parent = function getParent() {
                     return this.$parentKey !== null ? list[this.$parentKey] : null;
                 };
 
-                item.$ends = function(suffix) {
+                item.$ends = function (suffix) {
                     return angular.isString(this.id) ?
-                        this.id.indexOf(suffix, this.id.length - suffix.length) !== -1 : false;
+                    this.id.indexOf(suffix, this.id.length - suffix.length) !== -1 : false;
                 };
 
-                item.$visible = function isVisible(){
-                    if((this.$parentKey === null)) {
+                item.$visible = function isVisible() {
+                    if ((this.$parentKey === null)) {
                         return true;
                     }
                     var parent = list[this.$parentKey];
@@ -364,13 +366,13 @@ angular.module('coreApp', ['ngResource', 'ngSanitize', 'ui.router',
 
                 item.$padding = getPadding;
 
-                item.$toggle = function toggleItem(){
+                item.$toggle = function toggleItem() {
                     this.$expanded = !this.$expanded;
                 };
 
                 list[item.$key] = item;
 
-                if(item.$children > 0){
+                if (item.$children > 0) {
                     walkPropertiesRecursive(list, baseItemValue, item);
                 }
 
@@ -378,14 +380,14 @@ angular.module('coreApp', ['ngResource', 'ngSanitize', 'ui.router',
         }
 
         return {
-            getFlatArray: function(treeArray, subItemsField) {
+            getFlatArray: function (treeArray, subItemsField) {
                 var flatArray = [];
                 if (treeArray) {
                     walkArrayRecursive(flatArray, angular.isArray(treeArray) ? treeArray : [treeArray], subItemsField, null);
                 }
                 return flatArray;
             },
-            getPropertyArray: function(tree) {
+            getPropertyArray: function (tree) {
                 var flatArray = [];
                 if (tree) {
                     walkPropertiesRecursive(flatArray, tree, null);
@@ -400,7 +402,7 @@ angular.module('coreApp', ['ngResource', 'ngSanitize', 'ui.router',
         return {
             restrict: 'A',
             transclude: false,
-            scope: {properties: '=treeProperties',treeLevel:"@"},
+            scope: {properties: '=treeProperties', treeLevel: "@"},
             templateUrl: '/views/core/tree-properties.html',
             replace: false,
             link: function (scope, element, attrs) {
@@ -414,7 +416,7 @@ angular.module('coreApp', ['ngResource', 'ngSanitize', 'ui.router',
         };
     })
 
-    .directive('inputDate', function (coreTree,$timeout,coreApp) {
+    .directive('inputDate', function (coreTree, $timeout, coreApp) {
         return {
             restrict: 'A',
             transclude: false,
@@ -427,14 +429,14 @@ angular.module('coreApp', ['ngResource', 'ngSanitize', 'ui.router',
                 scope.isOpen = false;
                 scope.open = function () {
                     $timeout(function () {
-                         scope.isOpen = true;
+                        scope.isOpen = true;
                     });
                 };
 
-                scope.currentText='Today';
-                scope.toggleWeeksText= 'Weeks';
-                scope.clearText='Clear';
-                scope.closeText= 'Close';
+                scope.currentText = 'Today';
+                scope.toggleWeeksText = 'Weeks';
+                scope.clearText = 'Clear';
+                scope.closeText = 'Close';
             }
         };
     })
@@ -462,7 +464,7 @@ angular.module('coreApp', ['ngResource', 'ngSanitize', 'ui.router',
         };
     })
 
-    .directive('listReload', function ($log,coreApp) {
+    .directive('listReload', function ($log, coreApp) {
         return {
             restrict: 'EA',//Element, Attribute
             transclude: true,
@@ -486,12 +488,12 @@ angular.module('coreApp', ['ngResource', 'ngSanitize', 'ui.router',
         };
     })
 
-    .directive('listPaginator', function ($log,coreApp,$state,$stateParams) {
+    .directive('listPaginator', function ($log, coreApp, $state, $stateParams) {
 
         function pageCount(model) {
-            return model.pageSize && model.totalCount?
+            return model.pageSize && model.totalCount ?
                 (Math.floor(model.totalCount / model.pageSize) +
-                ( (model.totalCount % model.pageSize ) > 0 ? 1 : 0)): null;
+                ( (model.totalCount % model.pageSize ) > 0 ? 1 : 0)) : null;
 
         }
 
@@ -505,11 +507,11 @@ angular.module('coreApp', ['ngResource', 'ngSanitize', 'ui.router',
 
                 $scope.pageSizes = coreApp.getPageSizes();
 
-                $scope.$watch('model', function (value,oldValue) {
-                    if (value && value!=oldValue) {
+                $scope.$watch('model', function (value, oldValue) {
+                    if (value && value != oldValue) {
                         $scope.totalCount = $scope.model.totalCount || $scope.model.items.length;
 
-                        if($scope.model.pageNumber && $scope.model.pageSize){
+                        if ($scope.model.pageNumber && $scope.model.pageSize) {
 
                             $scope.pageCount = Math.floor($scope.totalCount / $scope.model.pageSize) +
                                 ( $scope.totalCount % $scope.model.pageSize > 0 ? 1 : 0);
@@ -517,10 +519,10 @@ angular.module('coreApp', ['ngResource', 'ngSanitize', 'ui.router',
                                 (($scope.model.pageNumber - 1) * $scope.model.pageSize + 1) : 0;
 
                             $scope.maxIndex = $scope.model.pageNumber < $scope.pageCount ?
-                                $scope.model.pageNumber * $scope.model.pageSize :
-                                    $scope.totalCount;
+                            $scope.model.pageNumber * $scope.model.pageSize :
+                                $scope.totalCount;
 
-                        }else{
+                        } else {
                             $scope.pageCount = null;
                             $scope.minIndex = $scope.totalCount > 0 ? 1 : 0;
                             $scope.maxIndex = $scope.totalCount;
@@ -569,8 +571,8 @@ angular.module('coreApp', ['ngResource', 'ngSanitize', 'ui.router',
             replace: true,
             controller: function ($scope, $element, $attrs) {
                 $scope.messageEvent = null;
-                $scope.$on('message-event', function(event, message) {
-                    $log.info('message:event',message);
+                $scope.$on('message-event', function (event, message) {
+                    $log.info('message:event', message);
                     $scope.messageEvent = message;
                     var isObject = angular.isObject(message.reason);
 
@@ -601,10 +603,10 @@ angular.module('coreApp', ['ngResource', 'ngSanitize', 'ui.router',
             templateUrl: '/views/core/page-form.html',
             replace: true,
             controller: function ($scope, $element, $attrs) {
-                $attrs.$observe('pageForm',function(title){
+                $attrs.$observe('pageForm', function (title) {
                     $scope.title = title;
                 });
-                $attrs.$observe('title',function(title){
+                $attrs.$observe('title', function (title) {
                     $scope.title = title;
                 });
             }
@@ -614,14 +616,14 @@ angular.module('coreApp', ['ngResource', 'ngSanitize', 'ui.router',
         return {
             restrict: 'A',
             transclude: false,
-            scope: { model: '=model', info: '@iconInfo', placement: '@', remove: '&remove' },
+            scope: {model: '=model', info: '@iconInfo', placement: '@', remove: '&remove'},
             templateUrl: '/views/core/icon-info.html',
             replace: true,
             link: function (scope, element, attrs) {
                 scope.iconHide = function () {
-                    if(angular.isObject(scope.model) || angular.isArray(scope.model)){
-                        return _.size(scope.model)>0 && scope.remove;
-                    }else{
+                    if (angular.isObject(scope.model) || angular.isArray(scope.model)) {
+                        return _.size(scope.model) > 0 && scope.remove;
+                    } else {
                         return scope.model && scope.remove;
                     }
                 };
@@ -655,28 +657,92 @@ angular.module('coreApp', ['ngResource', 'ngSanitize', 'ui.router',
         };
     })
 
+    .service('util', function () {
+        var timePart = [60, 60, 24];
+        var timePartStr = ["s", "mins", "hours"];
+
+        return {
+            getInterval: function (currentTime, eventTime) {
+
+                if (eventTime <= 0) {
+                    return "-";
+                }
+
+                var interval = (currentTime - eventTime) / 1000;
+
+                var result = '';
+                var fastBreak = false;
+
+                for (var i = 0; i < timePart.length; i++) {
+                    var t = Math.floor(interval % timePart[i]);
+                    if (t > 0) {
+                        result = "" + t + " " + timePartStr[i] + " " + result;
+                    }
+
+                    interval = Math.floor(interval / timePart[i]);
+
+                    if (interval == 0) {
+                        fastBreak = true;
+                        break;
+                    }
+                }
+
+                if (!fastBreak && interval > 0) {
+                    result = "" + interval + " days " + result;
+                }
+
+
+                return result;
+            },
+
+            getFullActorId: function (task) {
+                if (!task) {
+                    return null;
+                }
+                var fullActorId = task.actorId;
+
+                if (task.options) {
+                    if (task.options.taskConfigContainer) {
+                        if (task.options.taskConfigContainer.taskList) {
+                            fullActorId += "#" + task.options.taskConfigContainer.taskList;
+                        }
+                    }
+                }
+
+                return fullActorId;
+            }
+        }
+    })
 
     //Filters
     .filter('dateTime', function ($filter) {
         return function (date, emptyValue) {
-            return date>0 ? $filter('date')(date,'dd-MM-yyyy HH:mm:ss') :
+            return date > 0 ? $filter('date')(date, 'dd-MM-yyyy HH:mm:ss') :
+                ( emptyValue ? emptyValue : date );
+        };
+    })
+
+    .filter('interval', function ($filter) {
+        return function (date, emptyValue) {
+            return date > 0 ? $filter('date')(date, 'dd-MM-yyyy HH:mm:ss') :
                 ( emptyValue ? emptyValue : date );
         };
     })
 
     .filter('prettyStack', function (processRest, coreApp, $log) {
         return function (message) {
-            return message.replace(new RegExp('([.,])\\s', 'ig'), '$1' +'<br/>')
-                .replace(new RegExp('\\s([{])', 'ig'), '<br/>' + '$1' )
-                .replace(new RegExp('[\\n]', 'ig'), '<br/>' );
+            return message.replace(new RegExp('([.,])\\s', 'ig'), '$1' + '<br/>')
+                .replace(new RegExp('\\s([{])', 'ig'), '<br/>' + '$1')
+                .replace(new RegExp('[\\n]', 'ig'), '<br/>');
 
         };
     })
     .filter('lineWrap', function ($log) {
         var words = {};
+
         function skippingIndexOf(word, skip, char) {
             var result = -1;
-            if (word && word.length>skip) {
+            if (word && word.length > skip) {
                 var subResult = word.substr(skip).indexOf(char);
                 if (subResult >= 0) {
                     result = subResult + skip;
@@ -686,14 +752,15 @@ angular.module('coreApp', ['ngResource', 'ngSanitize', 'ui.router',
             return result;
         }
 
-        function parseWord(word, skip, delimiter){
+        function parseWord(word, skip, delimiter) {
             var skippingIndex = skippingIndexOf(word, skip || 25, delimiter || '.');
-            if (skippingIndex >=0) {
+            if (skippingIndex >= 0) {
                 //$log.log('skippingIndex['+skippingIndex+'] for['+word+'], sub1['+word.substr(0, skippingIndex+1)+'], sub 2['+word.substr(skippingIndex+1)+']');
-                return ( words[word] = word.substr(0, skippingIndex+1) + '<wbr>' + word.substr(skippingIndex+1));
+                return ( words[word] = word.substr(0, skippingIndex + 1) + '<wbr>' + word.substr(skippingIndex + 1));
             }
             return (words[word] = word);
         }
+
         return function (word, delimiter) {
             return words[word] || parseWord(word, 25, delimiter);
         };
@@ -701,8 +768,8 @@ angular.module('coreApp', ['ngResource', 'ngSanitize', 'ui.router',
 
     .filter('prettyStack', function (processRest, coreApp, $log) {
         return function (message) {
-            return message.replace(new RegExp('([.,])\\s', 'ig'), '$1' +'<br/>')
-                .replace(new RegExp('\\s([{])', 'ig'), '<br/>' + '$1' );
+            return message.replace(new RegExp('([.,])\\s', 'ig'), '$1' + '<br/>')
+                .replace(new RegExp('\\s([{])', 'ig'), '<br/>' + '$1');
 
         };
     })
