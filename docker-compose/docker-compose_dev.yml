@@ -3,10 +3,10 @@ version: "2"
 services:
   tsk_node1: &tsk_node
     volumes:
-      - ../assemble/target/assemble-$MVN_PROJECT_VERSION.jar:/opt/taskurotta/taskurotta.jar
+      - ../taskurotta/target/taskurotta-$MVN_PROJECT_VERSION.jar:/opt/taskurotta/taskurotta.jar
 
-  tsk_node2:
-    <<: *tsk_node
+#  tsk_node2:
+#    <<: *tsk_node
 
   tsk_web_dev:
     container_name: tsk_web_dev
@@ -31,6 +31,6 @@ services:
       - ./etc/haproxy/haproxy_dev.conf:/usr/local/etc/haproxy/haproxy.cfg
     links:
       - tsk_node1
-      - tsk_node2
+#      - tsk_node2
       - tsk_web_dev
       - tsk_web_doc_dev

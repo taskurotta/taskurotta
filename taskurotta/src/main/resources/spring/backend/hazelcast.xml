@@ -16,8 +16,14 @@
     <bean id="actorConfigManager" class="ru.taskurotta.service.hz.config.HzActorConfigManager">
         <constructor-arg name="hzInstance" ref="hzInstance"/>
         <constructor-arg name="actorConfigName" value="${hz.map.actor-preferences.name}"/>
-
-        <property name="metricsDataRetriever" ref="metricsDataHandler"/>
+        <constructor-arg name="queueInfoRetriever" ref="realQueueBackend" />
+        <constructor-arg name="pollTimeout">
+            <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
+                <constructor-arg name="duration" value="${monitoring.queue.poll-timeout}"/>
+            </bean>
+        </constructor-arg>
+        <constructor-arg name="metricsDataRetriever" ref="metricsDataHandler"/>
+        <constructor-arg name="taskInfoRetriever" ref="taskService" />
     </bean>
     <!-- /Actor config support -->
 
@@ -88,7 +94,6 @@
                 <constructor-arg name="duration" value="${recovery.process.incomplete-timeout}"/>
             </bean>
         </constructor-arg>
-
     </bean>
 
     <bean id="dependencyService" class="ru.taskurotta.service.hz.dependency.HzDependencyService"

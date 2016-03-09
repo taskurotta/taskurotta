@@ -86,7 +86,8 @@ processesModel= {{ processesModel | json}}
                     <a ui-sref="task({processId:process.processId,taskId:process.startTaskId})" class="btn-link">
                         {{process.startTaskId}}
                     </a><br/>
-                    <span ng-bind-html="process.startTask.actorId | lineWrap"></span>
+                    <a ui-sref="actor({actorId: getFullActorId(process.startTask)})" class="btn-link">
+                        {{getFullActorId(process.startTask)}}</a>
                     - <b>{{ process.startTask.method }}</b>
                     <i icon-info="Show startTask detail" ng-click="showStartTask(process)"></i>
                 </td>

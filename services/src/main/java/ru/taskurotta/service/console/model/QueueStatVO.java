@@ -24,6 +24,7 @@ public class QueueStatVO implements Serializable {
     private int nodes = 0;
 
     private boolean local = false;
+    private ActorState state;
 
     public String getName() {
         return name;
@@ -136,12 +137,22 @@ public class QueueStatVO implements Serializable {
                 "name='" + name + '\'' +
                 ", count=" + count +
                 ", lastActivity=" + lastActivity +
+                ", lastPolledTaskEnqueueTime=" + lastPolledTaskEnqueueTime +
                 ", inHour=" + inHour +
                 ", outHour=" + outHour +
                 ", inDay=" + inDay +
                 ", outDay=" + outDay +
                 ", nodes=" + nodes +
                 ", local=" + local +
-                "} ";
+                ", state=" + state +
+                '}';
+    }
+
+    public void setState(ActorState state) {
+        this.state = state;
+    }
+
+    public ActorState getState() {
+        return state;
     }
 }

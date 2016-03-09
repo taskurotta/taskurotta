@@ -80,6 +80,24 @@ angular.module('indexApp', ['coreApp','homeModule', 'queueModule', 'actorModule'
             }
         });
 
+        //Actors pages configs
+        $stateProvider.state('actor', {
+            url: '/actor?{actorId}&{refreshRate:int}', // root route
+            params: {},
+            views: {
+                'navigation': {
+                    templateUrl: '/views/navigation.html'
+                },
+                '': {
+                    templateUrl: '/views/actor/card.html',
+                    controller: /*@ngInject*/ 'actorController'
+                },
+                'footer': {
+                    templateUrl: '/views/footer.html'
+                }
+            }
+        });
+
         //Tasks pages configs
         $stateProvider.state('tasks', {
             url: '/tasks?{taskId}&{processId}&{iterationCount:int}&{pageNum:int}&{pageSize:int}&{refreshRate:int}',

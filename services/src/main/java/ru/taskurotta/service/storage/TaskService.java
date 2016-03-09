@@ -76,4 +76,6 @@ public interface TaskService {
     void updateTaskDecision(DecisionContainer taskDecision);
 
     void addNewTasks(DecisionContainer taskDecision);
+
+    List<TaskUID> getInProgressTasks(int size);
 }

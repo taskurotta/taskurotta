@@ -39,7 +39,8 @@ interruptedModel= {{ interruptedModel | json}}
                 <span ng-bind-html="task.starterId | lineWrap"></span>
             </td>
             <td>
-                <span ng-bind-html="task.actorId | lineWrap"></span>
+                <a ui-sref="actor({actorId: task.actorId})" class="btn-link"
+                   style="display: block; width: 100%;" ng-bind-html="task.actorId | lineWrap"></a>
             </td>
             <td style="min-width:120px">
                 {{task.time | dateTime }}

@@ -1,15 +1,14 @@
 package ru.taskurotta.service.console.manager.impl;
 
 import ru.taskurotta.service.console.manager.ConsoleManager;
+import ru.taskurotta.service.console.model.ActorState;
 import ru.taskurotta.service.console.model.GenericPage;
 import ru.taskurotta.service.console.model.Process;
 import ru.taskurotta.service.console.model.QueueStatVO;
 import ru.taskurotta.service.console.model.TaskTreeVO;
 import ru.taskurotta.service.console.retriever.ConfigInfoRetriever;
-import ru.taskurotta.service.console.retriever.DecisionInfoRetriever;
 import ru.taskurotta.service.console.retriever.GraphInfoRetriever;
 import ru.taskurotta.service.console.retriever.ProcessInfoRetriever;
-import ru.taskurotta.service.console.retriever.ProfileInfoRetriever;
 import ru.taskurotta.service.console.retriever.QueueInfoRetriever;
 import ru.taskurotta.service.console.retriever.TaskInfoRetriever;
 import ru.taskurotta.service.console.retriever.command.ProcessSearchCommand;
@@ -19,6 +18,7 @@ import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -32,10 +32,21 @@ public class ConsoleManagerImpl implements ConsoleManager {
     private QueueInfoRetriever queueInfo;
     private ProcessInfoRetriever processInfo;
     private TaskInfoRetriever taskInfo;
-    private ProfileInfoRetriever profileInfo;
-    private DecisionInfoRetriever decisionInfo;
     private ConfigInfoRetriever configInfo;
     private GraphInfoRetriever graphInfo;
+
+    private long pollTimeout;
+
+    public ConsoleManagerImpl(QueueInfoRetriever queueInfo, ProcessInfoRetriever processInfo,
+                              TaskInfoRetriever taskInfo, ConfigInfoRetriever configInfo,
+                              GraphInfoRetriever graphInfo, long pollTimeout) {
+        this.queueInfo = queueInfo;
+        this.processInfo = processInfo;
+        this.taskInfo = taskInfo;
+        this.configInfo = configInfo;
+        this.graphInfo = graphInfo;
+        this.pollTimeout = pollTimeout;
+    }
 
     @Override
     public Collection<TaskContainer> getProcessTasks(UUID processId) {
@@ -158,7 +169,41 @@ public class ConsoleManagerImpl implements ConsoleManager {
 
     @Override
     public GenericPage<QueueStatVO> getQueuesStatInfo(int pageNumber, int pageSize, String filter) {
-        return queueInfo.getQueuesStatsPage(pageNumber, pageSize, filter);
+
+        GenericPage<QueueStatVO> model = queueInfo.getQueuesStatsPage(pageNumber, pageSize, filter);
+
+        if (model != null) {
+            List<QueueStatVO> list = model.getItems();
+            if (list != null) {
+
+                for (QueueStatVO queueVO : list) {
+                    ActorState actorState = ActorState.ACTIVE;
+                    String actorId = queueVO.getName();
+
+                    if (configInfo.isActorBlocked(queueVO.getName())) {
+                        actorState = ActorState.BLOCKED;
+                    } else {
+                        Date lastActivityTime = queueVO.getLastActivity();
+                        if (lastActivityTime == null ||
+                                isActorInactive(actorId, lastActivityTime.getTime())) {
+                            actorState = ActorState.INACTIVE;
+                        }
+                    }
+
+                    queueVO.setState(actorState);
+                }
+            }
+        }
+
+        return model;
+    }
+
+    private boolean isActorInactive(String actorId, long lastActivity) {
+        if (System.currentTimeMillis() - lastActivity > pollTimeout) {
+            return true;
+        }
+
+        return false;
     }
 
     @Override
@@ -166,31 +211,4 @@ public class ConsoleManagerImpl implements ConsoleManager {
         return processInfo.getFinishedCount(customId);
     }
 
-    public void setQueueInfo(QueueInfoRetriever queueInfo) {
-        this.queueInfo = queueInfo;
-    }
-
-    public void setProcessInfo(ProcessInfoRetriever processInfo) {
-        this.processInfo = processInfo;
-    }
-
-    public void setTaskInfo(TaskInfoRetriever taskInfo) {
-        this.taskInfo = taskInfo;
-    }
-
-    public void setProfileInfo(ProfileInfoRetriever profileInfo) {
-        this.profileInfo = profileInfo;
-    }
-
-    public void setDecisionInfo(DecisionInfoRetriever decisionInfo) {
-        this.decisionInfo = decisionInfo;
-    }
-
-    public void setConfigInfo(ConfigInfoRetriever configInfo) {
-        this.configInfo = configInfo;
-    }
-
-    public void setGraphInfo(GraphInfoRetriever graphInfo) {
-        this.graphInfo = graphInfo;
-    }
 }

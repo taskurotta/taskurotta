@@ -33,13 +33,6 @@ public class QueueStatListResource extends BaseResource {
     public GenericPage<QueueStatVO> getQueuesPage(@QueryParam("pageNum") Optional<Integer> pageNum, @QueryParam("pageSize") Optional<Integer> pageSize, @QueryParam("filter") Optional<String> filter) {
         try {
             GenericPage<QueueStatVO> queuesStatInfo = consoleManager.getQueuesStatInfo(pageNum.or(DEFAULT_START_PAGE), pageSize.or(DEFAULT_PAGE_SIZE), filter.or(""));
-            if (queuesStatInfo != null && queuesStatInfo.getItems() != null && !queuesStatInfo.getItems().isEmpty()) {
-                for (QueueStatVO qs : queuesStatInfo.getItems()) {
-                    long time = queueInfoRetriever.getLastPolledTaskEnqueueTime(qs.getName());
-                    logger.debug("LastPolledTaskEnqueueTime for queue [{}] is [{}]", qs.getName(), time);
-                    qs.setLastPolledTaskEnqueueTime(time);
-                }
-            }
             logger.debug("QueueStatVO page is [{}]", queuesStatInfo);
             return queuesStatInfo;
         } catch (Throwable e) {
@@ -59,7 +52,7 @@ public class QueueStatListResource extends BaseResource {
     @GET
     public Integer getQueueRealSize(@PathParam("queueName") String queueName) {
         try {
-            int queueSize = queueInfoRetriever.getQueueTaskCount(queueName);
+            int queueSize = queueInfoRetriever.getQueueSize(queueName);
             logger.debug("Queue [{}] real size is [{}]", queueName, queueSize);
             return queueSize;
         } catch (Throwable e) {
@@ -72,7 +65,7 @@ public class QueueStatListResource extends BaseResource {
     @GET
     public Long getQueueStorageRealSize(@PathParam("queueName") String queueName) {
         try {
-            long result = queueInfoRetriever.getQueueStorageCount(queueName);
+            long result = queueInfoRetriever.getQueueDelaySize(queueName);
             logger.debug("Queue [{}] storage real size is [{}]", queueName, result);
             return result;
         } catch (Throwable e) {

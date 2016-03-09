@@ -3,10 +3,10 @@ package ru.taskurotta.service.hz.recovery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.service.common.ResultSetCursor;
-import ru.taskurotta.service.hz.TaskKey;
 import ru.taskurotta.service.recovery.RecoveryService;
 import ru.taskurotta.service.recovery.RecoveryThreads;
 import ru.taskurotta.service.storage.TaskDao;
+import ru.taskurotta.service.storage.TaskUID;
 import ru.taskurotta.util.Shutdown;
 
 import java.util.Collection;
@@ -78,17 +78,17 @@ public class IncompleteTaskFinder implements RecoveryThreads {
 
                 try {
                     if (nodeLock.tryLock()) {
-                        try (ResultSetCursor incompleteTasksCursor = taskDao.findIncompleteTasks(System.currentTimeMillis(), batchSize)) {
+                        try (ResultSetCursor<TaskUID> incompleteTasksCursor = taskDao.findIncompleteTasks(System.currentTimeMillis(), batchSize)) {
                             while (true) {
-                                Collection<TaskKey> incompleteTasks = incompleteTasksCursor.getNext();
+                                Collection<TaskUID> incompleteTasks = incompleteTasksCursor.getNext();
 
                                 if (incompleteTasks.isEmpty()) {
                                     logger.debug("Incomplete tasks not found");
                                     break;
                                 }
 
-                                for (TaskKey taskKey : incompleteTasks) {
-                                    recoveryService.reenqueueTask(taskKey.getTaskId(), taskKey.getProcessId());
+                                for (TaskUID taskUID : incompleteTasks) {
+                                    recoveryService.reenqueueTask(taskUID.getTaskId(), taskUID.getProcessId());
                                 }
                             }
                         }

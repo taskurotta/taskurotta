@@ -4,7 +4,7 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
     <!-- Backends -->
-    <bean id="mongoTaskDao" class="ru.taskurotta.service.hz.storage.MongoTaskDao">
+    <bean id="taskDao" class="ru.taskurotta.service.hz.storage.MongoTaskDao">
         <constructor-arg name="hzInstance" ref="hzInstance"/>
         <constructor-arg name="id2TaskMapName" value="${hz.map.task.name}"/>
         <constructor-arg name="id2TaskDecisionMapName" value="${hz.map.decision.name}"/>
@@ -83,7 +83,7 @@
 
     <bean id="incompleteTaskFinder" class="ru.taskurotta.service.hz.recovery.IncompleteTaskFinder">
         <constructor-arg name="recoveryService" ref="recoveryService"/>
-        <constructor-arg name="taskDao" ref="mongoTaskDao"/>
+        <constructor-arg name="taskDao" ref="taskDao"/>
         <constructor-arg name="incompleteTaskFindTimeout">
             <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
                 <constructor-arg name="duration" value="${recovery.task.find-timeout}"/>

@@ -168,7 +168,7 @@ public class ActorListResource {
     @GET
     @Path("/info")
     public Response getInfo(@QueryParam("actorId") String actorId) {
-        return Response.ok(actorConfigManager.getActorExtVo(actorId), MediaType.APPLICATION_JSON).build();
+        return Response.ok(actorConfigManager.getActorFullVo(actorId), MediaType.APPLICATION_JSON).build();
     }
 
     private ActorExtVO createActorExtVO(ActorVO actorVO) {

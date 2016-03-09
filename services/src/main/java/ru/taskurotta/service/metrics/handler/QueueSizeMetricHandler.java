@@ -31,7 +31,7 @@ public class QueueSizeMetricHandler {
 
             @Override
             public Number getDatasetValue(String dataset) {//returns number of tasks in a queue
-                return retriever.getQueueTaskCount(dataset);
+                return retriever.getQueueSize(dataset);
             }
 
             @Override

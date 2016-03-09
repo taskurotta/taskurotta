@@ -189,9 +189,9 @@ public class HzQueueService implements QueueService, QueueInfoRetriever {
     }
 
     @Override
-    public long getQueueStorageCount(String queueName) {
+    public long getQueueDelaySize(String queueName) {
         CachedDelayQueue<TaskQueueItem> queue = queueMap.get(ActorUtils.toPrefixed(queueName, queueNamePrefix));
-        return queue != null ? queue.size() : -1;//-1 indicating that there is no such queue cached yet
+        return queue != null ? queue.delaySize() : -1;//-1 indicating that there is no such queue cached yet
     }
 
     @Override
@@ -309,7 +309,7 @@ public class HzQueueService implements QueueService, QueueInfoRetriever {
     }
 
     @Override
-    public int getQueueTaskCount(String queueName) {
+    public int getQueueSize(String queueName) {
         return getQueue(ActorUtils.toPrefixed(queueName, queueNamePrefix)).size();
     }
 
@@ -362,7 +362,14 @@ public class HzQueueService implements QueueService, QueueInfoRetriever {
                 if (!resultItems.isEmpty()) {
                     for (QueueStatVO item : resultItems) {
                         item.setNodes(nodes);
-                        item.setLocal(ClusterUtils.isLocalCachedQueue(hazelcastInstance, queueNamePrefix + item.getName()));
+                        item.setLocal(ClusterUtils.isLocalCachedQueue(hazelcastInstance,
+                                queueNamePrefix + item.getName()));
+
+                        long time = getLastPolledTaskEnqueueTime(item.getName());
+                        if (logger.isDebugEnabled()) {
+                            logger.debug("LastPolledTaskEnqueueTime for queue [{}] is [{}]", item.getName(), time);
+                        }
+                        item.setLastPolledTaskEnqueueTime(time);
                     }
 
                     result = new GenericPage<>(resultItems, pageNum, pageSize, fullFilteredQueueNamesList.size());

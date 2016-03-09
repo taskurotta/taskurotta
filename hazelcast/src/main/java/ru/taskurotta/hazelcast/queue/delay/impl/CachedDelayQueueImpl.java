@@ -86,6 +86,11 @@ public class CachedDelayQueueImpl<E> implements CachedDelayQueue<E> {
     }
 
     @Override
+    public long delaySize() {
+        return storage.size();
+    }
+
+    @Override
     public boolean isEmpty() {
         return queue.isEmpty();
     }

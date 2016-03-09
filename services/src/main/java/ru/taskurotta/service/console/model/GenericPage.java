@@ -12,6 +12,7 @@ public class GenericPage<T> {
     private long totalCount;
     private int pageSize;
     private List<T> items;
+    private long currentTimeMillis = System.currentTimeMillis();
 
     public GenericPage(List<T> items, int pageNumber, int pageSize, long totalCount) {
         this.items = items;
@@ -36,6 +37,10 @@ public class GenericPage<T> {
         return totalCount;
     }
 
+    public long getCurrentTimeMillis() {
+        return currentTimeMillis;
+    }
+
     @Override
     public String toString() {
         return "GenericPage{" +
@@ -43,6 +48,7 @@ public class GenericPage<T> {
                 ", totalCount=" + totalCount +
                 ", pageSize=" + pageSize +
                 ", items=" + items +
-                "} ";
+                ", currentTimeMillis=" + currentTimeMillis +
+                '}';
     }
 }

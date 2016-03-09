@@ -348,3 +348,25 @@ span.header-mini {
     cursor:hand;
 }
 /* /documentation */
+
+/* actors */
+
+.actor-active {
+}
+.actor-inactive {
+    background: #f2dede;
+}
+.actor-blocked {
+    background: #d9edf7;
+}
+
+.table tbody tr.actor-inactive > td {
+    background-color: #f2dede;
+}
+
+.table tbody tr.actor-blocked > td {
+    background-color: #d9edf7;
+}
+
+
+/* /actors */

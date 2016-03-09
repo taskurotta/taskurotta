@@ -36,6 +36,7 @@ public class NumberDataHandler implements NumberDataListener, MetricsNumberDataR
 
     @Override
     public void handleNumberData(String metricName, String datasetName, Number value, long currentTime, int maxPoints) {
+        // todo: holder key should not be String. Remove unnecessary String concatenation operations
         String holderKey = MetricsDataUtils.getKey(metricName, datasetName);
 
         NumberDataRowVO dataRow = dataHolder.get(holderKey);

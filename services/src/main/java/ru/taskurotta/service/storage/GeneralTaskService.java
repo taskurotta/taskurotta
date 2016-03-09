@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.internal.core.ArgType;
 import ru.taskurotta.internal.core.TaskType;
+import ru.taskurotta.service.common.ResultSetCursor;
 import ru.taskurotta.service.console.model.GenericPage;
 import ru.taskurotta.service.console.retriever.TaskInfoRetriever;
 import ru.taskurotta.service.console.retriever.command.TaskSearchCommand;
@@ -13,6 +14,8 @@ import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.model.TaskOptionsContainer;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -308,5 +311,35 @@ public class GeneralTaskService implements TaskService, TaskInfoRetriever {
 
     public boolean isTaskReleased(UUID taskId, UUID processId) {
         return taskDao.isTaskReleased(taskId, processId);
+    }
+
+    @Override
+    public List<TaskUID> getInProgressTasks(int size) {
+
+        List<TaskUID> result = null;
+
+        try {
+            try (ResultSetCursor<TaskUID> resultSetCursor = taskDao.findIncompleteTasks(Long.MAX_VALUE, size)) {
+                while (true) {
+                    Collection<TaskUID> incompleteTasks = resultSetCursor.getNext();
+
+                    if (incompleteTasks.isEmpty()) {
+                        logger.debug("Incomplete tasks not found");
+                        break;
+                    }
+
+                    for (TaskUID taskUID : incompleteTasks) {
+                        if (result == null) {
+                            result = new ArrayList<>();
+                        }
+                        result.add(taskUID);
+                    }
+                }
+            }
+        } catch (IOException e) {
+            throw new IllegalStateException("Can not get in progress tasks", e);
+        }
+
+        return result;
     }
 }

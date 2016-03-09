@@ -78,7 +78,7 @@ public class MetricsTaskServer implements TaskServer {
     @Override
     public void startProcess(TaskContainer task) {
 
-        String actorId = task.getActorId();
+        String actorId = TransportUtils.getFullActorName(task);
 
         long startTime = System.currentTimeMillis();
 
@@ -93,22 +93,20 @@ public class MetricsTaskServer implements TaskServer {
     @Override
     public TaskContainer poll(ActorDefinition actorDefinition) {
 
-        String actorId = ActorUtils.getActorId(actorDefinition);
+        String actorId = ActorUtils.getFullActorName(actorDefinition);
 
         long startTime = System.currentTimeMillis();
 
         TaskContainer taskContainer = taskServer.poll(actorDefinition);
 
-        String queueName = TransportUtils.createQueueName(actorId, actorDefinition.getTaskList());
-
         long invocationTime = System.currentTimeMillis() - startTime;
         Metric pollMetric = metricsFactory.getInstance(MetricName.POLL.getValue());
-        pollMetric.mark(queueName, invocationTime);
+        pollMetric.mark(actorId, invocationTime);
         pollMetric.mark(MetricName.POLL.getValue(), invocationTime);
 
         if (taskContainer != null) {
             Metric successPollMetric = metricsFactory.getInstance(MetricName.SUCCESSFUL_POLL.getValue());
-            successPollMetric.mark(queueName, invocationTime);
+            successPollMetric.mark(actorId, invocationTime);
             successPollMetric.mark(MetricName.SUCCESSFUL_POLL.getValue(), invocationTime);
         }
 

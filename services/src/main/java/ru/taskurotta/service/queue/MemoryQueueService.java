@@ -109,7 +109,7 @@ public class MemoryQueueService implements QueueService, QueueInfoRetriever {
     }
 
     @Override
-    public long getQueueStorageCount(String queueName) {
+    public long getQueueDelaySize(String queueName) {
         return 0;//no storages for memory impl
     }
 
@@ -149,7 +149,7 @@ public class MemoryQueueService implements QueueService, QueueInfoRetriever {
 
 
     @Override
-    public int getQueueTaskCount(String queueName) {
+    public int getQueueSize(String queueName) {
         return getQueue(queueName).size();
     }
 

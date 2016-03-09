@@ -10,8 +10,8 @@ import org.slf4j.LoggerFactory;
 import ru.taskurotta.mongodb.driver.BSerializationService;
 import ru.taskurotta.mongodb.driver.DBObjectCheat;
 import ru.taskurotta.service.common.ResultSetCursor;
-import ru.taskurotta.service.hz.TaskKey;
 import ru.taskurotta.service.hz.serialization.bson.DecisionBSerializer;
+import ru.taskurotta.service.storage.TaskUID;
 import ru.taskurotta.transport.model.Decision;
 
 import java.io.IOException;
@@ -41,12 +41,12 @@ public class MongoTaskDao extends HzTaskDao {
         this.decisionDBCollection.createIndex(new BasicDBObject(RECOVERY_TIME_NAME, 1));
     }
 
-    public ResultSetCursor findIncompleteTasks(long lastRecoveryTime, int batchSize) {
+    public ResultSetCursor<TaskUID> findIncompleteTasks(long lastRecoveryTime, int batchSize) {
         BasicDBObject query = new BasicDBObject(RECOVERY_TIME_NAME, new BasicDBObject("$lte", lastRecoveryTime));
         return new DecisionTaskKeyResultSetCursor(decisionDBCollection, query, batchSize);
     }
 
-    private class DecisionTaskKeyResultSetCursor implements ResultSetCursor {
+    private class DecisionTaskKeyResultSetCursor implements ResultSetCursor<TaskUID> {
 
         private DBCollection dbCollection;
         private BasicDBObject query;
@@ -65,18 +65,18 @@ public class MongoTaskDao extends HzTaskDao {
         }
 
         @Override
-        public Collection getNext() {
+        public Collection<TaskUID> getNext() {
             if (dbCursor == null) {
                 open();
             }
 
-            Collection<TaskKey> result = new ArrayList<>();
+            Collection<TaskUID> result = new ArrayList<>();
 
             int i = 0;
             while (i++ < batchSize && dbCursor.hasNext()) {
                 DBObjectCheat dbObject = (DBObjectCheat) dbCursor.next();
                 Decision decision = (Decision) dbObject.getObject();
-                result.add(new TaskKey(decision.getTaskId(), decision.getProcessId()));
+                result.add(new TaskUID(decision.getTaskId(), decision.getProcessId()));
             }
 
             if (logger.isDebugEnabled()) {

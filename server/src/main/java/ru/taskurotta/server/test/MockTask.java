@@ -1,5 +1,7 @@
 package ru.taskurotta.server.test;
 
+import ru.taskurotta.core.TaskConfig;
+import ru.taskurotta.core.TaskOptions;
 import ru.taskurotta.internal.core.TaskImpl;
 import ru.taskurotta.internal.core.TaskTargetImpl;
 import ru.taskurotta.internal.core.TaskType;
@@ -27,7 +29,12 @@ public class MockTask extends TaskImpl {
         String actorVersion = parts[1];
         String actorMethod = parts[2];
 
-        // todo: add taskList as a part[3]
+        if (parts.length == 4) {
+            this.taskOptions = new TaskOptions();
+            TaskConfig taskConfig = new TaskConfig();
+            taskConfig.setTaskList(parts[3]);
+            taskOptions.setTaskConfig(taskConfig);
+        }
 
         target = new TaskTargetImpl(taskType, actorName, actorVersion, actorMethod);
     }

@@ -7,12 +7,12 @@ angular.module('actorModule', ['coreApp'])
             //list
             query: {url: restActorUrl + 'list/', params: {}},
             loadMetrics: {url: restActorUrl + 'metrics/compare', method: 'POST', params: {}},
-            info: {url: restActorUrl + 'info', method: 'GET'},
+            info: {url: restActorUrl + 'info/', method: 'GET'},
             //actions
             unblock: {url: restActorUrl + 'unblock/', method: 'POST'},
             block: {url: restActorUrl + 'block/', method: 'POST'},
             //dictionaries
-            dictionaryMetrics: {url: restActorUrl + 'metrics/compare', params: {}, isArray: true, cache:true}
+            dictionaryMetrics: {url: restActorUrl + 'metrics/compare', params: {}, isArray: true, cache: true}
         });
     })
 
@@ -43,7 +43,9 @@ angular.module('actorModule', ['coreApp'])
             $log.info('Load metric data');
             $scope.metricsResource = actorRest.loadMetrics({
                     metrics: coreApp.getKeys(metrics),
-                    actorIds: _.map(actors, function (item) { return item.id; })
+                    actorIds: _.map(actors, function (item) {
+                        return item.id;
+                    })
                 },
                 function success(value) {
                     $log.info('Successfully updated metrics data');
@@ -75,7 +77,7 @@ angular.module('actorModule', ['coreApp'])
 
         //Update command:
         $scope.search = function () {
-            coreApp.reloadState(angular.extend({},$scope.formParams,{
+            coreApp.reloadState(angular.extend({}, $scope.formParams, {
                 pageNum: undefined,
                 refreshRate: undefined,
                 metrics: coreApp.stringifyObjectParam($scope.formParams.metrics)
@@ -92,7 +94,7 @@ angular.module('actorModule', ['coreApp'])
             coreApp.openConfirmModal('Actor will be set to unblock.',
                 function confirmed() {
                     actorRest.unblock(actor.id, function success(value) {
-                        $log.log('Actor [' + actor.id + '] have been set to unblocked',value);
+                        $log.log('Actor [' + actor.id + '] have been set to unblocked', value);
                         loadModel($scope.resourceParams);
                     }, function error(reason) {
                         coreApp.error('Error setting unblocked for actor [' + actor.id + ']', reason);
@@ -104,7 +106,7 @@ angular.module('actorModule', ['coreApp'])
             coreApp.openConfirmModal('Actor will be set to block.',
                 function confirmed() {
                     actorRest.block(actor.id, function success(value) {
-                        $log.log('Actor [' + actor.id + '] have been set to blocked',value);
+                        $log.log('Actor [' + actor.id + '] have been set to blocked', value);
                         loadModel($scope.resourceParams);
                     }, function error(reason) {
                         coreApp.error('Error setting blocked for actor [' + actor.id + ']', reason);
@@ -115,7 +117,7 @@ angular.module('actorModule', ['coreApp'])
         $scope.showInfo = function (actorId) {
             $modal.open({
                 size: 'actor',
-                backdrop: false,
+                backdrop: true,
                 templateUrl: 'views/actor/modal.html',
                 controller: 'ActorModalCtrl',
                 resolve: {
@@ -132,23 +134,34 @@ angular.module('actorModule', ['coreApp'])
         function ($scope, $uibModalInstance, actorRest, actorId) {
 
             $scope.actorId = actorId;
-            actorRest.info(
-                {actorId: actorId},
-                function success(value) {
-                    $scope.info = value;
-                },
-                function error(reason) {
-                    console.error(reason);
-                }
-            );
+            $scope.loading = false;
 
             $scope.ok = function (form) {
                 $uibModalInstance.close();
             };
 
-            $scope.quotes = function(str) {
+            $scope.quotes = function (str) {
                 return '{"' + str + '":true}';
-            }
+            };
+
+
+            $scope.reload = function () {
+                $scope.loading = true;
+
+                actorRest.info(
+                    {actorId: actorId},
+                    function success(value) {
+                        $scope.info = value;
+                        $scope.loading = false;
+                    },
+                    function error(reason) {
+                        console.error(reason);
+                    }
+                );
+            };
+
+            $scope.reload();
+
         }])
 
 ;

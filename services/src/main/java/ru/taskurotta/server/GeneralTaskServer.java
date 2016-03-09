@@ -129,7 +129,8 @@ public class GeneralTaskServer implements TaskServer {
     @Override
     public TaskContainer poll(ActorDefinition actorDefinition) {
 
-        String actorId = ActorUtils.getActorId(actorDefinition);
+        // todo: move to queue name instead of actorId
+        String actorId = ActorUtils.getFullActorName(actorDefinition);
 
         if (configService.isActorBlocked(actorId)) {
             logger.debug("Rejected poll request from blocked actor {}", actorDefinition);
