@@ -55,25 +55,25 @@ info = {{ info | json}}
                 <tr ng-repeat="metric in metricsInfo">
                     <td>{{ metric.text }}</td>
                     <td>
-                        <div popover="from {{value.hour.timeMin | date: 'HH:mm:ss dd.MM.yyyy'}} to {{value.hour.timeMax | date: 'HH:mm:ss dd.MM.yyyy'}}"
+                        <div popover="{{ fromToStr(info.metrics[metric.name].hour) }}"
                              popover-trigger="mouseenter">
-                            <a ui-sref="metrics({metric: metric.name, scope: 'local', type: 'rate', period: '1hour', dataset: quotes(info.id), showDataset: 1, legend: 'nw', points: 1 })"
+                            <a ui-sref="metrics({metric: metric.name, scope: 'local', type: metric.graph_type, period: '1hour', dataset: quotes(info.id), showDataset: 1, legend: 'nw', points: 1 })"
                                class="btn-link" style="display: block; width: 100%;">
                                 {{ floor(info.metrics[metric.name].hour[metric.type]) }}
                             </a>
                         </div>
                     </td>
                     <td>
-                        <div popover="from {{value.day.timeMin | date: 'HH:mm:ss dd.MM.yyyy'}} to {{value.day.timeMax | date: 'HH:mm:ss dd.MM.yyyy'}}"
+                        <div popover="{{ fromToStr(info.metrics[metric.name].day) }}"
                              popover-trigger="mouseenter">
-                            <a ui-sref="metrics({metric: metric.name, scope: 'local', type: 'rate', period: '24hours', dataset: quotes(info.id), showDataset: 1, legend: 'nw', points: 1 })"
+                            <a ui-sref="metrics({metric: metric.name, scope: 'local', type: metric.graph_type, period: '24hours', dataset: quotes(info.id), showDataset: 1, legend: 'nw', points: 1 })"
                                class="btn-link" style="display: block; width: 100%;">
                                 {{ floor(info.metrics[metric.name].day[metric.type]) }}
                             </a>
                         </div>
                     </td>
                     <td>
-                        <div popover="{{ info.metrics[metric.name].lastTime > 0? (info.metrics[metric.name].lastTime| date: 'HH:mm:ss dd.MM.yyyy'): '-' }}"
+                        <div popover="{{info.metrics[metric.name].lastTime > 0? (info.metrics[metric.name].lastTime| date: 'HH:mm:ss dd.MM.yyyy'): 'never' }}"
                              popover-trigger="mouseenter">
                             {{ util.getInterval(info.currentTimeMillis, info.metrics[metric.name].lastTime) }}
                         </div>

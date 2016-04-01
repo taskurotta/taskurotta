@@ -1,13 +1,11 @@
 package ru.taskurotta.client.jersey;
 
-import com.sun.jersey.api.client.ClientHandlerException;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.UniformInterfaceException;
 import com.sun.jersey.api.client.WebResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.exception.server.InvalidServerRequestException;
-import ru.taskurotta.exception.server.ServerConnectionException;
 import ru.taskurotta.exception.server.ServerException;
 import ru.taskurotta.server.TaskServer;
 import ru.taskurotta.transport.model.DecisionContainer;
@@ -15,6 +13,9 @@ import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.util.ActorDefinition;
 
 import javax.ws.rs.core.MediaType;
+import java.net.InetAddress;
+import java.net.URI;
+import java.util.UUID;
 
 public class BaseTaskProxy implements TaskServer {
 
@@ -32,30 +33,37 @@ public class BaseTaskProxy implements TaskServer {
 
     @Override
     public void startProcess(TaskContainer task) {
+
+        if (logger.isTraceEnabled()) {
+            logger.trace("Start process thread name[{}]", Thread.currentThread().getName());
+        }
+
         try {
             WebResource.Builder rb = startResource.getRequestBuilder();
             rb.type(MediaType.APPLICATION_JSON);
             rb.accept(MediaType.APPLICATION_JSON);
             rb.post(task);
-        } catch (UniformInterfaceException ex) {//server responded with error
-            int status = ex.getResponse() != null ? ex.getResponse().getStatus() : -1;
-            if (status >= 400 && status < 500) {
-                throw new InvalidServerRequestException("Start process[" + task.getProcessId() + "] with task[" + task.getTaskId() + "] error: " + ex.getMessage(), ex);
-            } else {
-                throw new ServerException("Start process[" + task.getProcessId() + "] with task[" + task.getTaskId() + "] error: " + ex.getMessage(), ex);
-            }
-        } catch (ClientHandlerException ex) {//client processing error
-            throw new ServerConnectionException("Start process[" + task.getProcessId() + "] with task[" + task.getTaskId() + "] error: " + ex.getMessage(), ex);
-        } catch (Throwable ex) {//unexpected error
-            throw new ServerException("Start process[" + task.getProcessId() + "] with task[" + task.getTaskId() + "] error: " + ex.getMessage(), ex);
-        }
+        } catch (Throwable ex) {
 
+            if (ex instanceof OutOfMemoryError) {
+                throw (OutOfMemoryError) ex;
+            }
+
+            String msg = createStartProcessErrorMessage(startResource.getURI(), task.getActorId(),
+                    task.getProcessId(), ex);
+
+            checkAndThrowInvalidServerRequestException(msg, ex);
+        }
     }
+
 
     @Override
     public TaskContainer poll(ActorDefinition actorDefinition) {
-        logger.trace("Polling task thread name[{}]", Thread.currentThread().getName());
-        TaskContainer result = null;
+
+        if (logger.isTraceEnabled()) {
+            logger.trace("Polling task thread name[{}]", Thread.currentThread().getName());
+        }
+
         try {
             WebResource.Builder rb = pullResource.getRequestBuilder();
             rb.type(MediaType.APPLICATION_JSON);
@@ -63,43 +71,91 @@ public class BaseTaskProxy implements TaskServer {
 
             ClientResponse clientResponse = rb.post(ClientResponse.class, actorDefinition);
             if (clientResponse.getStatus() != 204) {//204 = no-content
-                result = clientResponse.getEntity(TaskContainer.class);
+                return clientResponse.getEntity(TaskContainer.class);
             }
-        } catch (UniformInterfaceException ex) {//server responded with error
-            int status = ex.getResponse() != null ? ex.getResponse().getStatus() : -1;
-            if (status >= 400 && status < 500) {
-                throw new InvalidServerRequestException("Poll error for actor[" + actorDefinition + "]: " + ex.getMessage(), ex);
-            } else {
-                throw new ServerException("Poll error for actor[" + actorDefinition + "]: " + ex.getMessage(), ex);
+        } catch (Throwable ex) {
+
+            if (ex instanceof OutOfMemoryError) {
+                throw (OutOfMemoryError) ex;
             }
-        } catch (ClientHandlerException ex) {//client processing error
-            throw new ServerConnectionException("Poll error for actor[" + actorDefinition + "]: " + ex.getMessage(), ex);
-        } catch (Throwable ex) {//unexpected error
-            throw new ServerException("Poll error for actor[" + actorDefinition + "]: " + ex.getMessage(), ex);
+
+            String msg = createPollErrorMessage(pullResource.getURI(), actorDefinition, ex);
+
+            checkAndThrowInvalidServerRequestException(msg, ex);
         }
-        return result;
+        return null;
     }
+
 
     @Override
     public void release(DecisionContainer taskResult) {
-        logger.trace("Releasing task thread name[{}], taskResult[{}]", Thread.currentThread().getName(), taskResult);
+
+        if (logger.isTraceEnabled()) {
+            logger.trace("Releasing task thread name[{}], taskResult[{}]", Thread.currentThread().getName(),
+                    taskResult);
+        }
+
         try {
             WebResource.Builder rb = releaseResource.getRequestBuilder();
             rb.type(MediaType.APPLICATION_JSON);
             rb.accept(MediaType.APPLICATION_JSON);
             rb.post(taskResult);
-        } catch (UniformInterfaceException ex) {//server responded with error
-            int status = ex.getResponse() != null ? ex.getResponse().getStatus() : -1;
-            if (status >= 400 && status < 500) {
-                throw new InvalidServerRequestException("Task release [" + taskResult.getTaskId() + "] error: " + ex.getMessage(), ex);
-            } else {
-                throw new ServerException("Task release [" + taskResult.getTaskId() + "] error: " + ex.getMessage(), ex);
+        } catch (Throwable ex) {
+
+            if (ex instanceof OutOfMemoryError) {
+                throw (OutOfMemoryError) ex;
             }
-        } catch (ClientHandlerException ex) {//client processing error
-            throw new ServerConnectionException("Task release [" + taskResult.getTaskId() + "] error: " + ex.getMessage(), ex);
-        } catch (Throwable ex) {//unexpected error
-            throw new ServerException("Task release [" + taskResult.getTaskId() + "] error: " + ex.getMessage(), ex);
+
+            String msg = createReleaseErrorMessage(releaseResource.getURI(), taskResult.getActorId(),
+                    taskResult.getTaskId(), ex);
+
+            checkAndThrowInvalidServerRequestException(msg, ex);
         }
+    }
+
+
+    private static void checkAndThrowInvalidServerRequestException(String msg, Throwable ex) {
+
+        if (ex instanceof UniformInterfaceException) {
+            ClientResponse response = ((UniformInterfaceException) ex).getResponse();
+            int status = response != null ? response.getStatus() : -1;
+            if (status >= 400 && status < 500) {
+                throw new InvalidServerRequestException(msg, ex);
+            }
+        }
+
+        throw new ServerException(msg, ex);
+    }
+
+    private String createReleaseErrorMessage(URI uri, String actorId, UUID taskId, Throwable ex) {
+        return createErrorMessage("Release task error [" + taskId.toString() + "]", uri, actorId, ex);
+    }
+
+    private String createStartProcessErrorMessage(URI uri, String actorId, UUID processId, Throwable ex) {
+        return createErrorMessage("Start process error [" + processId + "]", uri, actorId, ex);
+    }
+
+    private String createPollErrorMessage(URI uri, ActorDefinition actorDefinition, Throwable ex) {
+        return createErrorMessage("Poll error", uri, actorDefinition.toString(), ex);
+    }
+
+    private String createErrorMessage(String msg, URI uri, String actorId, Throwable ex) {
+        String ip = null;
+        String host = uri.getHost();
+        InetAddress address = null;
+        try {
+            address = InetAddress.getByName(host);
+            if (address == null) {
+                ip = "unknown ip";
+            } else {
+                ip = address.getHostAddress();
+            }
+        } catch (Throwable e) {
+            ip = e.getMessage();
+        }
+
+        return msg + " actor[" + actorId + "], URI [" + uri.toString() + "], host & ip ["
+                + host + "/" + ip + "]: " + ex.getMessage();
     }
 
     public void setThreadPoolSize(long threadPoolSize) {
