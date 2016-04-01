@@ -668,7 +668,11 @@ angular.module('coreApp', ['ngResource', 'ngSanitize', 'ui.router',
                     return "-";
                 }
 
-                var interval = (currentTime - eventTime) / 1000;
+                var interval = Math.floor((currentTime - eventTime) / 1000);
+
+                if (interval == 0) {
+                    return "0 s";
+                }
 
                 var result = '';
                 var fastBreak = false;

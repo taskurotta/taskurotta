@@ -160,7 +160,7 @@ angular.module('queueModule', ['coreApp'])
 
     })
 
-    .controller('actorController', function ($log, $scope, actorRest, coreApp, actorStateConf, util) {
+    .controller('actorController', function ($log, $scope, $filter, actorRest, coreApp, actorStateConf, util) {
         $log.info('actorController');
 
         $scope.util = util;
@@ -198,20 +198,33 @@ angular.module('queueModule', ['coreApp'])
         var mean = "mean";
         var count = "count";
         $scope.metricsInfo = [
-            {text: "New tasks", name: "enqueue", type: count},
-            {text: "Done tasks", name: "release", type: count},
-            {text: "Mean time", name: "executionTime", type: mean},
-            {text: "With exceptions", name: "errorDecision", type: count},
-            {text: "Mean time on exception", name: "errorDecision", type: mean},
-            {text: "Poll", name: "poll", type: count},
-            {text: "Poll with tasks", name: "successfulPoll", type: count},
-            {text: "Start process", name: "startProcess", type: count}
+            {text: "New tasks", name: "enqueue", type: "count", graph_type: "rate"},
+            {text: "Done tasks", name: "release", type: "count", graph_type: "rate"},
+            {text: "Mean time", name: "executionTime", type: "mean", graph_type: "mean"},
+            {text: "With exceptions", name: "errorDecision", type: "count", graph_type: "rate"},
+            {text: "Mean time on exception", name: "errorDecision", type: "mean", graph_type: "mean"},
+            {text: "Poll", name: "poll", type: "count", graph_type: "rate"},
+            {text: "Poll with tasks", name: "successfulPoll", type: "count", graph_type: "rate"},
+            {text: "Start process", name: "startProcess", type: "count", graph_type: "rate"}
             //{text: "Mean queue size", name: "queueSize", type: count}
 
         ];
 
         $scope.floor = function (number) {
+            if (isNaN(number)) {
+                return 0;
+            }
+            
             return Math.floor(number);
+        }
+        
+        $scope.fromToStr = function (metric) {
+            if (!metric) {
+                return "never";
+            }
+
+            return "from " + $filter('date')(metric.timeMin, 'HH:mm:ss dd.MM.yyyy') + " to " +
+                $filter('date')(metric.timeMax, 'HH:mm:ss dd.MM.yyyy');
         }
 
     });
