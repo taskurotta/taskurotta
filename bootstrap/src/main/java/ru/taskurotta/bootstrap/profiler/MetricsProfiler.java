@@ -9,6 +9,7 @@ import ru.taskurotta.bootstrap.profiler.logback.LoggerReporter;
 import ru.taskurotta.client.TaskSpreader;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
+import ru.taskurotta.internal.Heartbeat;
 import ru.taskurotta.util.ActorDefinition;
 import ru.taskurotta.util.ActorUtils;
 
@@ -113,12 +114,12 @@ public class MetricsProfiler implements Profiler {
         return new RuntimeProcessor() {
 
             @Override
-            public TaskDecision execute(Task task) {
+            public TaskDecision execute(Task task, Heartbeat heartbeat) {
 
                 long startTime = System.nanoTime();
 
                 try {
-                    return runtimeProcessor.execute(task);
+                    return runtimeProcessor.execute(task, heartbeat);
                 } finally {
                     timerExecute.update(System.nanoTime() - startTime, TimeUnit.NANOSECONDS);
                 }
@@ -126,7 +127,7 @@ public class MetricsProfiler implements Profiler {
             }
 
             @Override
-            public Task[] execute(UUID processId,  Runnable runnable) {
+            public Task[] execute(UUID taskId, UUID processId,  Heartbeat heartbeat, Runnable runnable) {
                 throw new IllegalAccessError("Method not supported yet");
             }
         };
@@ -174,6 +175,11 @@ public class MetricsProfiler implements Profiler {
                 } finally {
                     timerRelease.update(System.nanoTime() - startTime, TimeUnit.NANOSECONDS);
                 }
+            }
+
+            @Override
+            public void updateTimeout(UUID taskId, UUID processId, long timeout) {
+                taskSpreader.updateTimeout(taskId, processId, timeout);
             }
         };
     }

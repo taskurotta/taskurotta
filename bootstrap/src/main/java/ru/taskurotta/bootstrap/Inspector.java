@@ -10,6 +10,7 @@ import ru.taskurotta.core.TaskDecision;
 import ru.taskurotta.exception.server.ServerException;
 import ru.taskurotta.policy.retry.RetryPolicy;
 
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -92,6 +93,11 @@ public class Inspector {
                     logger.debug("Catch unexpected exception on release: ", e);
                     throw new RuntimeException(e);
                 }
+            }
+
+            @Override
+            public void updateTimeout(UUID taskId, UUID processId, long timeout) {
+                taskSpreader.updateTimeout(taskId, processId, timeout);
             }
         };
     }

@@ -120,6 +120,42 @@ public class MemoryTaskDao implements TaskDao {
     }
 
     @Override
+    public void updateTimeout(UUID taskId, UUID processId, long workerTimeout) {
+
+        UUID taskKey = taskId;
+
+        lock(taskKey);
+
+        try {
+
+            Decision decision = id2TaskDecisionMap.get(taskKey);
+
+            if (decision == null) {
+                // skip it
+                return;
+            }
+
+            if (decision.getState() != Decision.STATE_REGISTERED) {
+                logger.debug("{}/{} Can not start task. Task has {} state (not in registered state)",
+                        taskId, processId, decision.getState());
+
+                return;
+            }
+
+            long recoveryTime = System.currentTimeMillis() + workerTimeout;
+            decision.setRecoveryTime(recoveryTime);
+
+            id2TaskDecisionMap.put(taskKey, decision);
+
+        } finally {
+            unlock(taskKey);
+        }
+
+    }
+
+
+
+    @Override
     public Decision startTask(UUID taskId, UUID processId, long workerTimeout, boolean failOnWorkerTimeout) {
 
         UUID taskKey = taskId;

@@ -30,7 +30,7 @@ public class DeciderClientProviderCommon implements DeciderClientProvider {
 
     @Override
     public <DeciderClientType> DeciderClientType getDeciderClient(Class<DeciderClientType> type) {
-        return ProxyFactory.getDeciderClient(type, new RuntimeContext(null) {
+        return ProxyFactory.getDeciderClient(type, new RuntimeContext(null, null, null) {
             @Override
             public void handle(Task task) {
                 startProcess(task);

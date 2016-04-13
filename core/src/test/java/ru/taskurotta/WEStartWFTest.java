@@ -110,7 +110,7 @@ public class WEStartWFTest {
         TaskTarget taskTarget = new TaskTargetImpl(TaskType.DECIDER_START, SimpleDecider.class.getName(), "1.0", "start");
         Task task = TestTasks.newInstance(UUID.randomUUID(), taskTarget, null);
 
-        TaskDecision taskDecision = runtimeProcessor.execute(task);
+        TaskDecision taskDecision = runtimeProcessor.execute(task, null);
 
         // should be one task: TestWorker.doId("Drag and Drop!");
         Task[] taskList = taskDecision.getTasks();

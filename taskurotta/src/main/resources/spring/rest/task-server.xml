@@ -12,6 +12,9 @@
     <bean id="taskStarterResource" class="ru.taskurotta.dropwizard.resources.TaskStarterResource">
         <property name="taskServer" ref="taskServer"/>
     </bean>
+    <bean id="taskUpdateTimeoutResource" class="ru.taskurotta.dropwizard.resources.TaskUpdateTimeoutResource">
+        <property name="taskServer" ref="taskServer"/>
+    </bean>
     <!-- /REST resources -->
 
     <!-- Health checks -->

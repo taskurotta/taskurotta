@@ -28,6 +28,7 @@ public class TaskConfigContainerStreamSerializer implements StreamSerializer<Tas
         } else {
             out.writeBoolean(false);
         }
+        out.writeLong(object.getTimeout());
     }
 
     @Override
@@ -40,6 +41,8 @@ public class TaskConfigContainerStreamSerializer implements StreamSerializer<Tas
         if (retryPolicyExist) {
             container.setRetryPolicyConfigContainer(retryPolicyConfigContainerSerializer.read(in));
         }
+        container.setTimeout(in.readLong());
+
         return container;
     }
 

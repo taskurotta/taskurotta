@@ -66,7 +66,7 @@ public class ExecuteWorkerTest {
     public void testSimpleMethod() {
         TaskTarget taskTarget = new TaskTargetImpl(TaskType.WORKER, SimpleWorker.class.getName(), "1.0", "max");
         Task task = TestTasks.newInstance(processId, taskTarget, new Object[]{5, 6});
-        TaskDecision taskDecision = runtimeProcessor.execute(task);
+        TaskDecision taskDecision = runtimeProcessor.execute(task, null);
         assertEquals(taskDecision.getValue(), 6);
     }
 
@@ -74,7 +74,7 @@ public class ExecuteWorkerTest {
     public void testRecursiveMethod() {
         TaskTarget taskTarget = new TaskTargetImpl(TaskType.WORKER, SimpleWorker.class.getName(), "1.0", "fibonacci");
         Task task = TestTasks.newInstance(processId, taskTarget, new Object[]{4});
-        TaskDecision taskDecision = runtimeProcessor.execute(task);
+        TaskDecision taskDecision = runtimeProcessor.execute(task, null);
         assertEquals(taskDecision.getValue(), 3);
     }
 
@@ -84,7 +84,7 @@ public class ExecuteWorkerTest {
         Task task = TestTasks.newInstance(processId, taskTarget, new Object[]{});
 
         assertFalse(flag);
-        TaskDecision taskDecision = runtimeProcessor.execute(task);
+        TaskDecision taskDecision = runtimeProcessor.execute(task, null);
         assertTrue(flag);
         assertNull(taskDecision.getValue());
     }

@@ -16,6 +16,7 @@ import ru.taskurotta.service.storage.ProcessService;
 import ru.taskurotta.service.storage.TaskDao;
 import ru.taskurotta.service.storage.TaskService;
 import ru.taskurotta.transport.model.ArgContainer;
+import ru.taskurotta.transport.model.Decision;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.ErrorContainer;
 import ru.taskurotta.transport.model.TaskContainer;
@@ -72,7 +73,7 @@ public class RecoveryServiceImpl implements RecoveryService {
                                long findIncompleteProcessPeriod, long timeBeforeDeleteFinishedProcess,
                                long timeBeforeManualDeleteProcess) {
 
-        // todo: THIS IS A HUCK. SERVICES STRUCTURE SHOULD BE OPTIMIZED!!!
+        // todo: THIS IS A HACK. SERVICES STRUCTURE SHOULD BE OPTIMIZED!!!
         this.generalTaskServer = generalTaskServer;
 
         this.queueService = queueService;
@@ -554,7 +555,7 @@ public class RecoveryServiceImpl implements RecoveryService {
         // is never polled? => not ready
         if (lastEnqueueTime <= 0l) {
 
-            logger.debug("#[{}]/[{}]: skip process restart, because queue [{}] is not polled by any actor. " +
+            logger.debug("#[{}]/[{}]: skip task restart, because queue [{}] is not polled by any actor. " +
                             "lastEnqueueTime is {}",
                     processId, taskId, queueName, lastEnqueueTime);
 
@@ -566,7 +567,7 @@ public class RecoveryServiceImpl implements RecoveryService {
         if (lastEnqueueTime < lastRecoveryStartTime) {//still filled with old tasks => not ready
 
             if (logger.isDebugEnabled()) {
-                logger.debug("#[{}]/[{}]: skip process restart, because queue not polled since last recovery " +
+                logger.debug("#[{}]/[{}]: skip task restart, because queue not polled since last recovery " +
                                 "activity, queue [{}] " +
                                 "(last enqueue time [{}], last recovery start time [{}])",
                         processId, taskId, queueName, lastEnqueueTime, lastRecoveryStartTime);
@@ -581,9 +582,21 @@ public class RecoveryServiceImpl implements RecoveryService {
             // todo: check decision analise time for this queueName
 
             if (logger.isDebugEnabled()) {
-                logger.debug("#[{}]/[{}]: skip process restart, because earlier tasks in queue [{}] (last enqueue " +
+                logger.debug("#[{}]/[{}]: skip task restart, because earlier tasks in queue [{}] (last enqueue " +
                                 "time [{}], last task start time [{}])",
                         processId, taskId, queueName, lastEnqueueTime, startTime);
+            }
+
+            return false;
+        }
+
+        // check recoveryTime. It is possible in case of heartbeat are received from actor
+        Decision decision = taskService.getDecision(taskId, processId);
+        if (decision != null && decision.getRecoveryTime() > System.currentTimeMillis()) {
+
+            if (logger.isDebugEnabled()) {
+                logger.debug("#[{}]/[{}]: skip task restart, because its recoveryTime in future [{}]",
+                        processId, taskId, decision.getRecoveryTime());
             }
 
             return false;

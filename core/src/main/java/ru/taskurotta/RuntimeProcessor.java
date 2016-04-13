@@ -2,6 +2,7 @@ package ru.taskurotta;
 
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
+import ru.taskurotta.internal.Heartbeat;
 
 import java.util.UUID;
 
@@ -18,7 +19,7 @@ public interface RuntimeProcessor {
      * @param task
      * @return
      */
-    public TaskDecision execute(Task task);
+    public TaskDecision execute(Task task, Heartbeat heartbeat);
 
 
     /**
@@ -28,5 +29,5 @@ public interface RuntimeProcessor {
      * @param runnable
      * @return Array af intercepted tasks
      */
-    public Task[] execute(UUID processId, Runnable runnable);
+    public Task[] execute(UUID taskId, UUID processId,  Heartbeat heartbeat, Runnable runnable);
 }

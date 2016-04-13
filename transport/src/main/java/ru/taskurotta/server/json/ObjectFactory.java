@@ -249,7 +249,8 @@ public class ObjectFactory {
         return new TaskConfig()
                 .setCustomId(actorSchedOptions.getCustomId())
                 .setStartTime(actorSchedOptions.getStartTime())
-                .setTaskList(actorSchedOptions.getTaskList());
+                .setTaskList(actorSchedOptions.getTaskList())
+                .setTimeout(actorSchedOptions.getTimeout());
     }
 
     public Promise<?>[] parsePromisesWaitFor(ArgContainer[] args) {
@@ -304,6 +305,7 @@ public class ObjectFactory {
             optionsContainer.setStartTime(taskConfig.getStartTime());
             optionsContainer.setCustomId(taskConfig.getCustomId());
             optionsContainer.setTaskList(taskConfig.getTaskList());
+            optionsContainer.setTimeout(taskConfig.getTimeout());
             RetryPolicyConfig rp = taskConfig.getRetryPolicyConfig();
             if (rp != null) {
                 optionsContainer.setRetryPolicyConfigContainer(new RetryPolicyConfigContainer(

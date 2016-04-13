@@ -8,5 +8,6 @@ public interface TaskServerResource {
     public static final String POLL = "/tasks/poll";
     public static final String START = "/tasks/start";
     public static final String RELEASE = "/tasks/release";
+    public static final String UPDATE_TIMEOUT = "/tasks/update-timeout";
 
 }

@@ -17,6 +17,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 import java.util.UUID;
 
+import static sun.management.snmp.jvminstr.JvmThreadInstanceEntryImpl.ThreadStateMap.Byte0.runnable;
+
 /**
  * User: romario
  * Date: 1/22/13
@@ -35,9 +37,9 @@ public class GeneralRuntimeProcessor implements RuntimeProcessor {
 
 
     @Override
-    public TaskDecision execute(Task task) {
+    public TaskDecision execute(Task task, Heartbeat heartbeat) {
 
-        RuntimeContext.start(task.getProcessId());
+        RuntimeContext.start(task.getId(), task.getProcessId(), heartbeat);
 
         TaskDecision taskDecision = null;
         TaskTarget key = task.getTarget();
@@ -98,9 +100,9 @@ public class GeneralRuntimeProcessor implements RuntimeProcessor {
     }
 
     @Override
-    public Task[] execute(UUID processId, Runnable runnable) {
+    public Task[] execute(UUID taskId, UUID processId,  Heartbeat heartbeat, Runnable runnable) {
 
-        RuntimeContext.start(processId);
+        RuntimeContext.start(taskId, processId, heartbeat);
 
         Task[] tasks;
 

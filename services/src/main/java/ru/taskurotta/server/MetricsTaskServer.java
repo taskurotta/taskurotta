@@ -16,6 +16,7 @@ import ru.taskurotta.util.ActorUtils;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * TaskServer wrapper delegating method calls to enclosed server with metrics data collect operations
@@ -138,6 +139,11 @@ public class MetricsTaskServer implements TaskServer {
             errMetric.mark(MetricName.ERROR_DECISION.getValue(), taskResult.getExecutionTime());
         }
 
+    }
+
+    @Override
+    public void updateTaskTimeout(UUID taskId, UUID processId, long timeout) {
+        taskServer.updateTaskTimeout(taskId, processId, timeout);
     }
 
 }

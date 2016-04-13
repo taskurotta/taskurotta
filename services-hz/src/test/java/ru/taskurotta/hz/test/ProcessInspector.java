@@ -234,6 +234,11 @@ public class ProcessInspector {
 
         return new GeneralTaskService(new TaskDao() {
             @Override
+            public void updateTimeout(UUID taskId, UUID processId, long workerTimeout) {
+
+            }
+
+            @Override
             public Decision startTask(UUID taskId, UUID processId, long workerTimeout, boolean failOnWorkerTimeout) {
                 return null;
             }

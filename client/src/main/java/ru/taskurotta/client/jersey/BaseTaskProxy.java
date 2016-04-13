@@ -10,6 +10,7 @@ import ru.taskurotta.exception.server.ServerException;
 import ru.taskurotta.server.TaskServer;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
+import ru.taskurotta.transport.model.UpdateTimeoutRequest;
 import ru.taskurotta.util.ActorDefinition;
 
 import javax.ws.rs.core.MediaType;
@@ -30,6 +31,7 @@ public class BaseTaskProxy implements TaskServer {
     protected WebResource startResource;
     protected WebResource pullResource;
     protected WebResource releaseResource;
+    protected WebResource updateTimeoutResource;
 
     @Override
     public void startProcess(TaskContainer task) {
@@ -113,6 +115,34 @@ public class BaseTaskProxy implements TaskServer {
         }
     }
 
+    @Override
+    public void updateTaskTimeout(UUID taskId, UUID processId, long timeout) {
+
+        UpdateTimeoutRequest updateTimeoutRequest = new UpdateTimeoutRequest(taskId, processId, timeout);
+
+        if (logger.isTraceEnabled()) {
+            logger.trace("Update task timeout thread name[{}], request[{}]",
+                    Thread.currentThread().getName(), updateTimeoutRequest);
+        }
+
+        try {
+            WebResource.Builder rb = updateTimeoutResource.getRequestBuilder();
+            rb.type(MediaType.APPLICATION_JSON);
+            rb.accept(MediaType.APPLICATION_JSON);
+            rb.post(updateTimeoutRequest);
+        } catch (Throwable ex) {
+
+            if (ex instanceof OutOfMemoryError) {
+                throw (OutOfMemoryError) ex;
+            }
+
+            String msg = createUpdateTimeoutErrorMessage(releaseResource.getURI(), null, taskId, ex);
+
+            checkAndThrowInvalidServerRequestException(msg, ex);
+        }
+
+    }
+
 
     private static void checkAndThrowInvalidServerRequestException(String msg, Throwable ex) {
 
@@ -125,6 +155,10 @@ public class BaseTaskProxy implements TaskServer {
         }
 
         throw new ServerException(msg, ex);
+    }
+
+    private String createUpdateTimeoutErrorMessage(URI uri, String actorId, UUID taskId, Throwable ex) {
+        return createErrorMessage("Update task timeout error [" + taskId.toString() + "]", uri, actorId, ex);
     }
 
     private String createReleaseErrorMessage(URI uri, String actorId, UUID taskId, Throwable ex) {

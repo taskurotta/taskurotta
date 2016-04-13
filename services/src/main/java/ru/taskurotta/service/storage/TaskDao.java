@@ -1,5 +1,6 @@
 package ru.taskurotta.service.storage;
 
+import ru.taskurotta.internal.TaskUID;
 import ru.taskurotta.service.common.ResultSetCursor;
 import ru.taskurotta.service.console.model.GenericPage;
 import ru.taskurotta.service.console.retriever.command.TaskSearchCommand;
@@ -17,6 +18,8 @@ import java.util.UUID;
  * Date: 09.04.13
  */
 public interface TaskDao {
+
+    void updateTimeout(UUID taskId, UUID processId, long workerTimeout);
 
     Decision startTask(UUID taskId, UUID processId, long workerTimeout, boolean failOnWorkerTimeout);
 

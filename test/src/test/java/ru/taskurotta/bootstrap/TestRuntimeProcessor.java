@@ -4,6 +4,7 @@ import org.junit.Ignore;
 import ru.taskurotta.RuntimeProcessor;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
+import ru.taskurotta.internal.Heartbeat;
 import ru.taskurotta.internal.core.TaskDecisionImpl;
 
 import java.util.ArrayList;
@@ -25,7 +26,7 @@ public class TestRuntimeProcessor implements RuntimeProcessor {
     public List<Integer> timeouts = new ArrayList<Integer>();
 
     @Override
-    public TaskDecision execute(Task task) {
+    public TaskDecision execute(Task task, Heartbeat heartbeat) {
         if (attemptDate == null) {
             attemptDate = new Date();
         }
@@ -37,7 +38,7 @@ public class TestRuntimeProcessor implements RuntimeProcessor {
     }
 
     @Override
-    public Task[] execute(UUID processId, Runnable runnable) {
+    public Task[] execute(UUID taskId, UUID processId, Heartbeat heartbeat, Runnable runnable) {
         return new Task[0];
     }
 }

@@ -45,10 +45,10 @@ public class InspectorTest {
         TaskTarget taskTarget = new TaskTargetImpl(TaskType.WORKER, TestWorker.class.getName(), "1.0", "sum");
         Task task = new TaskImpl(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), taskTarget, System.currentTimeMillis(), 1,
                 new Object[]{1, 2}, null, false, null);
-        TaskDecision taskDecision = runtimeProcessor.execute(task);
+        TaskDecision taskDecision = runtimeProcessor.execute(task, null);
 
         RuntimeProcessor decorateRuntimeProcessor = inspector.decorate(runtimeProcessor);
-        TaskDecision taskDecisionFromDecorateRuntimeProcessor = decorateRuntimeProcessor.execute(task);
+        TaskDecision taskDecisionFromDecorateRuntimeProcessor = decorateRuntimeProcessor.execute(task, null);
 
         assertEquals(taskDecision, taskDecisionFromDecorateRuntimeProcessor);
     }

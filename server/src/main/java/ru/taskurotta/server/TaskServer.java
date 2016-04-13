@@ -5,6 +5,8 @@ import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.util.ActorDefinition;
 
+import java.util.UUID;
+
 /**
  */
 public interface TaskServer {
@@ -12,20 +14,28 @@ public interface TaskServer {
     /**
      * @param task
      */
-    public void startProcess(TaskContainer task);
+    void startProcess(TaskContainer task);
 
 
     /**
      * @param actorDefinition
      * @return
      */
-    public TaskContainer poll(ActorDefinition actorDefinition);
+    TaskContainer poll(ActorDefinition actorDefinition);
 
 
     /**
      * @param taskResult
      */
-    public void release(DecisionContainer taskResult);
+    void release(DecisionContainer taskResult);
 
 
+    /**
+     * Set new task timeout value
+     *
+     * @param taskId task unique id
+     * @param processId process unique id
+     * @param timeout in milliseconds
+     */
+    void updateTaskTimeout(UUID taskId, UUID processId, long timeout);
 }

@@ -12,6 +12,8 @@ import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.util.ActorDefinition;
 import ru.taskurotta.util.ActorUtils;
 
+import java.util.UUID;
+
 /**
  * User: stukushin
  * Date: 07.02.13
@@ -45,6 +47,12 @@ public class TaskSpreaderCommon implements TaskSpreader {
         DecisionContainer decisionContainer = objectFactory.dumpResult(taskDecision, ActorUtils.getFullActorName(actorDefinition));
         logger.debug("Release decisionContainer[{}]", decisionContainer);
         taskServer.release(decisionContainer);
+    }
+
+    @Override
+    public void updateTimeout(UUID taskId, UUID processId, long timeout) {
+        logger.debug("Update task timeout: taskId[{}], processId[{}], timeout[{}]", taskId, processId, timeout);
+        taskServer.updateTaskTimeout(taskId, processId, timeout);
     }
 
 }

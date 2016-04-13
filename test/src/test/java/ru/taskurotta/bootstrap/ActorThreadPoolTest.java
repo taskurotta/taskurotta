@@ -9,9 +9,11 @@ import ru.taskurotta.bootstrap.profiler.SimpleProfiler;
 import ru.taskurotta.client.TaskSpreader;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
+import ru.taskurotta.internal.Heartbeat;
 import ru.taskurotta.policy.retry.LinearRetryPolicy;
 
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
@@ -25,12 +27,12 @@ public class ActorThreadPoolTest {
 
     class SimpleRuntimeProcessor implements RuntimeProcessor {
         @Override
-        public TaskDecision execute(Task task) {
+        public TaskDecision execute(Task task, Heartbeat heartbeat) {
             return null;
         }
 
         @Override
-        public Task[] execute(UUID processId, Runnable runnable) {
+        public Task[] execute(UUID taskId, UUID processId, Heartbeat heartbeat, Runnable runnable) {
             return new Task[0];
         }
     }
@@ -48,6 +50,11 @@ public class ActorThreadPoolTest {
 
         @Override
         public void release(TaskDecision taskDecision) {}
+
+        @Override
+        public void updateTimeout(UUID taskId, UUID processId, long timeout) {
+
+        }
     }
 
     private ActorMultiThreadPool actorThreadPool;
@@ -62,7 +69,7 @@ public class ActorThreadPoolTest {
         retryPolicy.setMaximumAttempts(2);
         Inspector inspector = new Inspector(retryPolicy, actorThreadPool);
 
-        ActorExecutor actorExecutor = new ActorExecutor(profiler, inspector, new SimpleRuntimeProcessor(), new SimpleTaskSpreader());
+        ActorExecutor actorExecutor = new ActorExecutor(profiler, inspector, new SimpleRuntimeProcessor(), new SimpleTaskSpreader(), new ConcurrentHashMap<>());
 
         actorThreadPool.start(actorExecutor);
     }

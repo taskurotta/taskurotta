@@ -20,6 +20,7 @@ public class ActorConfig {
     private Properties properties;
     private long shutdownTimeoutMillis = 60000l;
     private String taskList;
+    private String updateTimeoutInterval = "10 minutes";
 
     public String getActorInterface() {
         return actorInterface;
@@ -105,6 +106,14 @@ public class ActorConfig {
         this.enabled = enabled;
     }
 
+    public String getUpdateTimeoutInterval() {
+        return updateTimeoutInterval;
+    }
+
+    public void setUpdateTimeoutInterval(String updateTimeoutInterval) {
+        this.updateTimeoutInterval = updateTimeoutInterval;
+    }
+
     @Override
     public String toString() {
         return "ActorConfig{" +
@@ -118,6 +127,7 @@ public class ActorConfig {
                 ", properties=" + properties +
                 ", shutdownTimeoutMillis=" + shutdownTimeoutMillis +
                 ", taskList='" + taskList + '\'' +
+                ", updateTimeoutInterval='" + updateTimeoutInterval + '\'' +
                 '}';
     }
 }

@@ -2,6 +2,7 @@ package ru.taskurotta.service.storage;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.taskurotta.internal.TaskUID;
 import ru.taskurotta.internal.core.ArgType;
 import ru.taskurotta.internal.core.TaskType;
 import ru.taskurotta.service.common.ResultSetCursor;
@@ -11,6 +12,7 @@ import ru.taskurotta.service.console.retriever.command.TaskSearchCommand;
 import ru.taskurotta.transport.model.ArgContainer;
 import ru.taskurotta.transport.model.Decision;
 import ru.taskurotta.transport.model.DecisionContainer;
+import ru.taskurotta.transport.model.TaskConfigContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.model.TaskOptionsContainer;
 
@@ -114,8 +116,20 @@ public class GeneralTaskService implements TaskService, TaskInfoRetriever {
         // todo: timeout should be calculated for every actor
 
         if (!simulate) {
+
+            long timeout = workerTimeoutMilliseconds;
+
+            TaskOptionsContainer taskOptions = task.getOptions();
+            if (taskOptions != null) {
+                TaskConfigContainer taskConfig = taskOptions.getTaskConfigContainer();
+                if (taskConfig != null && taskConfig.getTimeout() != -1) {
+                    timeout = taskConfig.getTimeout();
+                }
+            }
+
+
             // todo: actors should support acceptLast and acceptFirst strategies depends of their needs
-            Decision decision = taskDao.startTask(taskId, processId, workerTimeoutMilliseconds, false);
+            Decision decision = taskDao.startTask(taskId, processId, timeout, false);
 
             if (decision == null) {
                 logger.debug("{}/{} Task can not be executed. It is already started or finished", taskId, processId);
@@ -239,6 +253,12 @@ public class GeneralTaskService implements TaskService, TaskInfoRetriever {
     }
 
     @Override
+    public void updateTimeout(UUID taskId, UUID processId, long workerTimeout) {
+        taskDao.updateTimeout(taskId, processId, workerTimeout);
+    }
+
+
+        @Override
     public Collection<TaskContainer> getProcessTasks(Collection<UUID> processTaskIds, UUID processId) {
         Collection<TaskContainer> tasks = new LinkedList<>();
 

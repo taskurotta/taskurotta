@@ -1,4 +1,4 @@
-package ru.taskurotta.service.storage;
+package ru.taskurotta.internal;
 
 import java.util.UUID;
 

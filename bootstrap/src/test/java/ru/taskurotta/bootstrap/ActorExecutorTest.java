@@ -3,9 +3,11 @@ package ru.taskurotta.bootstrap;
 import org.junit.Test;
 import org.slf4j.Marker;
 import ru.taskurotta.bootstrap.profiler.SimpleProfiler;
+import ru.taskurotta.internal.TaskUID;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static org.junit.Assert.assertEquals;
 
@@ -47,7 +49,7 @@ public class ActorExecutorTest {
     private ActorExecutor getModeledActorExecutor() throws NoSuchFieldException, IllegalAccessException {
 
         // create instance
-        ActorExecutor actorExecutor = new ActorExecutor(new SimpleProfiler(), new Inspector(null, null), null, null);
+        ActorExecutor actorExecutor = new ActorExecutor(new SimpleProfiler(), new Inspector(null, null), null, null, new ConcurrentHashMap<TaskUID, Long>());
 
         // set mock logger
         Field field = ActorExecutor.class.getDeclaredField("logger");

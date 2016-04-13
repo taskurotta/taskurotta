@@ -5,6 +5,8 @@ import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.util.ActorDefinition;
 
+import java.util.UUID;
+
 /**
  */
 public class QuorumTaskServerProxy implements TaskServer {
@@ -44,6 +46,17 @@ public class QuorumTaskServerProxy implements TaskServer {
         int needToQuorum = clusterQuorum.needToQuorum();
         if (needToQuorum <= 0) {
             original.release(taskResult);
+            return;
+        }
+
+        throwOutOfQuorumException(needToQuorum);
+    }
+
+    @Override
+    public void updateTaskTimeout(UUID taskId, UUID processId, long timeout) {
+        int needToQuorum = clusterQuorum.needToQuorum();
+        if (needToQuorum <= 0) {
+            original.updateTaskTimeout(taskId, processId, timeout);
             return;
         }
 

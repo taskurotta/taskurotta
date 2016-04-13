@@ -11,6 +11,7 @@ import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
 
 import java.util.Properties;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -86,6 +87,11 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
             @Override
             public void release(TaskDecision taskDecision) {
                 taskSpreader.release(taskDecision);
+            }
+
+            @Override
+            public void updateTimeout(UUID taskId, UUID processId, long timeout) {
+                taskSpreader.updateTimeout(taskId, processId, timeout);
             }
         };
     }

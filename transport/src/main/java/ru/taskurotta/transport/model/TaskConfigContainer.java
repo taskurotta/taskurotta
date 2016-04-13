@@ -2,26 +2,24 @@ package ru.taskurotta.transport.model;
 
 import java.io.Serializable;
 
-/**
- * User: stukushin
- * Date: 21.05.13
- * Time: 14:03
- */
+
 public class TaskConfigContainer implements Serializable {
 
     private String customId;
     private long startTime;
     private String taskList;
     private RetryPolicyConfigContainer retryPolicyConfigContainer;
+    private long timeout;
 
     public TaskConfigContainer() {
     }
 
-    public TaskConfigContainer(String customId, long startTime, String taskList, RetryPolicyConfigContainer retryPolicyConfigContainer) {
+    public TaskConfigContainer(String customId, long startTime, String taskList, RetryPolicyConfigContainer retryPolicyConfigContainer, long timeout) {
         this.customId = customId;
         this.startTime = startTime;
         this.taskList = taskList;
         this.retryPolicyConfigContainer = retryPolicyConfigContainer;
+        this.timeout = timeout;
     }
 
     public String getCustomId() {
@@ -56,6 +54,14 @@ public class TaskConfigContainer implements Serializable {
         this.retryPolicyConfigContainer = retryPolicyConfigContainer;
     }
 
+    public long getTimeout() {
+        return timeout;
+    }
+
+    public void setTimeout(long timeout) {
+        this.timeout = timeout;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -64,12 +70,11 @@ public class TaskConfigContainer implements Serializable {
         TaskConfigContainer that = (TaskConfigContainer) o;
 
         if (startTime != that.startTime) return false;
+        if (timeout != that.timeout) return false;
         if (customId != null ? !customId.equals(that.customId) : that.customId != null) return false;
-        if (retryPolicyConfigContainer != null ? !retryPolicyConfigContainer.equals(that.retryPolicyConfigContainer) : that.retryPolicyConfigContainer != null)
-            return false;
         if (taskList != null ? !taskList.equals(that.taskList) : that.taskList != null) return false;
+        return retryPolicyConfigContainer != null ? retryPolicyConfigContainer.equals(that.retryPolicyConfigContainer) : that.retryPolicyConfigContainer == null;
 
-        return true;
     }
 
     @Override
@@ -78,6 +83,7 @@ public class TaskConfigContainer implements Serializable {
         result = 31 * result + (int) (startTime ^ (startTime >>> 32));
         result = 31 * result + (taskList != null ? taskList.hashCode() : 0);
         result = 31 * result + (retryPolicyConfigContainer != null ? retryPolicyConfigContainer.hashCode() : 0);
+        result = 31 * result + (int) (timeout ^ (timeout >>> 32));
         return result;
     }
 
@@ -88,6 +94,7 @@ public class TaskConfigContainer implements Serializable {
                 ", startTime=" + startTime +
                 ", taskList='" + taskList + '\'' +
                 ", retryPolicyConfigContainer=" + retryPolicyConfigContainer +
+                ", timeout=" + timeout +
                 '}';
     }
 }

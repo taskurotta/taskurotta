@@ -48,6 +48,8 @@ public class JerseyHttpTaskServerProxy extends BaseTaskProxy {
         startResource = contentServerClient.resource(TransportUtils.getRestPath(endpoint, TaskServerResource.START));
         pullResource = contentServerClient.resource(TransportUtils.getRestPath(endpoint, TaskServerResource.POLL));
         releaseResource = contentServerClient.resource(TransportUtils.getRestPath(endpoint, TaskServerResource.RELEASE));
+        updateTimeoutResource = contentServerClient.resource(TransportUtils.getRestPath(endpoint,
+                TaskServerResource.UPDATE_TIMEOUT));
     }
 
     public void setMaxConnectionsPerHost(int maxConnectionsPerHost) {

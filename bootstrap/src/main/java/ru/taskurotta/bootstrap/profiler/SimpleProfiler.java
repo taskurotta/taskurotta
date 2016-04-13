@@ -4,6 +4,7 @@ import ru.taskurotta.RuntimeProcessor;
 import ru.taskurotta.client.TaskSpreader;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
+import ru.taskurotta.internal.Heartbeat;
 
 import java.util.UUID;
 
@@ -21,13 +22,13 @@ public class SimpleProfiler implements Profiler {
     public RuntimeProcessor decorate(final RuntimeProcessor runtimeProcessor) {
         return new RuntimeProcessor() {
             @Override
-            public TaskDecision execute(Task task) {
-                return runtimeProcessor.execute(task);
+            public TaskDecision execute(Task task, Heartbeat heartbeat) {
+                return runtimeProcessor.execute(task, heartbeat);
             }
 
             @Override
-            public Task[] execute(UUID processId, Runnable runnable) {
-                return runtimeProcessor.execute(processId, runnable);
+            public Task[] execute(UUID taskId, UUID processId, Heartbeat heartbeat, Runnable runnable) {
+                return runtimeProcessor.execute(taskId, processId, heartbeat, runnable);
             }
         };
     }
@@ -43,6 +44,11 @@ public class SimpleProfiler implements Profiler {
             @Override
             public void release(TaskDecision taskDecision) {
                 taskSpreader.release(taskDecision);
+            }
+
+            @Override
+            public void updateTimeout(UUID taskId, UUID processId, long timeout) {
+                taskSpreader.updateTimeout(taskId, processId, timeout);
             }
         };
     }

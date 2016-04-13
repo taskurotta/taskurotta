@@ -49,7 +49,7 @@ public class GeneralRuntimeProcessorTest {
         TaskTarget taskTarget = new TaskTargetImpl(TaskType.DECIDER_START, SimpleDecider.class.getName(), "1.0", "start1");
         Task task = TestTasks.newInstance(UUID.randomUUID(), taskTarget, null);
 
-        TaskDecision taskDecision = runtimeProcessor.execute(task);
+        TaskDecision taskDecision = runtimeProcessor.execute(task, null);
         Assert.assertTrue(taskDecision.isError());
         Assert.assertEquals(UndefinedActorException.class, taskDecision.getException().getClass());
     }
@@ -63,7 +63,7 @@ public class GeneralRuntimeProcessorTest {
         TaskTarget taskTarget = new TaskTargetImpl(TaskType.DECIDER_START, SimpleDecider.class.getName(), "1.0", "start");
         Task task = TestTasks.newInstance(UUID.randomUUID(), taskTarget, null);
 
-        TaskDecision taskDecision = runtimeProcessor.execute(task);
+        TaskDecision taskDecision = runtimeProcessor.execute(task, null);
         Assert.assertTrue(taskDecision.isError());
         Assert.assertEquals(RuntimeException.class, taskDecision.getException().getClass());
     }

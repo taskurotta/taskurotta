@@ -25,6 +25,8 @@ public class JerseyTaskServerProxy extends BaseTaskProxy {
         startResource = client.resource(TransportUtils.getRestPath(endpoint, TaskServerResource.START));
         pullResource = client.resource(TransportUtils.getRestPath(endpoint, TaskServerResource.POLL));
         releaseResource = client.resource(TransportUtils.getRestPath(endpoint, TaskServerResource.RELEASE));
+        updateTimeoutResource = client.resource(TransportUtils.getRestPath(endpoint,
+                TaskServerResource.UPDATE_TIMEOUT));
 
         //Prints JSON request to console
         //client.addFilter(new LoggingFilter(System.out));

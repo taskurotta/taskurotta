@@ -16,6 +16,7 @@ import ru.taskurotta.client.TaskSpreader;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
 import ru.taskurotta.core.TaskTarget;
+import ru.taskurotta.internal.Heartbeat;
 import ru.taskurotta.test.fullfeature.RuntimeExceptionHolder;
 import ru.taskurotta.util.DaemonThread;
 
@@ -181,12 +182,12 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
         return new RuntimeProcessor() {
 
             @Override
-            public TaskDecision execute(Task task) {
+            public TaskDecision execute(Task task, Heartbeat heartbeat) {
 
                 long startTime = System.currentTimeMillis();
 
                 try {
-                    return runtimeProcessor.execute(task);
+                    return runtimeProcessor.execute(task, heartbeat);
                 } finally {
                     if (logProfilerSeconds > 0) {
                         updateTimer("execute", task.getTarget(), executeTimers, System.currentTimeMillis() - startTime);
@@ -196,7 +197,7 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
             }
 
             @Override
-            public Task[] execute(UUID processId, Runnable runnable) {
+            public Task[] execute(UUID taskId, UUID processId, Heartbeat heartbeat, Runnable runnable) {
                 throw new IllegalAccessError("Method not supported yet");
             }
         };
@@ -302,6 +303,11 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
 
                 // clean thread local container
                 RuntimeExceptionHolder.exceptionToThrow.set(null);
+            }
+
+            @Override
+            public void updateTimeout(UUID taskId, UUID processId, long timeout) {
+                taskSpreader.updateTimeout(taskId, processId, timeout);
             }
         };
     }

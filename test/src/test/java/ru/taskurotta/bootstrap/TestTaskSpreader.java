@@ -8,6 +8,7 @@ import ru.taskurotta.core.TaskDecision;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * User: stukushin
@@ -47,6 +48,11 @@ public class TestTaskSpreader implements TaskSpreader {
 
     @Override
     public void release(TaskDecision taskDecision) {
+
+    }
+
+    @Override
+    public void updateTimeout(UUID taskId, UUID processId, long timeout) {
 
     }
 }

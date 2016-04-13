@@ -56,7 +56,7 @@ public class ProxyInvocationHandlerTest {
         Class clazz = TestProxy.class;
         Method method = clazz.getMethod("correctMethod", int.class, int.class);
 
-        RuntimeContext.start(UUID.randomUUID());
+        RuntimeContext.start(UUID.randomUUID(), UUID.randomUUID(), null);
 
         try {
 
@@ -74,7 +74,7 @@ public class ProxyInvocationHandlerTest {
         Class clazz = TestProxy.class;
         Method method = clazz.getMethod("voidMethod");
 
-        RuntimeContext.start(UUID.randomUUID());
+        RuntimeContext.start(UUID.randomUUID(), UUID.randomUUID(), null);
 
         try {
 
@@ -92,7 +92,7 @@ public class ProxyInvocationHandlerTest {
         Class clazz = TestProxy.class;
         Method method = clazz.getMethod("incorrectMethod", int.class, int.class);
 
-        RuntimeContext.start(UUID.randomUUID());
+        RuntimeContext.start(UUID.randomUUID(), UUID.randomUUID(), null);
 
         try {
             proxyInvocationHandler.invoke(new TestProxy(), method, new Object[]{1, 2});

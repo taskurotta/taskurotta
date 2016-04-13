@@ -60,7 +60,7 @@ public class WorkerInvocationHandlerTest {
     @Test
     public void testSum() throws Throwable {
 
-        RuntimeContext.start(UUID.randomUUID());
+        RuntimeContext.start(UUID.randomUUID(), UUID.randomUUID(), null);
 
         try {
             assertEquals(Promise.class, workerInvocationHandler.invoke(simpleProxy, methodSum, new Object[]{1, 2}).getClass());
@@ -71,7 +71,7 @@ public class WorkerInvocationHandlerTest {
 
     @Test
     public void testAVoid() throws Throwable {
-        RuntimeContext.start(UUID.randomUUID());
+        RuntimeContext.start(UUID.randomUUID(), UUID.randomUUID(), null);
 
         try {
             assertNull(workerInvocationHandler.invoke(simpleProxy, methodAVoid, new Object[]{}));

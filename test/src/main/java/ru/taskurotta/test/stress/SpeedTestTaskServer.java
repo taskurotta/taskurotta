@@ -8,6 +8,7 @@ import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.util.ActorDefinition;
 
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -117,5 +118,10 @@ public class SpeedTestTaskServer implements TaskServer {
             }
 
         }
+    }
+
+    @Override
+    public void updateTaskTimeout(UUID taskId, UUID processId, long timeout) {
+        originalTaskServer.updateTaskTimeout(taskId, processId, timeout);
     }
 }

@@ -2,11 +2,11 @@ package ru.taskurotta.service.hz.recovery;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.taskurotta.internal.TaskUID;
 import ru.taskurotta.service.common.ResultSetCursor;
 import ru.taskurotta.service.recovery.RecoveryService;
 import ru.taskurotta.service.recovery.RecoveryThreads;
 import ru.taskurotta.service.storage.TaskDao;
-import ru.taskurotta.service.storage.TaskUID;
 import ru.taskurotta.util.Shutdown;
 
 import java.util.Collection;

@@ -189,6 +189,11 @@ public class GeneralTaskServer implements TaskServer {
         processDecision(decision);
     }
 
+    @Override
+    public void updateTaskTimeout(UUID taskId, UUID processId, long timeout) {
+        taskService.updateTimeout(taskId, processId, timeout);
+    }
+
 
     /**
      * @param taskId

@@ -10,6 +10,7 @@ public class TaskConfig {
     private long startTime = -1;
     private String taskList; // name of task queue/list
     private RetryPolicyConfig retryPolicyConfig;
+    private long timeout = -1;
 
     public String getCustomId() {
         return customId;
@@ -44,6 +45,15 @@ public class TaskConfig {
 
     public TaskConfig setRetryPolicyConfig(RetryPolicyConfig retryPolicyConfig) {
         this.retryPolicyConfig = retryPolicyConfig;
+        return this;
+    }
+
+    public long getTimeout() {
+        return timeout;
+    }
+
+    public TaskConfig setTimeout(long timeout) {
+        this.timeout = timeout;
         return this;
     }
 
@@ -85,10 +95,11 @@ public class TaskConfig {
         TaskConfig that = (TaskConfig) o;
 
         if (startTime != that.startTime) return false;
+        if (timeout != that.timeout) return false;
         if (customId != null ? !customId.equals(that.customId) : that.customId != null) return false;
         if (taskList != null ? !taskList.equals(that.taskList) : that.taskList != null) return false;
+        return retryPolicyConfig != null ? retryPolicyConfig.equals(that.retryPolicyConfig) : that.retryPolicyConfig == null;
 
-        return true;
     }
 
     @Override
@@ -96,6 +107,8 @@ public class TaskConfig {
         int result = customId != null ? customId.hashCode() : 0;
         result = 31 * result + (int) (startTime ^ (startTime >>> 32));
         result = 31 * result + (taskList != null ? taskList.hashCode() : 0);
+        result = 31 * result + (retryPolicyConfig != null ? retryPolicyConfig.hashCode() : 0);
+        result = 31 * result + (int) (timeout ^ (timeout >>> 32));
         return result;
     }
 
@@ -106,6 +119,7 @@ public class TaskConfig {
                 ", startTime=" + startTime +
                 ", taskList='" + taskList + '\'' +
                 ", retryPolicyConfig=" + retryPolicyConfig +
+                ", timeout=" + timeout +
                 '}';
     }
 }

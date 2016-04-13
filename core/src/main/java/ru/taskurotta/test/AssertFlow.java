@@ -35,9 +35,10 @@ public abstract class AssertFlow {
 
         final Box<Promise> box = new Box<Promise>();
 
+        UUID taskId = UUID.randomUUID();
         UUID processId = UUID.randomUUID();
 
-        Task[] expectedTaskList = runtimeProcessor.execute(processId, new Runnable() {
+        Task[] expectedTaskList = runtimeProcessor.execute(taskId, processId, null, new Runnable() {
             @Override
             public void run() {
                 Promise promise = expectedFlow();
@@ -52,7 +53,7 @@ public abstract class AssertFlow {
         // 2. run all task sequentially
         // ============================
 
-        Task[] startTasks = runtimeProcessor.execute(processId, new Runnable() {
+        Task[] startTasks = runtimeProcessor.execute(taskId, processId, null, new Runnable() {
             @Override
             public void run() {
                 execute();
@@ -72,7 +73,7 @@ public abstract class AssertFlow {
             throw new TestFailedError("Only DECIDER_START and DECIDER_ASYNCHRONOUS types of Task supported!");
         }
 
-        TaskDecision taskDecision = runtimeProcessor.execute(startTasks[0]);
+        TaskDecision taskDecision = runtimeProcessor.execute(startTasks[0], null);
 
         Task[] interceptedTasks = taskDecision.getTasks();
         Promise interceptedPromise = (Promise) taskDecision.getValue();

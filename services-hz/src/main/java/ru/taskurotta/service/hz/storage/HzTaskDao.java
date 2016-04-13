@@ -145,6 +145,40 @@ public class HzTaskDao implements TaskDao {
     }
 
     @Override
+    public void updateTimeout(UUID taskId, UUID processId, long workerTimeout) {
+
+        TaskKey taskKey = new TaskKey(taskId, processId);
+
+        lock(taskKey);
+
+        try {
+
+            Decision decision = id2TaskDecisionMap.get(taskKey);
+
+            if (decision == null) {
+                // skip it
+                return;
+            }
+
+            if (decision.getState() != Decision.STATE_REGISTERED) {
+                logger.debug("{}/{} Can not start task. Task has {} state (not in registered state)",
+                        taskId, processId, decision.getState());
+
+                return;
+            }
+
+            long recoveryTime = System.currentTimeMillis() + workerTimeout;
+            decision.setRecoveryTime(recoveryTime);
+
+            id2TaskDecisionMap.set(taskKey, decision, 0l, TimeUnit.NANOSECONDS);
+
+        } finally {
+            unlock(taskKey);
+        }
+
+    }
+
+    @Override
     public Decision startTask(UUID taskId, UUID processId, long workerTimeout, boolean failOnWorkerTimeout) {
 
         TaskKey taskKey = new TaskKey(taskId, processId);
@@ -212,8 +246,8 @@ public class HzTaskDao implements TaskDao {
                         if (errorContainer == null || !errorContainer.isFatalError()) {
 
                             logger.debug("{}/{} Can not restart task. Task is finished now and has not fatal error. " +
-                                            "Decision is {}", taskId, processId, decision
-                                            .getState(), decision);
+                                    "Decision is {}", taskId, processId, decision
+                                    .getState(), decision);
                             return false;
                         }
                     }

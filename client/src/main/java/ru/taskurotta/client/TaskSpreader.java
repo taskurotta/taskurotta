@@ -3,6 +3,8 @@ package ru.taskurotta.client;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
 
+import java.util.UUID;
+
 /**
  * User: romario
  * Date: 1/29/13
@@ -22,4 +24,6 @@ public interface TaskSpreader {
      * @param taskDecision
      */
     public void release(TaskDecision taskDecision);
+
+    void updateTimeout(UUID taskId, UUID processId, long timeout);
 }

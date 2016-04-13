@@ -5,6 +5,8 @@ import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.util.ActorDefinition;
 
+import java.util.UUID;
+
 /**
  */
 public class ProxyTaskServer implements TaskServer {
@@ -28,5 +30,10 @@ public class ProxyTaskServer implements TaskServer {
     @Override
     public void release(DecisionContainer taskResult) {
         target.release(taskResult);
+    }
+
+    @Override
+    public void updateTaskTimeout(UUID taskId, UUID processId, long timeout) {
+        target.updateTaskTimeout(taskId, processId, timeout);
     }
 }

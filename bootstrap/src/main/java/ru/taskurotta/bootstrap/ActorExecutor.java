@@ -11,10 +11,13 @@ import ru.taskurotta.core.TaskDecision;
 import ru.taskurotta.exception.SerializationException;
 import ru.taskurotta.exception.server.ServerConnectionException;
 import ru.taskurotta.exception.server.ServerException;
+import ru.taskurotta.internal.Heartbeat;
+import ru.taskurotta.internal.TaskUID;
 import ru.taskurotta.internal.core.TaskDecisionImpl;
 import ru.taskurotta.util.DuplicationErrorSuppressor;
 
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * User: stukushin
@@ -32,11 +35,14 @@ public class ActorExecutor implements Runnable {
 
     private ThreadLocal<Boolean> threadRun = new ThreadLocal<Boolean>();
     private volatile boolean instanceRun = true;
+    private ConcurrentHashMap<TaskUID, Long> timeouts;
 
-    public ActorExecutor(Profiler profiler, Inspector inspector, RuntimeProcessor runtimeProcessor, TaskSpreader taskSpreader) {
+    public ActorExecutor(Profiler profiler, Inspector inspector, RuntimeProcessor runtimeProcessor,
+                         TaskSpreader taskSpreader, ConcurrentHashMap<TaskUID, Long> timeouts) {
         this.profiler = profiler;
         this.runtimeProcessor = inspector.decorate(profiler.decorate(runtimeProcessor));
         this.taskSpreader = inspector.decorate(profiler.decorate(taskSpreader));
+        this.timeouts = timeouts;
     }
 
     @Override
@@ -55,7 +61,7 @@ public class ActorExecutor implements Runnable {
             try {
 
                 logger.trace("Thread [{}]: try to poll", threadName);
-                Task task = null;
+                final Task task;
 
                 try {
                     task = taskSpreader.poll();
@@ -90,8 +96,14 @@ public class ActorExecutor implements Runnable {
 
                 TaskDecision taskDecision = null;
 
+                final TaskUID taskUID = new TaskUID(task.getId(), task.getProcessId());
                 try {
-                    taskDecision = runtimeProcessor.execute(task);
+                    taskDecision = runtimeProcessor.execute(task, new Heartbeat() {
+                        @Override
+                        public void updateTimeout(long timeout) {
+                            timeouts.put(taskUID, timeout);
+                        }
+                    });
                 } catch (SerializationException ex) {
 
                     UUID taskId = ex.getTaskId();
@@ -113,6 +125,8 @@ public class ActorExecutor implements Runnable {
 
                     taskSpreader.release(errorDecision);
                     continue;
+                } finally {
+                    timeouts.remove(taskUID);
                 }
 
                 logger.trace("Thread [{}]: try to release decision [{}] of task [{}]", threadName, taskDecision, task);

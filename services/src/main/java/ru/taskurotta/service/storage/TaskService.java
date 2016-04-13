@@ -1,5 +1,6 @@
 package ru.taskurotta.service.storage;
 
+import ru.taskurotta.internal.TaskUID;
 import ru.taskurotta.transport.model.Decision;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
@@ -35,6 +36,8 @@ public interface TaskService {
      */
     TaskContainer getTask(UUID taskId, UUID processId);
 
+
+    void updateTimeout(UUID taskId, UUID processId, long workerTimeout);
 
     Decision finishTask(DecisionContainer taskDecision);
 

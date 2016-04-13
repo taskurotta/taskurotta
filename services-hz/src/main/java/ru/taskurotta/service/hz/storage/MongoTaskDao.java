@@ -7,11 +7,11 @@ import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.taskurotta.internal.TaskUID;
 import ru.taskurotta.mongodb.driver.BSerializationService;
 import ru.taskurotta.mongodb.driver.DBObjectCheat;
 import ru.taskurotta.service.common.ResultSetCursor;
 import ru.taskurotta.service.hz.serialization.bson.DecisionBSerializer;
-import ru.taskurotta.service.storage.TaskUID;
 import ru.taskurotta.transport.model.Decision;
 
 import java.io.IOException;

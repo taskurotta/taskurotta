@@ -12,6 +12,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class RollingLoggingProfiler implements Profiler {
@@ -127,7 +128,12 @@ public class RollingLoggingProfiler implements Profiler {
 				taskSpreader.release(taskDecision);
 				taskMeterMap.put(END+taskDecision.getId().toString(), new Date());
 			}
-			
+
+			@Override
+			public void updateTimeout(UUID taskId, UUID processId, long timeout) {
+				taskSpreader.updateTimeout(taskId, processId, timeout);
+			}
+
 		};
 	}
 

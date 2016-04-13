@@ -1,8 +1,8 @@
 package ru.taskurotta.service.console.retriever;
 
+import ru.taskurotta.internal.TaskUID;
 import ru.taskurotta.service.console.model.GenericPage;
 import ru.taskurotta.service.console.retriever.command.TaskSearchCommand;
-import ru.taskurotta.service.storage.TaskUID;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 

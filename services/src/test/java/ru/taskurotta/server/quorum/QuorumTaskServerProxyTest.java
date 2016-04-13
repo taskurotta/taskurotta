@@ -6,6 +6,8 @@ import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.util.ActorDefinition;
 
+import java.util.UUID;
+
 import static org.junit.Assert.assertNotNull;
 
 /**
@@ -44,6 +46,11 @@ public class QuorumTaskServerProxyTest {
 
             @Override
             public void release(DecisionContainer taskResult) {
+
+            }
+
+            @Override
+            public void updateTaskTimeout(UUID taskId, UUID processId, long timeout) {
 
             }
         }, mockClusterQuorum);

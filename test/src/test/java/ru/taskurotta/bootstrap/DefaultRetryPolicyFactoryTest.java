@@ -14,6 +14,7 @@ import ru.taskurotta.policy.retry.RetryPolicy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
@@ -52,7 +53,7 @@ public class DefaultRetryPolicyFactoryTest {
         MockActorThreadPool actorExecutorsPool = new MockActorThreadPool(TestWorker.class.getName(), 1);
         Inspector inspector = new Inspector(retryPolicy, actorExecutorsPool);
 
-        ActorExecutor actorExecutor = new ActorExecutor(profiler, inspector, runtimeProcessor, taskSpreader);
+        ActorExecutor actorExecutor = new ActorExecutor(profiler, inspector, runtimeProcessor, taskSpreader, new ConcurrentHashMap<>());
         actorExecutorsPool.start(actorExecutor);
 
         TimeUnit.SECONDS.sleep(5);

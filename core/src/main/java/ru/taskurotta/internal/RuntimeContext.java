@@ -16,17 +16,21 @@ public class RuntimeContext {
     private static ThreadLocal<RuntimeContext> currentContext = new ThreadLocal<RuntimeContext>();
 
     private List<Task> tasks;
+    private UUID taskId;
     private UUID processId;
     private long startTime;
+    private Heartbeat heartbeat;
 
-    public RuntimeContext(UUID processId) {
+    public RuntimeContext(UUID taskId, UUID processId, Heartbeat heartbeat) {
+        this.taskId = taskId;
         this.processId = processId;
         this.startTime = System.currentTimeMillis();
+        this.heartbeat = heartbeat;
     }
 
 
-    public static RuntimeContext start(UUID processId) {
-        RuntimeContext runtimeContext = new RuntimeContext(processId);
+    public static RuntimeContext start(UUID taskId, UUID processId, Heartbeat heartbeat) {
+        RuntimeContext runtimeContext = new RuntimeContext(taskId, processId, heartbeat);
         currentContext.set(runtimeContext);
         return runtimeContext;
     }
@@ -71,5 +75,9 @@ public class RuntimeContext {
 
     public long getStartTime() {
         return startTime;
+    }
+
+    public void updateTimeout(long timeout) {
+        heartbeat.updateTimeout(timeout);
     }
 }

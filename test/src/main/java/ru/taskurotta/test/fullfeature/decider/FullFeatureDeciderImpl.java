@@ -16,6 +16,7 @@ import ru.taskurotta.test.fullfeature.worker.FullFeatureWorkerClient;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Created by void 20.12.13 17:56
@@ -25,6 +26,8 @@ public class FullFeatureDeciderImpl implements FullFeatureDecider {
 
     FullFeatureDeciderImpl async;
     FullFeatureWorkerClient worker;
+
+    Random random = new Random();
 
     @Override
     public void start() {
@@ -66,7 +69,10 @@ public class FullFeatureDeciderImpl implements FullFeatureDecider {
         retryPolicyConfig.setRetryExpirationIntervalSeconds(PolicyConstants.NONE);
         retryPolicyConfig.setType(RetryPolicyConfig.RetryPolicyType.LINEAR);
         retryPolicyConfig.addExceptionToExclude(java.lang.IllegalArgumentException.class);
-        TaskConfig options = new TaskConfig().setStartTime(System.currentTimeMillis() + 100l).setRetryPolicyConfig(retryPolicyConfig);
+        TaskConfig options = new TaskConfig()
+                .setStartTime(System.currentTimeMillis() + 100L)
+                .setRetryPolicyConfig(retryPolicyConfig)
+                .setTimeout(random.nextInt(10));
         Promise<Double> arg = Promise.asPromise(-1 * (p1 + p2.get()));
         Promise<Double> sqrt = worker.sqrt(arg, options);
         return async.step3(arg, sqrt);
