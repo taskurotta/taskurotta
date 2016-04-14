@@ -30,7 +30,7 @@
     </bean>
 
     <!-- Jersey native ws client. Uses new thread for each connection -->
-    <bean id = "taskServer" class="ru.taskurotta.client.jersey.JerseyTaskServerProxy" >
+    <bean id = "taskServer" class="ru.taskurotta.client.jersey.JerseyHttpTaskServerProxy" >
         <property name="connectTimeout" value="3000" />
         <property name="readTimeout" value = "0" />
         <property name="threadPoolSize" value = "10" />

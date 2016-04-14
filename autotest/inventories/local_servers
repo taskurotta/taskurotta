@@ -2,12 +2,12 @@
 tsk_mongodb       ansible_connection=local
 
 [taskurotta]
-tsk_node1         ansible_connection=local
-tsk_node2         ansible_connection=local
+tsk-node1         ansible_connection=local
+tsk-node2         ansible_connection=local
 #tsk_node3         ansible_connection=local
 
 [http]
-tsk_http         ansible_connection=local
+tsk-http         ansible_connection=local
 
 [ff_actors]
 tsk_ff_actors     ansible_connection=local

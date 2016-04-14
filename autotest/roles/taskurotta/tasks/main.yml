@@ -39,7 +39,6 @@
       -Dhazelcast.max.join.seconds=30
       -Dhazelcast.merge.first.run.delay.seconds=10
       -Dhazelcast.merge.next.run.delay.seconds=10
-      -Dhazelcast.operation.thread.count=144
       -Dhazelcast.operation.call.timeout.millis=63000
       -server
       -jar
@@ -50,6 +49,7 @@
     - "8811"
     - "7777"
     net: autotest
+#-Dhazelcast.operation.thread.count=144
 
 - name: 'Wait cluster synchronization'
   tags:

@@ -56,15 +56,15 @@ do_clean()
 do_tail()
 {
     (tail -f -n 10000 data/tsk_ff_pusher/pusher.log & \
-    grep --line-buffered "ERROR" <(tail -f -n 10000 data/tsk_node1/service.log) & \
-    grep --line-buffered "ERROR" <(tail -f -n 10000 data/tsk_node2/service.log) & \
+    grep --line-buffered "ERROR" <(tail -f -n 10000 data/tsk-node1/service.log) & \
+    grep --line-buffered "ERROR" <(tail -f -n 10000 data/tsk-node2/service.log) & \
     grep --line-buffered "totalRate:" <(tail -f -n 10000 data/tsk_ff_actors/actors.log)) | tee /tmp/output
 }
 
 do_tail_hz()
 {
-    (grep --line-buffered "com.hazelcast" <(tail -f -n 10000 data/tsk_node1/service.log) & \
-    grep --line-buffered "com.hazelcast" <(tail -f -n 10000 data/tsk_node2/service.log)) | tee /tmp/output
+    (grep --line-buffered "com.hazelcast" <(tail -f -n 10000 data/tsk-node1/service.log) & \
+    grep --line-buffered "com.hazelcast" <(tail -f -n 10000 data/tsk-node2/service.log)) | tee /tmp/output
 }
 
 
@@ -73,8 +73,8 @@ do_errors()
 {
     set +e
     if [ -f data/tsk_ff_pusher/pusher.log ]; then grep "ERROR" data/tsk_ff_pusher/pusher.log; fi
-    if [ -f data/tsk_node1/service.log ]; then grep "ERROR" data/tsk_node1/service.log; fi
-    if [ -f data/tsk_node2/service.log ]; then grep "ERROR" data/tsk_node2/service.log; fi
+    if [ -f data/tsk-node1/service.log ]; then grep "ERROR" data/tsk-node1/service.log; fi
+    if [ -f data/tsk-node2/service.log ]; then grep "ERROR" data/tsk-node2/service.log; fi
     if [ -f data/tsk_ff_actors/actors.log ]; then grep "ERROR" data/tsk_ff_actors/actors.log; fi
     set -e
 }

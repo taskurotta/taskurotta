@@ -12,6 +12,7 @@ import ru.taskurotta.hazelcast.queue.CachedQueue;
 import ru.taskurotta.hazelcast.queue.delay.CachedDelayQueue;
 import ru.taskurotta.hazelcast.queue.delay.QueueFactory;
 import ru.taskurotta.hazelcast.util.ClusterUtils;
+import ru.taskurotta.server.TaskServer;
 import ru.taskurotta.service.console.model.GenericPage;
 import ru.taskurotta.service.console.model.QueueStatVO;
 import ru.taskurotta.service.console.retriever.QueueInfoRetriever;
@@ -233,6 +234,15 @@ public class HzQueueService implements QueueService, QueueInfoRetriever {
 
         } catch (InterruptedException e) {
             logger.error("Queue poll operation interrupted", e);
+        }
+
+        TaskServer.queueOwner.set(
+                hazelcastInstance.getPartitionService().getPartition(queueName).getOwner().getAddress().getHost());
+
+        if (result != null) {
+            TaskServer.processOwner.set(
+                    hazelcastInstance.getPartitionService().getPartition(result.getProcessId())
+                            .getOwner().getAddress().getHost());
         }
 
         return result;

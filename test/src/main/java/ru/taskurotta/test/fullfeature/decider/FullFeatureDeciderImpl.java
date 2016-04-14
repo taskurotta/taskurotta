@@ -28,6 +28,7 @@ public class FullFeatureDeciderImpl implements FullFeatureDecider {
     FullFeatureWorkerClient worker;
 
     Random random = new Random();
+    boolean setTaskTimeout = false;
 
     @Override
     public void start() {
@@ -71,8 +72,11 @@ public class FullFeatureDeciderImpl implements FullFeatureDecider {
         retryPolicyConfig.addExceptionToExclude(java.lang.IllegalArgumentException.class);
         TaskConfig options = new TaskConfig()
                 .setStartTime(System.currentTimeMillis() + 100L)
-                .setRetryPolicyConfig(retryPolicyConfig)
-                .setTimeout(random.nextInt(10));
+                .setRetryPolicyConfig(retryPolicyConfig);
+
+        if (setTaskTimeout) {
+            options.setTimeout(random.nextInt(10));
+        }
         Promise<Double> arg = Promise.asPromise(-1 * (p1 + p2.get()));
         Promise<Double> sqrt = worker.sqrt(arg, options);
         return async.step3(arg, sqrt);
@@ -126,5 +130,7 @@ public class FullFeatureDeciderImpl implements FullFeatureDecider {
         this.worker = worker;
     }
 
-
+    public void setSetTaskTimeout(boolean setTaskTimeout) {
+        this.setTaskTimeout = setTaskTimeout;
+    }
 }

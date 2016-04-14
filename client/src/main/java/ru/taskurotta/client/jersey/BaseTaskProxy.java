@@ -16,7 +16,9 @@ import ru.taskurotta.util.ActorDefinition;
 import javax.ws.rs.core.MediaType;
 import java.net.InetAddress;
 import java.net.URI;
+import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class BaseTaskProxy implements TaskServer {
 
@@ -28,10 +30,8 @@ public class BaseTaskProxy implements TaskServer {
 
     protected String endpoint = null;
 
-    protected WebResource startResource;
-    protected WebResource pullResource;
-    protected WebResource releaseResource;
-    protected WebResource updateTimeoutResource;
+    ConcurrentHashMap<String, ServerResources> servers = new ConcurrentHashMap<String, ServerResources>();
+    ConcurrentHashMap<ActorDefinition, String> queueOwnersMap = new ConcurrentHashMap<ActorDefinition, String>();
 
     @Override
     public void startProcess(TaskContainer task) {
@@ -39,6 +39,8 @@ public class BaseTaskProxy implements TaskServer {
         if (logger.isTraceEnabled()) {
             logger.trace("Start process thread name[{}]", Thread.currentThread().getName());
         }
+
+        WebResource startResource = servers.get(endpoint).getStartResource();
 
         try {
             WebResource.Builder rb = startResource.getRequestBuilder();
@@ -58,6 +60,37 @@ public class BaseTaskProxy implements TaskServer {
         }
     }
 
+    private ServerResources getQueueOwnerServerResource(ActorDefinition actorDefinition) {
+        String ownerEndpoint = queueOwnersMap.get(actorDefinition);
+
+        if (ownerEndpoint != null) {
+            return getServerResource(ownerEndpoint);
+        }
+
+        return servers.get(endpoint);
+    }
+
+    private ServerResources getServerResource(String ownerEndpoint) {
+
+        if (ownerEndpoint == null) {
+            return servers.get(endpoint);
+        }
+
+        ServerResources serverResources = servers.get(ownerEndpoint);
+
+        if (serverResources != null) {
+            return serverResources;
+        }
+
+        serverResources = servers.get(endpoint).createNewServerResource(ownerEndpoint);
+        servers.putIfAbsent(ownerEndpoint, serverResources);
+
+        return serverResources;
+    }
+
+    private void removeQueueOwner(ActorDefinition actorDefinition) {
+        queueOwnersMap.remove(actorDefinition);
+    }
 
     @Override
     public TaskContainer poll(ActorDefinition actorDefinition) {
@@ -66,22 +99,56 @@ public class BaseTaskProxy implements TaskServer {
             logger.trace("Polling task thread name[{}]", Thread.currentThread().getName());
         }
 
+        WebResource pollResource = getQueueOwnerServerResource(actorDefinition).getPollResource();
+
+        if (logger.isDebugEnabled()) {
+            logger.error("poll actor [{}] tasks from uri [{}]", actorDefinition, pollResource.getURI());
+        }
+
         try {
-            WebResource.Builder rb = pullResource.getRequestBuilder();
+            WebResource.Builder rb = pollResource.getRequestBuilder();
             rb.type(MediaType.APPLICATION_JSON);
             rb.accept(MediaType.APPLICATION_JSON, MediaType.MEDIA_TYPE_WILDCARD);
 
             ClientResponse clientResponse = rb.post(ClientResponse.class, actorDefinition);
+
             if (clientResponse.getStatus() != 204) {//204 = no-content
+
+                String queueOwner = null;
+                List<String> queueOwnerList = clientResponse.getHeaders().get(TaskServer.FIELD_QUEUE_OWNER);
+                if (queueOwnerList != null && !queueOwnerList.isEmpty()) {
+                    queueOwner = queueOwnerList.get(0);
+                }
+
+                TaskServer.queueOwner.remove();
+                if (queueOwner != null) {
+                    logger.debug("queue owner of actor [{}] is [{}]", actorDefinition, queueOwner);
+                    queueOwnersMap.put(actorDefinition, queueOwner);
+                }
+
+                String processOwner = null;
+                List<String> processOwnerList = clientResponse.getHeaders().get(TaskServer.FIELD_PROCESS_OWNER);
+                if (processOwnerList != null && !processOwnerList.isEmpty()) {
+                    processOwner = processOwnerList.get(0);
+                }
+
+                TaskServer.processOwner.remove();
+                if (processOwner != null) {
+                    logger.debug("task process owner of actor [{}] is [{}]", actorDefinition, processOwner);
+                    TaskServer.processOwner.set(processOwner);
+                }
+
                 return clientResponse.getEntity(TaskContainer.class);
             }
         } catch (Throwable ex) {
+
+            removeQueueOwner(actorDefinition);
 
             if (ex instanceof OutOfMemoryError) {
                 throw (OutOfMemoryError) ex;
             }
 
-            String msg = createPollErrorMessage(pullResource.getURI(), actorDefinition, ex);
+            String msg = createPollErrorMessage(pollResource.getURI(), actorDefinition, ex);
 
             checkAndThrowInvalidServerRequestException(msg, ex);
         }
@@ -95,6 +162,12 @@ public class BaseTaskProxy implements TaskServer {
         if (logger.isTraceEnabled()) {
             logger.trace("Releasing task thread name[{}], taskResult[{}]", Thread.currentThread().getName(),
                     taskResult);
+        }
+
+        WebResource releaseResource = getServerResource(TaskServer.processOwner.get()).getReleaseResource();
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("release task [{}] to process owner [{}]", taskResult.getProcessId(), releaseResource.getURI());
         }
 
         try {
@@ -125,6 +198,8 @@ public class BaseTaskProxy implements TaskServer {
                     Thread.currentThread().getName(), updateTimeoutRequest);
         }
 
+        WebResource updateTimeoutResource = servers.get(endpoint).getUpdateTimeoutResource();
+
         try {
             WebResource.Builder rb = updateTimeoutResource.getRequestBuilder();
             rb.type(MediaType.APPLICATION_JSON);
@@ -136,7 +211,7 @@ public class BaseTaskProxy implements TaskServer {
                 throw (OutOfMemoryError) ex;
             }
 
-            String msg = createUpdateTimeoutErrorMessage(releaseResource.getURI(), null, taskId, ex);
+            String msg = createUpdateTimeoutErrorMessage(updateTimeoutResource.getURI(), null, taskId, ex);
 
             checkAndThrowInvalidServerRequestException(msg, ex);
         }

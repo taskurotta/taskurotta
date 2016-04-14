@@ -15,12 +15,15 @@ public class FullFeatureWorkerImpl implements FullFeatureWorker {
 
     Random random = new Random();
 
+    boolean setTaskTimeout = false;
+
     @Override
     public double sqr(double a) {
         RuntimeExceptionHolder.beOrNotToBe();
 
-        RuntimeContext.getCurrent().updateTimeout(random.nextInt(10));
-
+        if (setTaskTimeout) {
+            RuntimeContext.getCurrent().updateTimeout(random.nextInt(10));
+        }
         //log.info("FullFeatureWorkerImpl.sqr({})", a);
         return a*a;
     }
@@ -33,5 +36,9 @@ public class FullFeatureWorkerImpl implements FullFeatureWorker {
             throw new IllegalArgumentException("Argument can not be less than 0: " + a);
         }
         return Math.sqrt(a);
+    }
+
+    public void setSetTaskTimeout(boolean setTaskTimeout) {
+        this.setTaskTimeout = setTaskTimeout;
     }
 }

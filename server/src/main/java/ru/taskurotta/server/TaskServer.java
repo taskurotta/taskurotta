@@ -11,6 +11,13 @@ import java.util.UUID;
  */
 public interface TaskServer {
 
+    String FIELD_QUEUE_OWNER = TaskServer.class.getName() + "#queue-owner";
+    String FIELD_PROCESS_OWNER = TaskServer.class.getName() + "#process-owner";
+
+    ThreadLocal<String> queueOwner = new ThreadLocal<String>();
+    ThreadLocal<String> processOwner = new ThreadLocal<String>();
+
+
     /**
      * @param task
      */

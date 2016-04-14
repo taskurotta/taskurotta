@@ -3,6 +3,8 @@ runtime:
       class: ru.taskurotta.spring.configs.RuntimeConfigPathXmlApplicationContext
       instance:
         context: classpath:ru/taskurotta/test/fullfeature/RuntimeBeans.xml
+        properties:
+          setTaskTimeout: true
 
 spreader:
   - MainTaskSpreaderConfig:
@@ -13,7 +15,7 @@ spreader:
           connectTimeout: 5000
           readTimeout: 0
           threadPoolSize: 50
-          endpoint: "http://tsk_http:80"
+          endpoint: "http://tsk-http:80"
 
 
 profiler:

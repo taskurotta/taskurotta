@@ -15,6 +15,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import static ru.taskurotta.server.TaskServer.queueOwner;
+
 @Path(TaskServerResource.POLL)
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
@@ -31,20 +33,40 @@ public class TaskPollerResource extends TaskServerAbstractResource {
         TaskContainer result = null;
 
         try {
-            result = taskServer.poll(actorDefinition);
-            logger.debug("Task polled for[{}] is[{}]", actorDefinition.getName(), result);
-        } catch (Throwable e) {
-            GeneralTaskServer.errorsCounter.incrementAndGet();
-            logError("Poll task failed!", e);
+            try {
+                result = taskServer.poll(actorDefinition);
+                logger.debug("Task polled for[{}] is[{}]", actorDefinition.getName(), result);
+            } catch (Throwable e) {
+                GeneralTaskServer.errorsCounter.incrementAndGet();
+                logError("Poll task failed!", e);
 
-            return Response.serverError().build();
+                return Response.serverError().build();
+            }
+
+
+            Response.ResponseBuilder responseBuilder = null;
+            if (result == null) {
+                responseBuilder = Response.noContent();
+            } else {
+                responseBuilder = Response.ok(result, MediaType.APPLICATION_JSON);
+
+                String processOwner = TaskServer.processOwner.get();
+                if (processOwner != null) {
+                    responseBuilder.header(TaskServer.FIELD_PROCESS_OWNER, processOwner);
+                }
+            }
+
+            String queueOwner = TaskServer.queueOwner.get();
+            if (queueOwner != null) {
+                responseBuilder.header(TaskServer.FIELD_QUEUE_OWNER, queueOwner);
+            }
+
+
+            return responseBuilder.build();
+
+        } finally {
+            queueOwner.remove();
         }
-
-        if (result == null) {
-            return Response.noContent().build();
-        }
-
-        return Response.ok(result, MediaType.APPLICATION_JSON).build();
 
     }
 
