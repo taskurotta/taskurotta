@@ -15,6 +15,7 @@
     volumes:
     - "{{ ff_actors_path }}:/var/log/taskurotta/actors"
     - "{{ ff_actors_path_javadumps }}:/tmp/javadumps"
+#    - "/home/romario/.m2/repository/ru/taskurotta/taskurotta/10.8.2/taskurotta-10.8.2.jar:/opt/taskurotta/taskurotta.jar"
     - "{{ taskurotta_jar }}:/opt/taskurotta/taskurotta.jar"
     - "{{ ff_actors_config }}:/etc/taskurotta/actors/config.yml"
     command:

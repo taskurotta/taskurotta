@@ -1,5 +1,7 @@
 package ru.taskurotta.transport.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import java.io.Serializable;
 
 
@@ -9,7 +11,9 @@ public class TaskConfigContainer implements Serializable {
     private long startTime;
     private String taskList;
     private RetryPolicyConfigContainer retryPolicyConfigContainer;
-    private long timeout;
+
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
+    private long timeout = -1;
 
     public TaskConfigContainer() {
     }

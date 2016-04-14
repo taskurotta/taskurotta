@@ -44,7 +44,7 @@ actor:
       spreaderConfig: MainTaskSpreaderConfig
       profilerConfig: MainProfilerConfig
       count: 25
-      updateTimeoutInterval: 1 seconds
+#      updateTimeoutInterval: 1 seconds
 
 logback:
     appender:
