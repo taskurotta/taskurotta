@@ -54,7 +54,7 @@ public class DefaultStorageFactory implements StorageFactory {
                         return;
                     }
 
-                    Set<UUID> keys = iMap.localKeySet(new Predicates.BetweenPredicate(ENQUEUE_TIME_NAME, 0l,
+                    Set<UUID> keys = iMap.localKeySet(Predicates.between(ENQUEUE_TIME_NAME, 0l,
                             System.currentTimeMillis()));
 
                     if (keys == null || keys.isEmpty()) {

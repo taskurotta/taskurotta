@@ -142,11 +142,6 @@ public class CachedDelayQueueImpl<E> implements CachedDelayQueue<E> {
     }
 
     @Override
-    public Object getId() {
-        return queue.getId();
-    }
-
-    @Override
     public String getPartitionKey() {
         return queue.getPartitionKey();
     }

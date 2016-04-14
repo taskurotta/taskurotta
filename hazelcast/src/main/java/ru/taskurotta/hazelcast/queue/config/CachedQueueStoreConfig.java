@@ -16,11 +16,12 @@
 
 package ru.taskurotta.hazelcast.queue.config;
 
-import com.hazelcast.util.ValidationUtil;
 import ru.taskurotta.hazelcast.queue.store.CachedQueueStore;
 import ru.taskurotta.hazelcast.queue.store.CachedQueueStoreFactory;
 
 import java.util.Properties;
+
+import static com.hazelcast.util.Preconditions.isNotNull;
 
 /**
  * @author ali 12/14/12
@@ -101,7 +102,7 @@ public class CachedQueueStoreConfig {
     }
 
     public CachedQueueStoreConfig setProperties(Properties properties) {
-        ValidationUtil.isNotNull(properties, "properties");
+        isNotNull(properties, "properties");
         this.properties = properties;
         return this;
     }

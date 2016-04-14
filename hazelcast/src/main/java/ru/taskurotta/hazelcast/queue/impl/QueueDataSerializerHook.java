@@ -16,7 +16,7 @@
 
 package ru.taskurotta.hazelcast.queue.impl;
 
-import com.hazelcast.nio.serialization.ArrayDataSerializableFactory;
+import com.hazelcast.internal.serialization.impl.ArrayDataSerializableFactory;
 import com.hazelcast.nio.serialization.DataSerializableFactory;
 import com.hazelcast.nio.serialization.IdentifiedDataSerializable;
 import com.hazelcast.util.ConstructorFunction;
@@ -29,7 +29,6 @@ import ru.taskurotta.hazelcast.queue.impl.operations.RemainingCapacityOperation;
 import ru.taskurotta.hazelcast.queue.impl.operations.SizeOperation;
 
 /**
- * A {@link com.hazelcast.nio.serialization.DataSerializerHook} for the queue operations and support structures.
  */
 public final class QueueDataSerializerHook {
 

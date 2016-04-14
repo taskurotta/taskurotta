@@ -17,12 +17,12 @@
 package ru.taskurotta.hazelcast.queue.impl;
 
 import com.hazelcast.core.HazelcastException;
+import com.hazelcast.internal.serialization.SerializationService;
 import com.hazelcast.nio.BufferObjectDataOutput;
 import com.hazelcast.nio.ClassLoaderUtil;
 import com.hazelcast.nio.IOUtil;
 import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.serialization.Data;
-import com.hazelcast.nio.serialization.SerializationService;
 import com.hazelcast.util.EmptyStatement;
 import com.hazelcast.util.QuickMath;
 import ru.taskurotta.hazelcast.queue.config.CachedQueueStoreConfig;
@@ -35,7 +35,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.hazelcast.util.ValidationUtil.checkNotNull;
+import static com.hazelcast.util.Preconditions.checkNotNull;
 
 /**
  * Wrapper for the Queue Store.

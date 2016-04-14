@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2015, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2016, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ import com.hazelcast.spi.NodeEngine;
 import com.hazelcast.spi.OperationService;
 import com.hazelcast.util.Clock;
 import com.hazelcast.util.executor.CompletedFuture;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -61,7 +62,7 @@ import static com.hazelcast.util.FutureUtil.ExceptionHandler;
 import static com.hazelcast.util.FutureUtil.logAllExceptions;
 import static com.hazelcast.util.FutureUtil.waitWithDeadline;
 import static com.hazelcast.util.Preconditions.checkNotNull;
-import static com.hazelcast.util.UuidUtil.buildRandomUuidString;
+import static com.hazelcast.util.UuidUtil.newUnsecureUuidString;
 
 public class ExecutorServiceProxy
         extends AbstractDistributedObject<DistributedExecutorService>
@@ -70,7 +71,7 @@ public class ExecutorServiceProxy
     public static final int SYNC_FREQUENCY = 100;
     public static final int SYNC_DELAY_MS = 10;
 
-    private static final AtomicIntegerFieldUpdater<ExecutorServiceProxy> CONSECUTIVE_SUBMITS_UPDATER = AtomicIntegerFieldUpdater
+    private static final AtomicIntegerFieldUpdater<ExecutorServiceProxy> CONSECUTIVE_SUBMITS = AtomicIntegerFieldUpdater
             .newUpdater(ExecutorServiceProxy.class, "consecutiveSubmits");
 
     private static final ExceptionHandler WHILE_SHUTDOWN_EXCEPTION_HANDLER =
@@ -81,7 +82,7 @@ public class ExecutorServiceProxy
     private final int partitionCount;
     private final ILogger logger;
 
-    // This field is never accessed directly but by the CONSECUTIVE_SUBMITS_UPDATER above
+    // This field is never accessed directly but by the CONSECUTIVE_SUBMITS above
     private volatile int consecutiveSubmits;
 
     private volatile long lastSubmitTime;
@@ -196,7 +197,7 @@ public class ExecutorServiceProxy
         NodeEngine nodeEngine = getNodeEngine();
         Callable<T> callable = createRunnableAdapter(task);
         Data callableData = nodeEngine.toData(callable);
-        String uuid = buildRandomUuidString();
+        String uuid = newUnsecureUuidString();
         int partitionId = getTaskPartitionId(callable);
 
         CallableTaskOperation op = new CallableTaskOperation(name, uuid, callableData);
@@ -237,7 +238,7 @@ public class ExecutorServiceProxy
 
         NodeEngine nodeEngine = getNodeEngine();
         Data taskData = nodeEngine.toData(task);
-        String uuid = buildRandomUuidString();
+        String uuid = newUnsecureUuidString();
 
         boolean sync = !preventSync && checkSync();
         CallableTaskOperation op = new CallableTaskOperation(name, uuid, taskData);
@@ -268,8 +269,8 @@ public class ExecutorServiceProxy
         long last = lastSubmitTime;
         long now = Clock.currentTimeMillis();
         if (last + SYNC_DELAY_MS < now) {
-            CONSECUTIVE_SUBMITS_UPDATER.set(this, 0);
-        } else if (CONSECUTIVE_SUBMITS_UPDATER.incrementAndGet(this) % SYNC_FREQUENCY == 0) {
+            CONSECUTIVE_SUBMITS.set(this, 0);
+        } else if (CONSECUTIVE_SUBMITS.incrementAndGet(this) % SYNC_FREQUENCY == 0) {
             sync = true;
         }
         lastSubmitTime = now;
@@ -299,7 +300,7 @@ public class ExecutorServiceProxy
 
         NodeEngine nodeEngine = getNodeEngine();
         Data taskData = nodeEngine.toData(task);
-        String uuid = buildRandomUuidString();
+        String uuid = newUnsecureUuidString();
         Address target = ((MemberImpl) member).getAddress();
 
         boolean sync = checkSync();
@@ -371,7 +372,7 @@ public class ExecutorServiceProxy
         CallableTaskOperation op = new CallableTaskOperation(name, null, taskData);
         OperationService operationService = nodeEngine.getOperationService();
         operationService.createInvocationBuilder(DistributedExecutorService.SERVICE_NAME, op, partitionId)
-                .setCallback(new ExecutionCallbackAdapter(callback)).invoke();
+                .setExecutionCallback((ExecutionCallback) callback).invoke();
     }
 
     @Override
@@ -392,12 +393,13 @@ public class ExecutorServiceProxy
 
         NodeEngine nodeEngine = getNodeEngine();
         Data taskData = nodeEngine.toData(task);
-        String uuid = buildRandomUuidString();
+        String uuid = newUnsecureUuidString();
         MemberCallableTaskOperation op = new MemberCallableTaskOperation(name, uuid, taskData);
         OperationService operationService = nodeEngine.getOperationService();
         Address address = ((MemberImpl) member).getAddress();
-        operationService.createInvocationBuilder(DistributedExecutorService.SERVICE_NAME, op, address)
-                .setCallback(new ExecutionCallbackAdapter(callback)).invoke();
+        operationService
+                .createInvocationBuilder(DistributedExecutorService.SERVICE_NAME, op, address)
+                .setExecutionCallback((ExecutionCallback) callback).invoke();
     }
 
     private String getRejectionMessage() {
@@ -554,11 +556,11 @@ public class ExecutorServiceProxy
     @Override
     public void shutdown() {
         NodeEngine nodeEngine = getNodeEngine();
-        Collection<MemberImpl> members = nodeEngine.getClusterService().getMemberList();
+        Collection<Member> members = nodeEngine.getClusterService().getMembers();
         OperationService operationService = nodeEngine.getOperationService();
         Collection<Future> calls = new LinkedList<Future>();
 
-        for (MemberImpl member : members) {
+        for (Member member : members) {
             if (member.localMember()) {
                 getService().shutdownExecutor(name);
             } else {
@@ -570,7 +572,7 @@ public class ExecutorServiceProxy
         waitWithDeadline(calls, 1, TimeUnit.SECONDS, WHILE_SHUTDOWN_EXCEPTION_HANDLER);
     }
 
-    private InternalCompletableFuture submitShutdownOperation(OperationService operationService, MemberImpl member) {
+    private InternalCompletableFuture submitShutdownOperation(OperationService operationService, Member member) {
         ShutdownOperation op = new ShutdownOperation(name);
         return operationService.invokeOnTarget(getServiceName(), op, member.getAddress());
     }
@@ -605,8 +607,8 @@ public class ExecutorServiceProxy
             throw new IllegalArgumentException("memberSelector must not be null");
         }
         List<Member> selected = new ArrayList<Member>();
-        Collection<MemberImpl> members = getNodeEngine().getClusterService().getMemberList();
-        for (MemberImpl member : members) {
+        Collection<Member> members = getNodeEngine().getClusterService().getMembers();
+        for (Member member : members) {
             if (memberSelector.select(member)) {
                 selected.add(member);
             }

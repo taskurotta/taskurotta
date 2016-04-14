@@ -162,7 +162,7 @@ public class HzInterruptedTasksService implements InterruptedTasksService {
     @Override
     public long deleteTasksForProcess(UUID processId) {
         long result = 0l;
-        Collection<InterruptedTaskExt> tasks = storeIMap.values(new Predicates.EqualPredicate("processId", processId));
+        Collection<InterruptedTaskExt> tasks = storeIMap.values(Predicates.equal("processId", processId));
         if (tasks!=null && !tasks.isEmpty()) {//TODO: lock map for the operation
             for (InterruptedTaskExt task : tasks) {
                 if (storeIMap.containsKey(task.getTaskId())) {

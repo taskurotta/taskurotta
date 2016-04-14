@@ -67,7 +67,7 @@ public class HzActorConfigManager implements ActorConfigManager {
         IMap<String, ActorPreferences> actorsPrefs = hzInstance.getMap(actorConfigName);
         List<ActorPreferences> allPreferences;
         if (filter != null && !filter.trim().isEmpty()) {
-            allPreferences = new ArrayList(actorsPrefs.values(new Predicates.LikePredicate("id", filter + "%")));
+            allPreferences = new ArrayList(actorsPrefs.values(Predicates.like("id", filter + "%")));
         } else {
             allPreferences = new ArrayList(actorsPrefs.values());
         }

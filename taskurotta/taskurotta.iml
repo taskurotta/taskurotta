@@ -100,7 +100,7 @@
     <orderEntry type="module" module-name="hazelcast" />
     <orderEntry type="library" name="Maven: org.springframework:spring-beans:4.1.4.RELEASE" level="project" />
     <orderEntry type="library" name="Maven: org.mongodb:mongo-java-driver:2.12.5" level="project" />
-    <orderEntry type="library" name="Maven: com.hazelcast:hazelcast-all:3.5.5" level="project" />
+    <orderEntry type="library" name="Maven: com.hazelcast:hazelcast-all:3.6.2" level="project" />
     <orderEntry type="module" module-name="recipes" />
     <orderEntry type="module" module-name="test" />
     <orderEntry type="library" name="Maven: org.apache.velocity:velocity:1.7" level="project" />

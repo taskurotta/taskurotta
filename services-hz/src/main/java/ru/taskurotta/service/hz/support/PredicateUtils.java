@@ -16,35 +16,35 @@ public class PredicateUtils {
         if (field == null || value == null) {
             return null;
         }
-        return new Predicates.LikePredicate(field, value.trim() + WILDCARD_SYMBOL);
+        return Predicates.like(field, value.trim() + WILDCARD_SYMBOL);
     }
 
     public static Predicate getEqual(String field, Comparable value) {
         if (field == null || value == null) {
             return null;
         }
-        return new Predicates.EqualPredicate(field, value);
+        return Predicates.equal(field, value);
     }
 
     public static Predicate getLessThen(String field, long positiveValue) {
         if (field == null || positiveValue < 0) {
             return null;
         }
-        return new Predicates.BetweenPredicate(field, 0l, positiveValue);
+        return Predicates.between(field, 0l, positiveValue);
     }
 
     public static Predicate getMoreThen(String field, long positiveValue) {
         if (field == null || positiveValue < 0) {
             return null;
         }
-        return new Predicates.BetweenPredicate(field, positiveValue, Long.MAX_VALUE);
+        return Predicates.between(field, positiveValue, Long.MAX_VALUE);
     }
 
     public static Predicate combineWithAndCondition(List<Predicate> predicates) {
         if (predicates == null || predicates.isEmpty()) {
             return null;
         }
-        return new Predicates.AndPredicate(predicates.toArray(new Predicate[predicates.size()]));
+        return Predicates.and(predicates.toArray(new Predicate[predicates.size()]));
     }
 
 

@@ -19,8 +19,8 @@ package ru.taskurotta.hazelcast.queue.config;
 
 import java.util.EventListener;
 
-import static com.hazelcast.util.ValidationUtil.hasText;
-import static com.hazelcast.util.ValidationUtil.isNotNull;
+import static com.hazelcast.util.Preconditions.checkHasText;
+import static com.hazelcast.util.Preconditions.isNotNull;
 
 /**
  * Contains the configuration for an {@link EventListener}. The configuration contains either the classname
@@ -86,7 +86,7 @@ public class CachedQueueListenerConfig {
      * @see #getClassName()
      */
     public CachedQueueListenerConfig setClassName(String className) {
-        this.className = hasText(className, "className");
+        this.className = checkHasText(className, "className");
         this.implementation = null;
         return this;
     }

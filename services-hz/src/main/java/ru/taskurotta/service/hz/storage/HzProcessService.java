@@ -58,9 +58,9 @@ public class HzProcessService extends AbstractHzProcessService implements Proces
 
     @Override
     public ResultSetCursor findIncompleteProcesses(long recoveryTime, int limit) {
-        com.hazelcast.query.Predicate predicate = new Predicates.AndPredicate(
-                new Predicates.BetweenPredicate(START_TIME_INDEX_NAME, 0l, recoveryTime),
-                new Predicates.EqualPredicate(STATE_INDEX_NAME, Process.ACTIVE));
+        com.hazelcast.query.Predicate predicate = Predicates.and(
+                Predicates.between(START_TIME_INDEX_NAME, 0l, recoveryTime),
+                Predicates.equal(STATE_INDEX_NAME, Process.ACTIVE));
 
         //PagingPredicate should be available in HZ 3.2
         final Collection<UUID> result = new ArrayList<>();

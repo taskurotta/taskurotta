@@ -32,13 +32,20 @@
       -XX:+PreserveFramePointer
       -XX:+HeapDumpOnOutOfMemoryError
       -XX:HeapDumpPath=/tmp/javadumps
-      -Dhazelcast.health.monitoring.level=OFF -Dru.taskurotta.service.hz.storage.saveFinishedProcessCustomId=true
+      -XX:OnOutOfMemoryError="kill -9 %p"
+      -Dru.taskurotta.service.hz.storage.saveFinishedProcessCustomId=true
+      -Dhazelcast.health.monitoring.level=OFF
       -Dhazelcast.socket.connect.timeout.seconds=10
       -Dhazelcast.max.join.seconds=30
       -Dhazelcast.merge.first.run.delay.seconds=10
       -Dhazelcast.merge.next.run.delay.seconds=10
-      -server -jar /opt/taskurotta/taskurotta.jar
-      server /etc/taskurotta/server/config.yml
+      -Dhazelcast.operation.thread.count=144
+      -Dhazelcast.operation.call.timeout.millis=63000
+      -server
+      -jar
+      /opt/taskurotta/taskurotta.jar
+      server
+      /etc/taskurotta/server/config.yml
     expose:
     - "8811"
     - "7777"

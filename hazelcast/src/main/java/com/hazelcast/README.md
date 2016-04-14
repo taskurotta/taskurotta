@@ -1,4 +1,4 @@
-# com.hazelcast.nio.serialization.SerializationServiceImpl
+# AbstractSerializationService
 
 Added serializersCache
 

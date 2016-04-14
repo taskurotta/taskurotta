@@ -16,8 +16,8 @@
 
 package ru.taskurotta.hazelcast.queue.impl;
 
+import com.hazelcast.internal.serialization.SerializationService;
 import com.hazelcast.nio.serialization.Data;
-import com.hazelcast.nio.serialization.SerializationService;
 import com.hazelcast.spi.NodeEngine;
 import com.yammer.metrics.core.Meter;
 import com.yammer.metrics.core.Timer;

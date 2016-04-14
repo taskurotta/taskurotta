@@ -298,11 +298,6 @@ public class MemberQueue<E> implements CachedQueue<E> {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    @Override
-    public Object getId() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
     //    @Override
     public String getPartitionKey() {
         return partiotionKey;
