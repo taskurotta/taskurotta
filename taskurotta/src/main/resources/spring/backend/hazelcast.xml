@@ -74,7 +74,7 @@
                 <constructor-arg name="duration" value="${hz.recovery.merge-period}"/>
             </bean>
         </constructor-arg>
-
+        <constructor-arg name="partitionRoutingEnabled" value="${hz.partition-routing.enable}" />
     </bean>
 
     <bean id="queueService" class="ru.taskurotta.assemble.ProxyQueueService">

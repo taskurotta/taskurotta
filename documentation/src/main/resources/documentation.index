@@ -1,5 +1,6 @@
 src/main/resources/content/ActorVersions.md
 src/main/resources/content/TaskTimeout.md
+src/main/resources/content/PartitionRouting.md
 src/main/resources/content/GC.md
 src/main/resources/content/Documentation.md
 src/main/resources/content/Autotest.md

@@ -4,7 +4,9 @@
 
     <!-- REST resources -->
     <bean id="taskPollerResource" class="ru.taskurotta.dropwizard.resources.TaskPollerResource">
-        <property name="taskServer" ref="taskServer"/>
+        <constructor-arg name="taskServer" ref="taskServer"/>
+        <constructor-arg name="partitionRoutingEnabled" value="${hz.partition-routing.enable}" />
+        <constructor-arg name="partitionRoutingPort" value="${hz.partition-routing.port}" />
     </bean>
     <bean id="taskReleaserResource" class="ru.taskurotta.dropwizard.resources.TaskReleaserResource">
         <property name="taskServer" ref="taskServer"/>

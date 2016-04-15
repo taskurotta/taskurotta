@@ -41,7 +41,7 @@ public class HzServiceBundle implements ServiceBundle {
         this.taskService = new GeneralTaskService(taskDao, workerTimeoutMilliseconds);
         StorageFactory storageFactory = new DefaultStorageFactory(hazelcastInstance, "storageName", 100l);
         QueueFactory queueFactory = new DefaultQueueFactory(hazelcastInstance, storageFactory);
-        this.queueService = new HzQueueService(queueFactory, hazelcastInstance, "q:", 5000, pollDelay);
+        this.queueService = new HzQueueService(queueFactory, hazelcastInstance, "q:", 5000, pollDelay, false);
 
         this.graphDao = new HzGraphDao(hazelcastInstance);
         this.dependencyService = new GeneralDependencyService(graphDao);

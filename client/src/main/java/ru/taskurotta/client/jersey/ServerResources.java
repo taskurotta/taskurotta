@@ -80,6 +80,6 @@ class ServerResources {
 
 
     public ServerResources createNewServerResource(String newEndpoint) {
-        return new ServerResources("http://" + newEndpoint + ":8811", threadPoolSize, connectTimeout, readTimeout, maxConnectionsPerHost);
+        return new ServerResources(newEndpoint, threadPoolSize, connectTimeout, readTimeout, maxConnectionsPerHost);
     }
 }

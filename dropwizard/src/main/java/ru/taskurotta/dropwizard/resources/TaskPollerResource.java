@@ -15,7 +15,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import static ru.taskurotta.server.TaskServer.queueOwner;
 
 @Path(TaskServerResource.POLL)
 @Consumes(MediaType.APPLICATION_JSON)
@@ -25,6 +24,14 @@ public class TaskPollerResource extends TaskServerAbstractResource {
     private static final Logger logger = LoggerFactory.getLogger(TaskPollerResource.class);
 
     private TaskServer taskServer;
+    private boolean partitionRoutingEnabled;
+    private String partitionRoutingPort;
+
+    public TaskPollerResource(TaskServer taskServer, boolean partitionRoutingEnabled, String partitionRoutingPort) {
+        this.taskServer = taskServer;
+        this.partitionRoutingEnabled = partitionRoutingEnabled;
+        this.partitionRoutingPort = partitionRoutingPort;
+    }
 
     @POST
     public Response poll(ActorDefinition actorDefinition) throws Exception {
@@ -50,28 +57,32 @@ public class TaskPollerResource extends TaskServerAbstractResource {
             } else {
                 responseBuilder = Response.ok(result, MediaType.APPLICATION_JSON);
 
-                String processOwner = TaskServer.processOwner.get();
-                if (processOwner != null) {
-                    responseBuilder.header(TaskServer.FIELD_PROCESS_OWNER, processOwner);
+                if (partitionRoutingEnabled) {
+                    String processOwner = TaskServer.processOwner.get();
+                    if (processOwner != null) {
+                        responseBuilder.header(TaskServer.FIELD_PROCESS_OWNER, createEndpoint(processOwner));
+                    }
                 }
             }
 
-            String queueOwner = TaskServer.queueOwner.get();
-            if (queueOwner != null) {
-                responseBuilder.header(TaskServer.FIELD_QUEUE_OWNER, queueOwner);
+            if (partitionRoutingEnabled) {
+                String queueOwner = TaskServer.queueOwner.get();
+                if (queueOwner != null) {
+                    responseBuilder.header(TaskServer.FIELD_QUEUE_OWNER, createEndpoint(queueOwner));
+                }
             }
-
 
             return responseBuilder.build();
 
         } finally {
-            queueOwner.remove();
+            TaskServer.queueOwner.remove();
         }
 
     }
 
-    public void setTaskServer(TaskServer taskServer) {
-        this.taskServer = taskServer;
+
+    private String createEndpoint(String host) {
+        return "http://" + host + ":" + partitionRoutingPort;
     }
 
 }

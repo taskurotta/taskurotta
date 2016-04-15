@@ -50,32 +50,34 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class HzQueueService implements QueueService, QueueInfoRetriever {
 
+    protected static final String HZ_QUEUE_INFO_EXECUTOR_SERVICE = "hzQueueInfoExecutorService";
+    private static final String LAST_POLLED_TASK_ENQUEUE_TIME = "lastPolledTaskEnqueueTimes";
+    private static final String SYNCH_LOCK_NAME = HzQueueService.class.getName().concat("#SINCH_LOCK");
+
     public static AtomicInteger pushedTaskToQueue = new AtomicInteger();
     public static AtomicInteger pushedTaskToQueueWithDelay = new AtomicInteger();
 
     private static final Logger logger = LoggerFactory.getLogger(HzQueueService.class);
     private transient final ReentrantLock lock = new ReentrantLock();
     private long pollDelay;
-    protected final ConcurrentHashMap<String, Long> lastPolledTaskEnqueueTimes = new ConcurrentHashMap<>();
 
     protected QueueFactory queueFactory;
     protected HazelcastInstance hazelcastInstance;
     protected String queueNamePrefix;
+    boolean partitionRoutingEnabled;
 
-    protected static final String HZ_QUEUE_INFO_EXECUTOR_SERVICE = "hzQueueInfoExecutorService";
-
-    private static final String LAST_POLLED_TASK_ENQUEUE_TIME = "lastPolledTaskEnqueueTimes";
-    private static final String SYNCH_LOCK_NAME = HzQueueService.class.getName().concat("#SINCH_LOCK");
+    protected final ConcurrentHashMap<String, Long> lastPolledTaskEnqueueTimes = new ConcurrentHashMap<>();
 
     private ILock synchLock = null;
 
     private Map<String, CachedDelayQueue<TaskQueueItem>> queueMap = new ConcurrentHashMap<>();
 
-    public HzQueueService(QueueFactory queueFactory, HazelcastInstance hazelcastInstance, String queueNamePrefix, long mergePeriodMs, long pollDelay) {
+    public HzQueueService(QueueFactory queueFactory, HazelcastInstance hazelcastInstance, String queueNamePrefix, long mergePeriodMs, long pollDelay, boolean partitionRoutingEnabled) {
         this.queueFactory = queueFactory;
         this.hazelcastInstance = hazelcastInstance;
         this.queueNamePrefix = queueNamePrefix;
         this.pollDelay = pollDelay;
+        this.partitionRoutingEnabled = partitionRoutingEnabled;
 
         this.synchLock = hazelcastInstance.getLock(SYNCH_LOCK_NAME);
 
@@ -236,17 +238,20 @@ public class HzQueueService implements QueueService, QueueInfoRetriever {
             logger.error("Queue poll operation interrupted", e);
         }
 
-        TaskServer.queueOwner.set(
-                hazelcastInstance.getPartitionService().getPartition(queueName).getOwner().getAddress().getHost());
+        if (partitionRoutingEnabled) {
+            TaskServer.queueOwner.set(
+                    hazelcastInstance.getPartitionService().getPartition(queueName).getOwner().getAddress().getHost());
 
-        if (result != null) {
-            TaskServer.processOwner.set(
-                    hazelcastInstance.getPartitionService().getPartition(result.getProcessId())
-                            .getOwner().getAddress().getHost());
+            if (result != null) {
+                TaskServer.processOwner.set(
+                        hazelcastInstance.getPartitionService().getPartition(result.getProcessId())
+                                .getOwner().getAddress().getHost());
+            }
         }
 
         return result;
     }
+
 
     private void updateQueueEffectiveTime(String queueName, TaskQueueItem result) {
         long lastPolledTaskEnqueueTime = (result != null ? result.getEnqueueTime() : System.currentTimeMillis());
