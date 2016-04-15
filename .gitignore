@@ -8,11 +8,11 @@
 logs/
 
 # Idea
-*.iml
+*/*.iml
 .idea/
 target/
 */target/
-assemble/dependency-reduced-pom.xml
+*/dependency-reduced-pom.xml
 
 # Eclipse
 *.pydevproject
