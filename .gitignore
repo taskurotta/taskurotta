@@ -8,7 +8,7 @@
 logs/
 
 # Idea
-*/*.iml
+**/*.iml
 .idea/
 target/
 */target/
