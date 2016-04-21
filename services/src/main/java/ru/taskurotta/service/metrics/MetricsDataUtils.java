@@ -23,26 +23,26 @@ public class MetricsDataUtils {
 
     public static List<Number[]> getNonZeroValuesDataSet(List<Number[]> target) {
         List<Number[]> result = new ArrayList<>();
-        if (target!=null && !target.isEmpty()) {
-            for(Number[] item : target) {
+        if (target != null && !target.isEmpty()) {
+            for (Number[] item : target) {
                 if (isContainNotNegativeValue(item, true)) {
                     result.add(item);
                 }
             }
         }
         if (logger.isDebugEnabled()) {
-            logger.debug("Remove zero values filter: before [{}] after [{}] points", target!=null? target.size(): null, result.size());
+            logger.debug("Remove zero values filter: before [{}] after [{}] points", target != null ? target.size() : null, result.size());
         }
         return result;
     }
 
     public static boolean isContainNotNegativeValue(Number[] point, boolean nullAllowed) {
         boolean result = true;
-        if (point!=null && point[0]!=null && point[1]!=null) {
+        if (point != null && point[0] != null && point[1] != null) {
             if (!isNotNegativeNumber(point[1], nullAllowed)) {//intrested only in value
                 result = false;
             }
-        } else{
+        } else {
             result = false;
         }
         return result;
@@ -51,17 +51,17 @@ public class MetricsDataUtils {
     public static boolean isNotNegativeNumber(Number target, boolean nullAllowed) {
         boolean result = false;
         if (target == null) {
-           result = nullAllowed;
+            result = nullAllowed;
 
         } else {
             if (Long.class.isAssignableFrom(target.getClass())) {
-                result = (Long)target >= 0l;
-            } else if(Double.class.isAssignableFrom(target.getClass())) {
-                result = (Double)target >= 0d;
-            } else if(Integer.class.isAssignableFrom(target.getClass())) {
-                result = (Integer)target >= 0;
-            } else if(Float.class.isAssignableFrom(target.getClass())) {
-                result = (Float)target >= 0f;
+                result = (Long) target >= 0l;
+            } else if (Double.class.isAssignableFrom(target.getClass())) {
+                result = (Double) target >= 0d;
+            } else if (Integer.class.isAssignableFrom(target.getClass())) {
+                result = (Integer) target >= 0;
+            } else if (Float.class.isAssignableFrom(target.getClass())) {
+                result = (Float) target >= 0f;
             }
         }
         return result;
@@ -69,16 +69,16 @@ public class MetricsDataUtils {
 
     public static List<Number[]> getSmoothedDataSet(List<Number[]> target, int times) {
         List<Number[]> compressedData = new ArrayList<>();
-        if (times>1 && target!=null && !target.isEmpty()) {
-            for(int i = 0; i<target.size(); i++) {
-                if (((i+1)%times) == 0) {
-                    Number[] item = {target.get(i)[0], getSiblingsAverage(i, times-1, target)};
+        if (times > 1 && target != null && !target.isEmpty()) {
+            for (int i = 0; i < target.size(); i++) {
+                if (((i + 1) % times) == 0) {
+                    Number[] item = {target.get(i)[0], getSiblingsAverage(i, times - 1, target)};
                     compressedData.add(item);
                 }
             }
         }
         if (logger.isDebugEnabled()) {
-            logger.debug("Smoothing data filter: before [{}] after [{}] points", target!=null? target.size(): null, compressedData.size());
+            logger.debug("Smoothing data filter: before [{}] after [{}] points", target != null ? target.size() : null, compressedData.size());
         }
 
         return compressedData;
@@ -88,10 +88,10 @@ public class MetricsDataUtils {
         if (target == null) {
             return null;
         }
-        int min = position-siblingCount;
-        int max = position+siblingCount;
-        min = min<0? 0: min;
-        max = max>target.size()?target.size(): max;
+        int min = position - siblingCount;
+        int max = position + siblingCount;
+        min = min < 0 ? 0 : min;
+        max = max > target.size() ? target.size() : max;
 
         Class<? extends Number> targetValueClass = getFirstItemClass(target);
         Number value = target.get(position)[1];
@@ -101,20 +101,20 @@ public class MetricsDataUtils {
         } else if (Long.class.isAssignableFrom(targetValueClass)) {
             result = getAverageLongValue(target, min, max);
 
-        } else if(Double.class.isAssignableFrom(targetValueClass)) {
+        } else if (Double.class.isAssignableFrom(targetValueClass)) {
             result = getAverageDoubleValue(target, min, max);
 
         } else {
-            throw new IllegalArgumentException("Unsupported value class: " + (value!=null? value.getClass().getName(): null));
+            throw new IllegalArgumentException("Unsupported value class: " + (value != null ? value.getClass().getName() : null));
         }
         return result;
     }
 
     public static Class<? extends Number> getFirstItemClass(List<Number[]> target) {
         Class<? extends Number> result = null;
-        if (target!=null && !target.isEmpty()) {
-            for(Number[] item: target) {
-                if (item!=null && item[1]!=null) {
+        if (target != null && !target.isEmpty()) {
+            for (Number[] item : target) {
+                if (item != null && item[1] != null) {
                     result = item[1].getClass();
                     break;
                 }
@@ -137,8 +137,8 @@ public class MetricsDataUtils {
             }
         }
 
-        if (count>0) {
-            result = result/Long.valueOf(count);
+        if (count > 0) {
+            result = result / Long.valueOf(count);
         }
 
         return result;
@@ -148,7 +148,7 @@ public class MetricsDataUtils {
     public static Number getAverageDoubleValue(List<Number[]> target, int from, int to) {
         Double result = null;
         int count = 0;
-        for(int i = from; i < to; i++) {
+        for (int i = from; i < to; i++) {
             if (isContainNotNegativeValue(target.get(i), false)) {
                 if (result == null) {
                     result = 0d;
@@ -158,8 +158,8 @@ public class MetricsDataUtils {
             }
         }
 
-        if (count > 0){
-            result = result/Double.valueOf(count);
+        if (count > 0) {
+            result = result / Double.valueOf(count);
         }
 
         return result;
@@ -168,11 +168,11 @@ public class MetricsDataUtils {
 
     public static List<Number[]> convertToDataRow(DataPointVO<? extends Number>[] target, boolean toTimeline, float timeStep) {
         List<Number[]> result = new ArrayList<>();
-        if (target!=null && target.length> 0) {
+        if (target != null && target.length > 0) {
             for (int i = 0; i < target.length; i++) {
-                Number value = target[i]!=null? target[i].getValue(): null;
+                Number value = target[i] != null ? target[i].getValue() : null;
 
-                Number[] item = {toTimeline? convertToTime(i, target[i]!=null? target[i].getTime(): 0, target.length, timeStep): i, value};
+                Number[] item = {toTimeline ? convertToTime(i, target[i] != null ? target[i].getTime() : 0, target.length, timeStep) : i, value};
                 result.add(item);
             }
         }
@@ -181,7 +181,7 @@ public class MetricsDataUtils {
 
     public static List<Number[]> convertToTimedDataRow(DataPointVO<? extends Number>[] target) {
         List<Number[]> result = new ArrayList<>();
-        if (target!=null && target.length> 0) {
+        if (target != null && target.length > 0) {
             boolean hasNullGap = false;
             for (int i = 0; i < target.length; i++) {
                 Number[] item = new Number[2];
@@ -204,7 +204,7 @@ public class MetricsDataUtils {
     }
 
     public static void sortDataSet(DataPointVO<? extends Number>[] target) {
-        if(target!=null && target.length>0) {
+        if (target != null && target.length > 0) {
             Arrays.sort(target, new Comparator<DataPointVO<? extends Number>>() {
                 @Override
                 public int compare(DataPointVO<? extends Number> o1, DataPointVO<? extends Number> o2) {
@@ -231,9 +231,9 @@ public class MetricsDataUtils {
 
     public static long getTotalCounts(DataPointVO<Long>[] target) {
         long result = 0l;
-        if (target!=null && target.length>0) {
-            for (int i = 0; i<target.length; i++) {
-                if (target[i]!=null && target[i].getValue()!=null && target[i].getValue()>=0) {
+        if (target != null && target.length > 0) {
+            for (int i = 0; i < target.length; i++) {
+                if (target[i] != null && target[i].getValue() != null && target[i].getValue() >= 0) {
                     result += target[i].getValue();
                 }
             }
@@ -245,15 +245,15 @@ public class MetricsDataUtils {
         double result = 0d;
         int resultCount = 0;
 
-        if (target!=null && target.length>0) {
-            for (int i = 0; i<target.length; i++) {
-                if (target[i]!=null && target[i].getValue()!=null && target[i].getValue()>=0) {
+        if (target != null && target.length > 0) {
+            for (int i = 0; i < target.length; i++) {
+                if (target[i] != null && target[i].getValue() != null && target[i].getValue() >= 0) {
                     result += target[i].getValue();
                     resultCount++;
                 }
             }
-            if (resultCount>0) {
-                result = result/Double.valueOf(resultCount);
+            if (resultCount > 0) {
+                result = result / Double.valueOf(resultCount);
             }
         }
 
@@ -266,7 +266,7 @@ public class MetricsDataUtils {
         if (target != null && target.length > 0) {
             result = 0l;
             for (DataPointVO<Long> dp : target) {
-                if (dp!=null && dp.getValue()>0) {
+                if (dp != null && dp.getValue() > 0) {
                     result += dp.getValue();
                 }
             }
@@ -274,7 +274,6 @@ public class MetricsDataUtils {
 
         return result;
     }
-
 
 
 }

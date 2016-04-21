@@ -30,6 +30,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -85,21 +86,6 @@ public class HzQueueService implements QueueService, QueueInfoRetriever {
 
         //Queue statistics for recovery
         scheduledExecutorService.scheduleAtFixedRate(new StatisticsMerger(), 0, mergePeriodMs, TimeUnit.MILLISECONDS);
-    }
-
-    private static QueueStatVO getItemByName(List<QueueStatVO> list, String name) {
-        QueueStatVO result = null;
-
-        if (list != null && !list.isEmpty() && !StringUtils.isBlank(name)) {
-            for (QueueStatVO qs : list) {
-                if (name.equals(qs.getName())) {
-                    result = qs;
-                    break;
-                }
-            }
-        }
-
-        return result;
     }
 
     class StatisticsMerger implements Runnable {
@@ -158,6 +144,7 @@ public class HzQueueService implements QueueService, QueueInfoRetriever {
             }
         }
 
+        // todo: rename this method with Local suffix
         Long time = lastPolledTaskEnqueueTimes.get(ActorUtils.toPrefixed(queueName, queueNamePrefix));
 
         // if no tasks in queue, than return -1
@@ -361,30 +348,28 @@ public class HzQueueService implements QueueService, QueueInfoRetriever {
             if (!queueNames.isEmpty()) {
                 IExecutorService es = hazelcastInstance.getExecutorService(HZ_QUEUE_INFO_EXECUTOR_SERVICE);
                 Map<Member, Future<List<QueueStatVO>>> results = es.submitToAllMembers(new HzQueueStatTask(new ArrayList<>(queueNames), queueNamePrefix));
-                List<QueueStatVO> resultItems = new ArrayList<>();
+
+                Map<String, QueueStatVO> queueStatVOMap = new HashMap();
                 int nodes = 0;
                 for (Future<List<QueueStatVO>> nodeResultFuture : results.values()) {
                     try {
                         List<QueueStatVO> qStat = nodeResultFuture.get(5, TimeUnit.SECONDS);
                         logger.debug("Try to merge queue list from node, qStat size[{}]", qStat.size());
-                        mergeByQueueName(resultItems, qStat);
+                        mergeByQueueName(queueStatVOMap, qStat);
                         nodes++;
                     } catch (Exception e) {
-                        logger.warn("Cannot obtain QueueStatVO data from node", e);
+                        logger.error("Cannot obtain QueueStatVO data from node", e);
                     }
                 }
 
+                // @todo: remove this information from actor list page
+                List<QueueStatVO> resultItems = new ArrayList<>(queueStatVOMap.values());
                 if (!resultItems.isEmpty()) {
                     for (QueueStatVO item : resultItems) {
                         item.setNodes(nodes);
                         item.setLocal(ClusterUtils.isLocalCachedQueue(hazelcastInstance,
                                 queueNamePrefix + item.getName()));
 
-                        long time = getLastPolledTaskEnqueueTime(item.getName());
-                        if (logger.isDebugEnabled()) {
-                            logger.debug("LastPolledTaskEnqueueTime for queue [{}] is [{}]", item.getName(), time);
-                        }
-                        item.setLastPolledTaskEnqueueTime(time);
                     }
 
                     result = new GenericPage<>(resultItems, pageNum, pageSize, fullFilteredQueueNamesList.size());
@@ -457,16 +442,20 @@ public class HzQueueService implements QueueService, QueueInfoRetriever {
         return result;
     }
 
-    private void mergeByQueueName(List<QueueStatVO> mergeTo, List<QueueStatVO> mergeFrom) {
-        if (mergeFrom != null && !mergeFrom.isEmpty()) {
-            for (QueueStatVO mergeFromItem : mergeFrom) {
-                QueueStatVO mergeTarget = getItemByName(mergeTo, mergeFromItem.getName());
-                if (mergeTarget != null) {
-                    mergeTarget.sumValuesWith(mergeFromItem);
-                } else {
-                    mergeTo.add(mergeFromItem);
-                }
+
+    private void mergeByQueueName(Map<String, QueueStatVO> queueStatVOMap, List<QueueStatVO> mergeFrom) {
+        if (mergeFrom == null || mergeFrom.isEmpty()) {
+            return;
+        }
+
+        for (QueueStatVO mergeFromItem : mergeFrom) {
+            QueueStatVO mergeTarget = queueStatVOMap.get(mergeFromItem.getName());
+            if (mergeTarget != null) {
+                mergeTarget.merge(mergeFromItem);
+            } else {
+                queueStatVOMap.put(mergeFromItem.getName(), mergeFromItem);
             }
         }
     }
+
 }

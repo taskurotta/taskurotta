@@ -36,14 +36,13 @@ public class NumberDataHandler implements NumberDataListener, MetricsNumberDataR
 
     @Override
     public void handleNumberData(String metricName, String datasetName, Number value, long currentTime, int maxPoints) {
-        // todo: holder key should not be String. Remove unnecessary String concatenation operations
         String holderKey = MetricsDataUtils.getKey(metricName, datasetName);
 
         NumberDataRowVO dataRow = dataHolder.get(holderKey);
-        if(dataRow == null) {
+        if (dataRow == null) {
             synchronized (dataHolder) {
                 dataRow = dataHolder.get(holderKey);
-                if(dataRow == null) {
+                if (dataRow == null) {
                     dataRow = new NumberDataRowVO(maxPoints, metricName, datasetName);
                     dataHolder.put(holderKey, dataRow);
                 }
@@ -59,7 +58,7 @@ public class NumberDataHandler implements NumberDataListener, MetricsNumberDataR
     @Override
     public Collection<String> getNumberMetricNames() {
         Set<String> result = new HashSet<>();
-        for (NumberDataRowVO value: dataHolder.values()) {
+        for (NumberDataRowVO value : dataHolder.values()) {
             result.add(value.getMetricsName());
         }
         return result;
@@ -68,7 +67,7 @@ public class NumberDataHandler implements NumberDataListener, MetricsNumberDataR
     @Override
     public Collection<String> getNumberDataSets(String metricName) {
         Set<String> result = new HashSet<>();
-        for (NumberDataRowVO value: dataHolder.values()) {
+        for (NumberDataRowVO value : dataHolder.values()) {
             if (value.getMetricsName().equals(metricName)) {
                 result.add(value.getDataSetName());
             }
@@ -102,11 +101,7 @@ public class NumberDataHandler implements NumberDataListener, MetricsNumberDataR
         Number result = null;
         NumberDataRowVO value = dataHolder.get(MetricsDataUtils.getKey(metricName, datasetName));
         if (value != null) {
-            DataPointVO<Number>[] data = value.getCurrentData();
-            if (data!=null && data.length>0) {
-                MetricsDataUtils.sortDataSet(data);
-                result = data[data.length-1].getValue();
-            }
+            result = value.getLastValue();
         }
         logger.debug("Last value for metric[{}], dataset[{}] is [{}]", metricName, datasetName, result);
         return result;

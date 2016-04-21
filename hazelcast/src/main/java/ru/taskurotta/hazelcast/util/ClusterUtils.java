@@ -27,10 +27,11 @@ public class ClusterUtils {
     }
 
     public static boolean isLocalCachedQueue(HazelcastInstance hazelcastInstance, String queueName) {
-        CachedQueue cachedQueue = hazelcastInstance.getDistributedObject(CachedQueue.class
-                .getName(), queueName);
 
-        return isLocalCachedQueue(hazelcastInstance, cachedQueue);
+        Partition queuePartition = hazelcastInstance.getPartitionService().getPartition(queueName);
+        Member queueOwner = queuePartition.getOwner();
+
+        return queueOwner.localMember();
     }
 
 }

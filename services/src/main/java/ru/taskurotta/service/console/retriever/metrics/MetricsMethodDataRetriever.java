@@ -23,6 +23,10 @@ public interface MetricsMethodDataRetriever {
      */
     Collection<String> getDataSetsNames(String metricName);
 
+    long getTotalCountOfLastHour(String metricName, String datasetName);
+
+    long getTotalCountOfLastDay(String metricName, String datasetName);
+
     /**
      * Retrieve aggregated statistic for given metric and dataset
      */

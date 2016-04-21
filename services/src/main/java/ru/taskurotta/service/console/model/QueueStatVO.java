@@ -106,13 +106,13 @@ public class QueueStatVO implements Serializable {
         this.local = local;
     }
 
-    public QueueStatVO sumValuesWith(QueueStatVO qs) {
+    public QueueStatVO merge(QueueStatVO qs) {
         if (qs != null) {
 
             this.count = qs.getCount();//counts are same on every node, so the last measured value should be correct
 
-            if (this.lastActivity==null
-                    || (qs.getLastActivity()!=null && qs.getLastActivity().after(this.lastActivity)) ) {
+            if (this.lastActivity == null
+                    || (qs.getLastActivity() != null && qs.getLastActivity().after(this.lastActivity))) {
                 this.lastActivity = qs.getLastActivity();
             }
             if (qs.getInDay() > 0) {
@@ -125,9 +125,14 @@ public class QueueStatVO implements Serializable {
                 this.outDay += qs.getOutDay();
             }
             if (qs.getOutDay() > 0) {
-                this.outHour += qs.getOutDay();
+                this.outHour += qs.getOutHour();
             }
         }
+
+        if (qs.getLastPolledTaskEnqueueTime() > lastPolledTaskEnqueueTime) {
+            lastPolledTaskEnqueueTime = qs.getLastPolledTaskEnqueueTime();
+        }
+
         return this;
     }
 

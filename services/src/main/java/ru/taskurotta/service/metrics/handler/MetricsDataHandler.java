@@ -115,6 +115,37 @@ public class MetricsDataHandler implements DataListener, MetricsMethodDataRetrie
         return result;
     }
 
+
+    @Override
+    public long getTotalCountOfLastHour(String metricName, String datasetName) {
+
+        DataRowVO row = lastHourDataHolder.get(MetricsDataUtils.getKey(metricName, datasetName));
+
+        long result = 0;
+        if (row != null) {
+            result = row.getTotalCount();
+        }
+
+        logger.debug("getTotalCountOfLastHour({}, {}) is [{}]", metricName, datasetName, result);
+        return result;
+    }
+
+
+    @Override
+    public long getTotalCountOfLastDay(String metricName, String datasetName) {
+
+        DataRowVO row = lastDayDataHolder.get(MetricsDataUtils.getKey(metricName, datasetName));
+
+        long result = 0;
+        if (row != null) {
+            row.getTotalCount();
+        }
+
+        logger.debug("getTotalCountOfLastDay({}, {}) is [{}]", metricName, datasetName, result);
+        return result;
+    }
+
+
     @Override
     public DataPointVO<Long>[] getCountsForLastHour(String metricName, String datasetName) {
         DataPointVO<Long>[] result = null;

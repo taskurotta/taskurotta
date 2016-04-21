@@ -27,6 +27,10 @@ public class BaseDataRowVO {
         return counter.getAndIncrement();
     }
 
+    protected int getCurrentPositionOnly() {
+        return counter.get();
+    }
+
     public String getMetricsName() {
         return metricName;
     }

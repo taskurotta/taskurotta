@@ -1,4 +1,4 @@
-angular.module('indexApp', ['coreApp','homeModule', 'queueModule', 'actorModule',
+angular.module('indexApp', ['coreApp','homeModule', 'queueModule',
     'taskModule','processModule','scheduleModule','interruptedModule','metricModule', 'notificationsModule',
     'documentationModule'])
 

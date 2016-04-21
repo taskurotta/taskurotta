@@ -45,7 +45,7 @@ queuesModel = {{ queuesModel | json}}
             </th>
             <th style="width: 50px">Size
                 <i class="icon-question-sign"
-                   popover="Value is measured by metrics handler and could be several seconds delayed from real current size"
+                   popover="Value is measured by metrics handler and could be 5-7 seconds delayed from real current size"
                    popover-trigger="mouseenter"></i>
             </th>
             <th>Actions</th>
@@ -80,8 +80,8 @@ queuesModel = {{ queuesModel | json}}
                 </div>
             </td>
             <td>
-                <div popover="By {{queue.nodes || 0}} nodes" popover-trigger="mouseenter">
-                    In: <b>{{ $stateParams.balancePeriod === 'day' ? queue.inDay : queue.inHour}}</b>,
+                <div popover="by {{queue.nodes || 0}} nodes" popover-trigger="mouseenter">
+                    In: <b>{{$stateParams.balancePeriod === 'day' ? queue.inDay : queue.inHour}}</b>,
                     out: <b>{{$stateParams.balancePeriod === 'day' ? queue.outDay: queue.outHour}}</b>
                 </div>
             </td>
