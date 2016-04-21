@@ -4,6 +4,38 @@
     <facet type="AspectJ" name="AspectJ">
       <configuration />
     </facet>
+    <facet type="Spring" name="Spring">
+      <configuration>
+        <fileset id="fileset" name="Spring Application Context" removed="false">
+          <file>file://$MODULE_DIR$/src/main/resources/spring/statistics/task-server.xml</file>
+          <file>file://$MODULE_DIR$/src/main/resources/spring/statistics/queue-hz.xml</file>
+          <file>file://$MODULE_DIR$/src/main/resources/spring/scheduler/file-stored-hz-scheduler.xml</file>
+          <file>file://$MODULE_DIR$/src/main/resources/tests/quantity/autoresurrect.xml</file>
+          <file>file://$MODULE_DIR$/src/main/resources/spring/scheduler/file-stored-scheduler.xml</file>
+          <file>file://$MODULE_DIR$/src/main/resources/spring/mapstore/mongodb.xml</file>
+          <file>file://$MODULE_DIR$/src/main/resources/spring/cluster/hazelcast.xml</file>
+          <file>file://$MODULE_DIR$/src/main/resources/spring/cluster/hazelcast-with-mapstore.xml</file>
+          <file>file://$MODULE_DIR$/src/main/resources/spring/backend/process-to-oracle.xml</file>
+          <file>file://$MODULE_DIR$/src/main/resources/spring/backend/hazelcast.xml</file>
+          <file>file://$MODULE_DIR$/src/main/resources/tests/stress/mem/SpreaderBeans-mem.xml</file>
+          <file>file://$MODULE_DIR$/src/main/resources/spring/rest/console.xml</file>
+          <file>file://$MODULE_DIR$/src/main/resources/spring/rest/task-server.xml</file>
+          <file>file://$MODULE_DIR$/src/main/resources/spring/e2e/all.xml</file>
+          <file>file://$MODULE_DIR$/src/main/resources/spring/scheduler/ora-stored-hz-scheduler.xml</file>
+          <file>file://$MODULE_DIR$/src/main/resources/spring/hz.xml</file>
+          <file>file://$MODULE_DIR$/src/main/resources/spring/hz-mongo.xml</file>
+          <file>file://$MODULE_DIR$/src/main/resources/spring/actor-ff.xml</file>
+          <file>file://$MODULE_DIR$/src/main/resources/spring/resurrect-broken-process.xml</file>
+          <file>file://$MODULE_DIR$/src/main/resources/spring/actor-ff-single.xml</file>
+          <file>file://$MODULE_DIR$/src/main/resources/spring/hz-ora-mongo.xml</file>
+          <file>file://$MODULE_DIR$/src/main/resources/spring/actor.xml</file>
+          <file>file://$MODULE_DIR$/src/main/resources/spring/backend/hazelcast-add-mongodb.xml</file>
+          <file>file://$MODULE_DIR$/src/main/resources/spring/stat-monitor.xml</file>
+          <file>file://$MODULE_DIR$/src/main/resources/tests/quantity/pusher-ff-standalone.xml</file>
+          <file>file://$MODULE_DIR$/src/main/resources/tests/quantity/ff-actor-spreader.xml</file>
+        </fileset>
+      </configuration>
+    </facet>
   </component>
   <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_8" inherit-compiler-output="false">
     <output url="file://$MODULE_DIR$/target/classes" />
