@@ -18,6 +18,7 @@ import ru.taskurotta.util.DuplicationErrorSuppressor;
 
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 /**
  * User: stukushin
@@ -36,13 +37,16 @@ public class ActorExecutor implements Runnable {
     private ThreadLocal<Boolean> threadRun = new ThreadLocal<Boolean>();
     private volatile boolean instanceRun = true;
     private ConcurrentHashMap<TaskUID, Long> timeouts;
+    private long sleepOnServerErrorMilliseconds;
 
     public ActorExecutor(Profiler profiler, Inspector inspector, RuntimeProcessor runtimeProcessor,
-                         TaskSpreader taskSpreader, ConcurrentHashMap<TaskUID, Long> timeouts) {
+                         TaskSpreader taskSpreader, ConcurrentHashMap<TaskUID, Long> timeouts,
+                         long sleepOnServerErrorMilliseconds) {
         this.profiler = profiler;
         this.runtimeProcessor = inspector.decorate(profiler.decorate(runtimeProcessor));
         this.taskSpreader = inspector.decorate(profiler.decorate(taskSpreader));
         this.timeouts = timeouts;
+        this.sleepOnServerErrorMilliseconds = sleepOnServerErrorMilliseconds;
     }
 
     @Override
@@ -54,6 +58,9 @@ public class ActorExecutor implements Runnable {
 
         threadRun.set(Boolean.TRUE);
 
+
+        boolean sleepOnFail = false;
+
         while (threadRun.get() && instanceRun) {
 
             profiler.cycleStart();
@@ -61,9 +68,11 @@ public class ActorExecutor implements Runnable {
             try {
 
                 logger.trace("Thread [{}]: try to poll", threadName);
-                final Task task;
+                Task task = null;
 
                 try {
+
+                    sleepOnFail = true;
                     task = taskSpreader.poll();
                 } catch (SerializationException ex) {
 
@@ -84,6 +93,7 @@ public class ActorExecutor implements Runnable {
 
                     logger.error("Can not deserialize task. Try to release error decision [{}]", errorDecision);
 
+                    sleepOnFail = true;
                     taskSpreader.release(errorDecision);
                     continue;
                 }
@@ -98,6 +108,7 @@ public class ActorExecutor implements Runnable {
 
                 final TaskUID taskUID = new TaskUID(task.getId(), task.getProcessId());
                 try {
+                    sleepOnFail = false;
                     taskDecision = runtimeProcessor.execute(task, new Heartbeat() {
                         @Override
                         public void updateTimeout(long timeout) {
@@ -123,6 +134,7 @@ public class ActorExecutor implements Runnable {
 
                     logger.error("Can not serialize task decision. Try to release error decision [{}]", errorDecision);
 
+                    sleepOnFail = true;
                     taskSpreader.release(errorDecision);
                     continue;
                 } finally {
@@ -130,15 +142,17 @@ public class ActorExecutor implements Runnable {
                 }
 
                 logger.trace("Thread [{}]: try to release decision [{}] of task [{}]", threadName, taskDecision, task);
+                sleepOnFail = true;
                 taskSpreader.release(taskDecision);
 
             } catch (ServerConnectionException ex) {
-                logError("Connection to task server error", ex);
+                logError("Connection to task server error", ex, sleepOnFail);
             } catch (ServerException ex) {
-                logError("Error at client-server communication", ex);
+                logError("Error at client-server communication", ex, sleepOnFail);
             } catch (Throwable t) {
-                logError("Unexpected actor execution error", t);
-                if (Environment.getInstance().getType() == Environment.Type.TEST) {
+                boolean isTest = Environment.getInstance().getType() == Environment.Type.TEST;
+                logError("Unexpected actor execution error", t, sleepOnFail && !isTest);
+                if (isTest) {
                     throw new RuntimeException(t);
                 }
             } finally {
@@ -150,9 +164,19 @@ public class ActorExecutor implements Runnable {
         logger.debug("Finish actor executor thread [{}]", threadName);
     }
 
-    protected void logError(String msg, Throwable ex) {
+    protected void logError(String msg, Throwable ex, boolean sleepOnFail) {
         if (!duplicationErrorSuppressor.isLastErrorEqualsTo(msg, ex)) {
             logger.error(msg, ex);
+        }
+
+        logger.trace("Sleep {} on fail {} milliseconds", sleepOnFail, sleepOnServerErrorMilliseconds);
+
+        if (sleepOnFail) {
+            // wait a while before next possible fail
+            try {
+                TimeUnit.MILLISECONDS.sleep(sleepOnServerErrorMilliseconds);
+            } catch (InterruptedException ignore) {
+            }
         }
     }
 

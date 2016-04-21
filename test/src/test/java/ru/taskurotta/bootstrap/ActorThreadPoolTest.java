@@ -69,7 +69,7 @@ public class ActorThreadPoolTest {
         retryPolicy.setMaximumAttempts(2);
         Inspector inspector = new Inspector(retryPolicy, actorThreadPool);
 
-        ActorExecutor actorExecutor = new ActorExecutor(profiler, inspector, new SimpleRuntimeProcessor(), new SimpleTaskSpreader(), new ConcurrentHashMap<>());
+        ActorExecutor actorExecutor = new ActorExecutor(profiler, inspector, new SimpleRuntimeProcessor(), new SimpleTaskSpreader(), new ConcurrentHashMap<>(), 0);
 
         actorThreadPool.start(actorExecutor);
     }

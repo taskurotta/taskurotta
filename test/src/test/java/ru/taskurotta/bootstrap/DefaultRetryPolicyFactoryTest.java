@@ -53,7 +53,7 @@ public class DefaultRetryPolicyFactoryTest {
         MockActorThreadPool actorExecutorsPool = new MockActorThreadPool(TestWorker.class.getName(), 1);
         Inspector inspector = new Inspector(retryPolicy, actorExecutorsPool);
 
-        ActorExecutor actorExecutor = new ActorExecutor(profiler, inspector, runtimeProcessor, taskSpreader, new ConcurrentHashMap<>());
+        ActorExecutor actorExecutor = new ActorExecutor(profiler, inspector, runtimeProcessor, taskSpreader, new ConcurrentHashMap<>(), 0);
         actorExecutorsPool.start(actorExecutor);
 
         TimeUnit.SECONDS.sleep(5);

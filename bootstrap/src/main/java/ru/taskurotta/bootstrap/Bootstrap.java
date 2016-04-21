@@ -180,7 +180,9 @@ public class Bootstrap implements BootstrapMBean {
 
         final ConcurrentHashMap<TaskUID, Long> timeouts = new ConcurrentHashMap<TaskUID, Long>(poolSize, 1F, poolSize);
 
-        ActorExecutor actorExecutor = new ActorExecutor(profiler, inspector, runtimeProcessor, taskSpreader, timeouts);
+        long sleepOnServerErrorMilliseconds = DurationParser.toMillis(actorConfig.getSleepOnServerError());
+        ActorExecutor actorExecutor = new ActorExecutor(profiler, inspector, runtimeProcessor, taskSpreader,
+                timeouts, sleepOnServerErrorMilliseconds);
         actorThreadPool.start(actorExecutor);
 
         Thread thread = new Thread(actorClass.getSimpleName() + " shutdowner") {

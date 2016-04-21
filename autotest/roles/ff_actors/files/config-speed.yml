@@ -37,17 +37,13 @@ profiler:
 actor:
   - FFDecider:
       actorInterface: ru.taskurotta.test.fullfeature.decider.FullFeatureDecider
-      runtimeConfig: MainRuntimeConfig
-      spreaderConfig: MainTaskSpreaderConfig
-      profilerConfig: MainProfilerConfig
       count: 25
+      sleepOnServerError: 1 seconds
 
   - FFWorker:
       actorInterface: ru.taskurotta.test.fullfeature.worker.FullFeatureWorker
-      runtimeConfig: MainRuntimeConfig
-      spreaderConfig: MainTaskSpreaderConfig
-      profilerConfig: MainProfilerConfig
       count: 25
+      sleepOnServerError: 1 seconds
 
 logback:
     appender:

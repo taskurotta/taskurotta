@@ -22,25 +22,25 @@ public class ActorExecutorTest {
         ActorExecutor actorExecutor = getModeledActorExecutor();
 
         for (int i = 0; i < 10; i++) {
-            actorExecutor.logError("Msg", new Exception());
+            actorExecutor.logError("Msg", new Exception(), false);
         }
 
         assertEquals(printedError, 1);
 
         for (int i = 0; i < 10; i++) {
-            actorExecutor.logError("Msg", new Exception(null, new Exception()));
+            actorExecutor.logError("Msg", new Exception(null, new Exception()), false);
         }
 
         assertEquals(printedError, 2);
 
         for (int i = 0; i < 10; i++) {
-            actorExecutor.logError("Msg", new Exception("test", new Exception()));
+            actorExecutor.logError("Msg", new Exception("test", new Exception()), false);
         }
 
         assertEquals(printedError, 3);
 
         for (int i = 0; i < 10; i++) {
-            actorExecutor.logError("Msg", new Exception("test"));
+            actorExecutor.logError("Msg", new Exception("test"), false);
         }
 
         assertEquals(printedError, 4);
@@ -49,7 +49,7 @@ public class ActorExecutorTest {
     private ActorExecutor getModeledActorExecutor() throws NoSuchFieldException, IllegalAccessException {
 
         // create instance
-        ActorExecutor actorExecutor = new ActorExecutor(new SimpleProfiler(), new Inspector(null, null), null, null, new ConcurrentHashMap<TaskUID, Long>());
+        ActorExecutor actorExecutor = new ActorExecutor(new SimpleProfiler(), new Inspector(null, null), null, null, new ConcurrentHashMap<TaskUID, Long>(), 0);
 
         // set mock logger
         Field field = ActorExecutor.class.getDeclaredField("logger");
