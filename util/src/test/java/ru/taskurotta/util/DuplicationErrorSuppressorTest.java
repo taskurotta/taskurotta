@@ -15,7 +15,7 @@ public class DuplicationErrorSuppressorTest {
 
     @Test
     public void test() throws InterruptedException {
-        final DuplicationErrorSuppressor duplicationErrorSuppressor = new DuplicationErrorSuppressor();
+        final DuplicationErrorSuppressor duplicationErrorSuppressor = new DuplicationErrorSuppressor(60000L, true);
 
         final AtomicInteger counter = new AtomicInteger(0);
 

@@ -1,5 +1,7 @@
 package ru.taskurotta.bootstrap;
 
+import ru.taskurotta.util.DuplicationErrorSuppressor;
+
 import java.util.Map;
 
 /**
@@ -20,7 +22,7 @@ public interface BootstrapMBean {
      * @param actorId - actorClass#version
      * @param poolSize - pool poolSize
      */
-    void startActorPool(String actorId, int poolSize);
+    void startActorPool(String actorId, int poolSize, DuplicationErrorSuppressor duplicationServerErrorSuppressor);
 
     /**
      * Gracefully stop actor pool.

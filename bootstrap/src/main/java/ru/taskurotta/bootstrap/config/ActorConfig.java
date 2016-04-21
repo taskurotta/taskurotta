@@ -21,7 +21,8 @@ public class ActorConfig {
     private long shutdownTimeoutMillis = 60000l;
     private String taskList;
     private String updateTimeoutInterval = "10 minutes";
-    private String sleepOnServerError = "1 minutes";
+    private String sleepOnServerErrorTime = "1 minutes";
+    private String suppressActorErrorTime = "1 minutes";
 
     public String getActorInterface() {
         return actorInterface;
@@ -115,12 +116,20 @@ public class ActorConfig {
         this.updateTimeoutInterval = updateTimeoutInterval;
     }
 
-    public String getSleepOnServerError() {
-        return sleepOnServerError;
+    public String getSleepOnServerErrorTime() {
+        return sleepOnServerErrorTime;
     }
 
-    public void setSleepOnServerError(String sleepOnServerError) {
-        this.sleepOnServerError = sleepOnServerError;
+    public void setSleepOnServerErrorTime(String sleepOnServerErrorTime) {
+        this.sleepOnServerErrorTime = sleepOnServerErrorTime;
+    }
+
+    public String getSuppressActorErrorTime() {
+        return suppressActorErrorTime;
+    }
+
+    public void setSuppressActorErrorTime(String suppressActorErrorTime) {
+        this.suppressActorErrorTime = suppressActorErrorTime;
     }
 
     @Override
@@ -137,7 +146,8 @@ public class ActorConfig {
                 ", shutdownTimeoutMillis=" + shutdownTimeoutMillis +
                 ", taskList='" + taskList + '\'' +
                 ", updateTimeoutInterval='" + updateTimeoutInterval + '\'' +
-                ", sleepOnServerError='" + sleepOnServerError + '\'' +
+                ", sleepOnServerErrorTime='" + sleepOnServerErrorTime + '\'' +
+                ", suppressActorErrorTime='" + suppressActorErrorTime + '\'' +
                 '}';
     }
 }

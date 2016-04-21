@@ -10,7 +10,7 @@ public abstract class TaskServerAbstractResource {
 
     private static final Logger logger = LoggerFactory.getLogger(TaskPollerResource.class);
 
-    private DuplicationErrorSuppressor duplicationErrorSuppressor = new DuplicationErrorSuppressor();
+    private DuplicationErrorSuppressor duplicationErrorSuppressor = new DuplicationErrorSuppressor(60000L, false);
 
     protected void logError(String msg, Throwable ex) {
         if (!duplicationErrorSuppressor.isLastErrorEqualsTo(msg, ex)) {

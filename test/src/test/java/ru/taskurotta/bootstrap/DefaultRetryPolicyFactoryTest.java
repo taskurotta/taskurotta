@@ -10,6 +10,7 @@ import ru.taskurotta.bootstrap.profiler.SimpleProfiler;
 import ru.taskurotta.internal.GeneralRuntimeProvider;
 import ru.taskurotta.policy.retry.LinearRetryPolicy;
 import ru.taskurotta.policy.retry.RetryPolicy;
+import ru.taskurotta.util.DuplicationErrorSuppressor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,7 +54,7 @@ public class DefaultRetryPolicyFactoryTest {
         MockActorThreadPool actorExecutorsPool = new MockActorThreadPool(TestWorker.class.getName(), 1);
         Inspector inspector = new Inspector(retryPolicy, actorExecutorsPool);
 
-        ActorExecutor actorExecutor = new ActorExecutor(profiler, inspector, runtimeProcessor, taskSpreader, new ConcurrentHashMap<>(), 0);
+        ActorExecutor actorExecutor = new ActorExecutor(profiler, inspector, runtimeProcessor, taskSpreader, new ConcurrentHashMap<>(), 0, new DuplicationErrorSuppressor(0, false), 0);
         actorExecutorsPool.start(actorExecutor);
 
         TimeUnit.SECONDS.sleep(5);

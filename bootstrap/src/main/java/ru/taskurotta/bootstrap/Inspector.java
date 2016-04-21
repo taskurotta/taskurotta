@@ -82,9 +82,7 @@ public class Inspector {
                     taskSpreader.release(taskDecision);
                 } catch (ServerException e) {
                     if (actorThreadPool.mute()) {
-                        logger.warn("Actor thread pool thread has been muted (on release) due to server error [{}]. Remain [{}] threads.",
-                                e.getLocalizedMessage(), actorThreadPool.getCurrentSize());
-                        //TODO: throw e?
+                        throw new RuntimeException(e);
                     } else {
                         logger.debug("Can't mute actor thread pool (on release), exception: ", e);
                         throw e;

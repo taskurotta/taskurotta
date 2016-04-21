@@ -36,13 +36,15 @@ actor:
   - FFDecider:
       actorInterface: ru.taskurotta.test.fullfeature.decider.FullFeatureDecider
       count: 25
-      sleepOnServerError: 1 seconds
+      sleepOnServerErrorTime: 1 seconds
+      suppressActorErrorTime: 0 seconds
 
   - FFWorker:
       actorInterface: ru.taskurotta.test.fullfeature.worker.FullFeatureWorker
       count: 25
       updateTimeoutInterval: 1 seconds
-      sleepOnServerError: 1 seconds
+      sleepOnServerErrorTime: 1 seconds
+      suppressActorErrorTime: 0 seconds
 
 logback:
     appender:

@@ -11,6 +11,7 @@ import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
 import ru.taskurotta.internal.Heartbeat;
 import ru.taskurotta.policy.retry.LinearRetryPolicy;
+import ru.taskurotta.util.DuplicationErrorSuppressor;
 
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -69,7 +70,7 @@ public class ActorThreadPoolTest {
         retryPolicy.setMaximumAttempts(2);
         Inspector inspector = new Inspector(retryPolicy, actorThreadPool);
 
-        ActorExecutor actorExecutor = new ActorExecutor(profiler, inspector, new SimpleRuntimeProcessor(), new SimpleTaskSpreader(), new ConcurrentHashMap<>(), 0);
+        ActorExecutor actorExecutor = new ActorExecutor(profiler, inspector, new SimpleRuntimeProcessor(), new SimpleTaskSpreader(), new ConcurrentHashMap<>(), 0, new DuplicationErrorSuppressor(0, false), 0);
 
         actorThreadPool.start(actorExecutor);
     }

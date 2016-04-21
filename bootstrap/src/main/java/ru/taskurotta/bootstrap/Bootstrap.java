@@ -26,6 +26,7 @@ import ru.taskurotta.policy.retry.RetryPolicy;
 import ru.taskurotta.util.ActorDefinition;
 import ru.taskurotta.util.ActorUtils;
 import ru.taskurotta.util.DaemonThread;
+import ru.taskurotta.util.DuplicationErrorSuppressor;
 import ru.taskurotta.util.DurationParser;
 
 import java.io.File;
@@ -135,7 +136,8 @@ public class Bootstrap implements BootstrapMBean {
     }
 
     @Override
-    public synchronized void startActorPool(String actorId, int poolSize) {
+    public synchronized void startActorPool(String actorId, int poolSize,
+                                            DuplicationErrorSuppressor duplicationServerErrorSuppressor) {
         ActorConfig actorConfig = actorConfigMap.get(actorId);
 
         if (actorConfig == null) {
@@ -180,9 +182,10 @@ public class Bootstrap implements BootstrapMBean {
 
         final ConcurrentHashMap<TaskUID, Long> timeouts = new ConcurrentHashMap<TaskUID, Long>(poolSize, 1F, poolSize);
 
-        long sleepOnServerErrorMilliseconds = DurationParser.toMillis(actorConfig.getSleepOnServerError());
+        long sleepOnServerErrorTimeMls = DurationParser.toMillis(actorConfig.getSleepOnServerErrorTime());
+        long suppressActorErrorTimeMls = DurationParser.toMillis(actorConfig.getSuppressActorErrorTime());
         ActorExecutor actorExecutor = new ActorExecutor(profiler, inspector, runtimeProcessor, taskSpreader,
-                timeouts, sleepOnServerErrorMilliseconds);
+                timeouts, sleepOnServerErrorTimeMls, duplicationServerErrorSuppressor, suppressActorErrorTimeMls);
         actorThreadPool.start(actorExecutor);
 
         Thread thread = new Thread(actorClass.getSimpleName() + " shutdowner") {
@@ -248,6 +251,9 @@ public class Bootstrap implements BootstrapMBean {
 
     public void start(Config config) {
         int started = 0;
+
+        DuplicationErrorSuppressor duplicationServerErrorSuppressor = new DuplicationErrorSuppressor(60000L, false);
+
         for (ActorConfig actorConfig : config.actorConfigs) {
             if (actorConfig.isEnabled()) {
                 Class actorClass = getActorClass(actorConfig.getActorInterface());
@@ -257,7 +263,7 @@ public class Bootstrap implements BootstrapMBean {
 
                 actorConfigMap.put(actorId, actorConfig);
 
-                startActorPool(actorId, actorConfig.getCount());
+                startActorPool(actorId, actorConfig.getCount(), duplicationServerErrorSuppressor);
                 started++;
             }
         }

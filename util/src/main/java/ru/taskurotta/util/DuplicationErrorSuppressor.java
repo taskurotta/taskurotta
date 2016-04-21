@@ -1,14 +1,18 @@
 package ru.taskurotta.util;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Arrays;
-import java.util.concurrent.TimeUnit;
 
 /**
  */
 public class DuplicationErrorSuppressor {
 
-    // todo: should be parametrized
-    private long suppressDuplicationErrorMls = TimeUnit.SECONDS.toMillis(60);
+    private static final Logger logger = LoggerFactory.getLogger(DuplicationErrorSuppressor.class);
+
+    private long suppressDuplicationErrorMls;
+    private boolean checkExMessages = true;
 
     private static class LogErrorEvent {
         String msg;
@@ -25,6 +29,11 @@ public class DuplicationErrorSuppressor {
     private volatile LogErrorEvent lastErrorEvent = null;
 
 
+    public DuplicationErrorSuppressor(long suppressDuplicationErrorMls, boolean checkExMessages) {
+        this.suppressDuplicationErrorMls = suppressDuplicationErrorMls;
+        this.checkExMessages = checkExMessages;
+    }
+
     public synchronized boolean isLastErrorEqualsTo(String msg, Throwable ex) {
 
         LogErrorEvent newLogErrorEvent = new LogErrorEvent(msg, ex);
@@ -32,12 +41,14 @@ public class DuplicationErrorSuppressor {
         // try to find same error
         if (lastErrorEvent != null && isRepeatedError(lastErrorEvent, newLogErrorEvent)) {
 
+            logger.error("isLastErrorEqualsTo return true");
             // skip it
             return true;
         }
 
         lastErrorEvent = newLogErrorEvent;
 
+        logger.error("isLastErrorEqualsTo return false");
         return false;
     }
 
@@ -60,7 +71,7 @@ public class DuplicationErrorSuppressor {
         return recursionEquals(oldErrorEvent.ex, newErrorEvent.ex);
     }
 
-    private static boolean recursionEquals(Throwable oldEx, Throwable newEx) {
+    private boolean recursionEquals(Throwable oldEx, Throwable newEx) {
 
         if (oldEx == null && newEx == null) {
             return true;
@@ -70,13 +81,15 @@ public class DuplicationErrorSuppressor {
             return false;
         }
 
-        String oldExMsg = oldEx.getMessage();
-        String newExMsg = newEx.getMessage();
+        if (checkExMessages) {
+            String oldExMsg = oldEx.getMessage();
+            String newExMsg = newEx.getMessage();
 
 
-        if (!((newExMsg == null && oldExMsg == null) || (newExMsg != null && oldExMsg != null && newExMsg
-                .equals(oldExMsg)))) {
-            return false;
+            if (!((newExMsg == null && oldExMsg == null) || (newExMsg != null && oldExMsg != null && newExMsg
+                    .equals(oldExMsg)))) {
+                return false;
+            }
         }
 
         StackTraceElement[] oldStElements = oldEx.getStackTrace();

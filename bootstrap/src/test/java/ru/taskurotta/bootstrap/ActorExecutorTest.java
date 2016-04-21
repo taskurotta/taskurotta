@@ -4,6 +4,7 @@ import org.junit.Test;
 import org.slf4j.Marker;
 import ru.taskurotta.bootstrap.profiler.SimpleProfiler;
 import ru.taskurotta.internal.TaskUID;
+import ru.taskurotta.util.DuplicationErrorSuppressor;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -49,7 +50,7 @@ public class ActorExecutorTest {
     private ActorExecutor getModeledActorExecutor() throws NoSuchFieldException, IllegalAccessException {
 
         // create instance
-        ActorExecutor actorExecutor = new ActorExecutor(new SimpleProfiler(), new Inspector(null, null), null, null, new ConcurrentHashMap<TaskUID, Long>(), 0);
+        ActorExecutor actorExecutor = new ActorExecutor(new SimpleProfiler(), new Inspector(null, null), null, null, new ConcurrentHashMap<TaskUID, Long>(), 0, new DuplicationErrorSuppressor(0, true), 0);
 
         // set mock logger
         Field field = ActorExecutor.class.getDeclaredField("logger");
