@@ -50,7 +50,7 @@ public class ActorExecutorTest {
     private ActorExecutor getModeledActorExecutor() throws NoSuchFieldException, IllegalAccessException {
 
         // create instance
-        ActorExecutor actorExecutor = new ActorExecutor(new SimpleProfiler(), new Inspector(null, null), null, null, new ConcurrentHashMap<TaskUID, Long>(), 0, new DuplicationErrorSuppressor(0, true), 0);
+        ActorExecutor actorExecutor = new ActorExecutor(new SimpleProfiler(), new Inspector(null, null), null, null, new ConcurrentHashMap<TaskUID, Long>(), 0, new DuplicationErrorSuppressor(60000, true), 60000);
 
         // set mock logger
         Field field = ActorExecutor.class.getDeclaredField("logger");
