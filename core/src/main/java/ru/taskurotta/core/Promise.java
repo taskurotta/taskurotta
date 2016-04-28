@@ -110,8 +110,9 @@ public class Promise<T> {
 	public String toString() {
 		return "Promise{" +
 				"id=" + id +
+				", value=" + value +
 				", isReady=" + isReady +
-                ", value=" + value +
+				", fail=" + fail +
 				'}';
 	}
 }

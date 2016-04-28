@@ -195,9 +195,9 @@ public class HzActorConfigManager implements ActorConfigManager {
 
         actorFullVO.setQueueSize(queueInfoRetriever.getQueueSize(actorId));
         actorFullVO.setQueueDelaySize(queueInfoRetriever.getQueueDelaySize(actorId));
+
+        // start distributed data
         actorFullVO.setLastPolledTaskEnqueueTime(queueInfoRetriever.getLastPolledTaskEnqueueTime(actorId));
-        // {{(endTime - startTime) | date: 'H:mm:ss': 'UTC'}}
-        //Date.now().
 
         // all metrics data
 
@@ -214,6 +214,8 @@ public class HzActorConfigManager implements ActorConfigManager {
 //        addMetricsDatasetSummary(metrics, MetricName.QUEUE_SIZE, actorId);
 
         actorFullVO.setMetrics(metrics);
+
+        // end distributed data
 
         // todo: add list of in progress tasks
 

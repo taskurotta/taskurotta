@@ -41,14 +41,12 @@ public class DuplicationErrorSuppressor {
         // try to find same error
         if (lastErrorEvent != null && isRepeatedError(lastErrorEvent, newLogErrorEvent)) {
 
-            logger.error("isLastErrorEqualsTo return true");
             // skip it
             return true;
         }
 
         lastErrorEvent = newLogErrorEvent;
 
-        logger.error("isLastErrorEqualsTo return false");
         return false;
     }
 
