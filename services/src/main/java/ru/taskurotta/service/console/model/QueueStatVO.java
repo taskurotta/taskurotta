@@ -124,7 +124,7 @@ public class QueueStatVO implements Serializable {
             if (qs.getOutDay() > 0) {
                 this.outDay += qs.getOutDay();
             }
-            if (qs.getOutDay() > 0) {
+            if (qs.getOutHour() > 0) {
                 this.outHour += qs.getOutHour();
             }
         }

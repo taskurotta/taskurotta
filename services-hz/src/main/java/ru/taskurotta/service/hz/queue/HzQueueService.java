@@ -28,6 +28,7 @@ import ru.taskurotta.util.StringUtils;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
@@ -353,17 +354,23 @@ public class HzQueueService implements QueueService, QueueInfoRetriever {
                 int nodes = 0;
                 for (Future<List<QueueStatVO>> nodeResultFuture : results.values()) {
                     try {
-                        List<QueueStatVO> qStat = nodeResultFuture.get(5, TimeUnit.SECONDS);
+                        List<QueueStatVO> qStat = nodeResultFuture.get();
                         logger.debug("Try to merge queue list from node, qStat size[{}]", qStat.size());
                         mergeByQueueName(queueStatVOMap, qStat);
                         nodes++;
                     } catch (Exception e) {
-                        logger.error("Cannot obtain QueueStatVO data from node", e);
+                        throw new IllegalStateException("Can not receive List<QueueStatVO> from cluster member", e);
                     }
                 }
 
                 // @todo: remove this information from actor list page
                 List<QueueStatVO> resultItems = new ArrayList<>(queueStatVOMap.values());
+                Collections.sort(resultItems, new Comparator<QueueStatVO>() {
+                    @Override
+                    public int compare(QueueStatVO o1, QueueStatVO o2) {
+                        return o1.getName().compareTo(o2.getName());
+                    }
+                });
                 if (!resultItems.isEmpty()) {
                     for (QueueStatVO item : resultItems) {
                         item.setNodes(nodes);

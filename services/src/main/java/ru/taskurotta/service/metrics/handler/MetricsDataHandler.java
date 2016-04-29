@@ -138,7 +138,7 @@ public class MetricsDataHandler implements DataListener, MetricsMethodDataRetrie
 
         long result = 0;
         if (row != null) {
-            row.getTotalCount();
+            result = row.getTotalCount();
         }
 
         logger.debug("getTotalCountOfLastDay({}, {}) is [{}]", metricName, datasetName, result);

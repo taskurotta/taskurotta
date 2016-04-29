@@ -14,6 +14,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response.Status;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -39,6 +40,7 @@ public class MetricsResource extends BaseResource implements MetricsConstants {
         Integer smooth = smoothOpt.or(-1);
 
         List<String> dataSetNames = MetricsConsoleUtils.extractDatasets(dataSetOpt.or(""));
+        Collections.sort(dataSetNames);
         try {
 
             List<DatasetVO> dataSets = metricsDataHandler.getDataResponse(metricName, dataSetNames, scope, dataType, period);
