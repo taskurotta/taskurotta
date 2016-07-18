@@ -5,7 +5,7 @@
 
     <groupId>ru.taskurotta</groupId>
     <artifactId>ru.taskurotta</artifactId>
-    <version>11.1.1</version>
+    <version>11.2-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Taskurotta :: Parent module</name>
@@ -481,6 +481,23 @@
                             </configuration>
                         </execution>
                     </executions>
+                </plugin>
+                <plugin>
+                    <groupId>external.atlassian.jgitflow</groupId>
+                    <artifactId>jgitflow-maven-plugin</artifactId>
+                    <version>1.0-m5.1</version>
+                    <configuration>
+                        <autoVersionSubmodules>true</autoVersionSubmodules>
+                        <noDeploy>true</noDeploy>
+                        <pushReleases>true</pushReleases>
+                        <username>${username}</username>
+                        <password>${password}</password>
+                        <scmCommentPrefix>[RELEASE] </scmCommentPrefix>
+                        <!--
+                         see goals wiki page for configuration options
+                         https://bitbucket.org/atlassian/jgit-flow/wiki/goals.wiki
+                         -->
+                    </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>
