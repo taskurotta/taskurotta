@@ -1,0 +1,18 @@
+CREATE TABLE TSK_PROCESS (
+  process_id    VARCHAR(36)         NOT NULL,
+  start_task_id VARCHAR(36)         NOT NULL,
+  custom_id     VARCHAR(256)        NULL,
+  start_time    BIGINT              NOT NULL,
+  end_time      BIGINT              NULL,
+  state         INT                 NOT NULL,
+  return_value  JSONB               NULL,
+  start_json    JSONB               NULL,
+  actor_id      VARCHAR(500)        NOT NULL,
+  task_list     VARCHAR(500)        NULL
+);
+
+CREATE INDEX TSK_PROCESS_STATE_IDX ON TSK_PROCESS(STATE);
+CREATE INDEX TSK_PROCESS_CUSTOM_ID_IDX ON TSK_PROCESS(CUSTOM_ID);
+CREATE INDEX TSK_PROCESS_START_TIME_IDX ON TSK_PROCESS(START_TIME);
+CREATE INDEX TSK_PROCESS_ACTOR_ID_IDX ON TSK_PROCESS(ACTOR_ID);
+CREATE INDEX TSK_PROCESS_END_TIME_IDX ON TSK_PROCESS(END_TIME);
