@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+            http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+            http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.1.xsd">
+
+    <context:property-placeholder/>
+    <context:annotation-config/>
+
+    <bean id="processService" class="ru.taskurotta.service.pg.storage.PgProcessService">
+        <constructor-arg name="hzInstance" ref="hzInstance"/>
+        <constructor-arg name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <bean id="interruptedTasksService" class="ru.taskurotta.service.pg.storage.PgInterruptedTaskService">
+        <property name="dataSource" ref="originalDataSource"/>
+    </bean>
+
+    <!-- Data source -->
+    <bean id="dataSource" class="org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy">
+        <constructor-arg name="targetDataSource" ref="originalDataSource"/>
+    </bean>
+
+    <bean id="originalDataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+        <property name="driverClassName" value="org.postgresql.Driver"/>
+        <property name="url" value="${db.url}"/>
+        <property name="initialSize" value="${db.initial-size:1}"/>
+        <property name="maxActive" value="${db.max-active:5}"/>
+        <property name="username" value="${db.user}"/>
+        <property name="password" value="${db.password}"/>
+    </bean>
+    <!-- /Data source -->
+
+    <!-- Transactions -->
+    <bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <tx:advice id="processTransactions" transaction-manager="txManager">
+        <tx:attributes>
+            <tx:method name="startProcess" propagation="REQUIRES_NEW"/>
+        </tx:attributes>
+    </tx:advice>
+
+    <tx:advice id="interruptedTasksTransactions" transaction-manager="txManager">
+        <tx:attributes>
+            <tx:method name="save" propagation="REQUIRES_NEW"/>
+        </tx:attributes>
+    </tx:advice>
+
+    <aop:config>
+        <aop:pointcut id="serviceOperation"
+                      expression="execution(* ru.taskurotta.service.pg.storage.PgProcessService.*(..))"/>
+        <aop:pointcut id="interruptedTasksOperation"
+                      expression="execution(* ru.taskurotta.service.pg.storage.PgInterruptedTaskService.*(..))"/>
+
+        <aop:advisor advice-ref="processTransactions" pointcut-ref="serviceOperation"/>
+        <aop:advisor advice-ref="interruptedTasksTransactions" pointcut-ref="interruptedTasksOperation"/>
+    </aop:config>
+    <!-- /Transactions -->
+
+</beans>

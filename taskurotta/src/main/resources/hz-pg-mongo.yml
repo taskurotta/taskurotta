@@ -1,0 +1,78 @@
+#Location of Spring application context:
+#Hazelcast without mongo mapstore
+contextLocation: "classpath*:spring/hz-postgres-mongo.xml"
+
+#Used for static resource serving in development mode
+assets:
+  overrides:
+    /: ../dropwizard/src/main/resources/assets/
+
+#Configuration of actors served by this server:
+actorConfig:
+  actorPreferences:
+    - id: "default"
+
+#Task server common properties (will be available as placeholders in spring context):
+properties:
+  server.poll-delay: 60 seconds
+  hz.mancenter.enabled: false
+  mongo.host: localhost
+  mongo.port: 27017
+  db.url: "jdbc:postgresql://localhost:5432/taskurotta"
+  db.user: "postgres"
+  db.password: "123"
+#  recovery.process.incomplete-timeout: "5 SECONDS"
+#  recovery.find-incomplete-process-period: "5 SECONDS"
+#  hz.nodes: "localhost:7777,localhost:7778"
+#  gc.enabled: false
+#  recovery.enabled: true
+
+server:
+  type: simple
+  applicationContextPath: /
+  adminContextPath: /admin
+  connector:
+    type: http
+    port: 9911
+  requestLog:
+    timeZone: UTC
+    appenders:
+    - type: file
+      currentLogFilename: "./target/logs/request.log"
+      threshold: ALL
+      archive: true
+      archivedLogFilenamePattern: "./target/logs/requests-%d.log.gz"
+      archivedFileCount: 5
+      timeZone: UTC
+      logFormat: "%-4r %d [%t] %-5p %c - %m%n"
+    - type: console
+      threshold: ALL
+      timeZone: UTC
+      target: stdout
+      logFormat: "%-4r %d [%t] %-5p %c - %m%n"
+
+#Http server configuration:
+logging:
+    level: INFO
+    loggers:
+        com.hazelcast: INFO
+        com.yammer: INFO
+        ru.taskurotta: INFO
+        ru.taskurotta.dropwizard.resources.console.schedule: DEBUG
+#        ru.taskurotta.dropwizard.resources.console.notifications: DEBUG
+#        ru.taskurotta.service.notification: DEBUG
+#        ru.taskurotta.service.hz.adapter.notification: DEBUG
+    appenders:
+    - type: file
+      currentLogFilename: "./target/logs/service.log"
+      threshold: ALL
+      archive: true
+      archivedLogFilenamePattern: "./target/logs/service-%d.log.gz"
+      archivedFileCount: 5
+      timeZone: UTC
+      logFormat: "%-4r %d [%t] %-5p %c - %m%n"
+    - type: console
+      threshold: ALL
+      timeZone: UTC
+      target: stdout
+      logFormat: "%-4r %d [%t] %-5p %c - %m%n"
