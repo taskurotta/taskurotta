@@ -44,8 +44,8 @@ public class PgSchedulerJobStoreTest {
 
     @Before
     public void init() throws IOException {
-        File propsFile = new File(System.getProperty("pg.test.properties.location", "src/test/resources/pg.properties"));
-//        File propsFile = new File(System.getProperty("pg.test.properties.location", "pg.test.properties"));
+//        File propsFile = new File(System.getProperty("pg.test.properties.location", "src/test/resources/pg.properties"));
+        File propsFile = new File(System.getProperty("pg.test.properties.location", "pg.test.properties"));
         if (propsFile.exists()) {
             try (FileInputStream fis = new FileInputStream(propsFile)) {
                 Properties props = new Properties();
