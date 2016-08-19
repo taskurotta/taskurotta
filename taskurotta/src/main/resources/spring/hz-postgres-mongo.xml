@@ -14,6 +14,7 @@
     <import resource="backend/process-to-postgres.xml"/>
 
     <!-- console -->
+    <import resource="scheduler/pg-stored-hz-scheduler.xml" />
     <import resource="rest/task-server.xml" />
 
 </beans>

@@ -21,6 +21,10 @@
         <property name="dataSource" ref="originalDataSource"/>
     </bean>
 
+    <bean id = "notificationDao" class="ru.taskurotta.service.pg.storage.PgNotificationDao">
+        <property name="dataSource" ref="originalDataSource" />
+    </bean>
+
     <!-- Data source -->
     <bean id="dataSource" class="org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy">
         <constructor-arg name="targetDataSource" ref="originalDataSource"/>
