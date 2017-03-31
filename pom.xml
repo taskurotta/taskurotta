@@ -1,11 +1,10 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>ru.taskurotta</groupId>
     <artifactId>ru.taskurotta</artifactId>
-    <version>11.1.1</version>
+    <version>11.2</version>
     <packaging>pom</packaging>
 
     <name>Taskurotta :: Parent module</name>
@@ -55,8 +54,8 @@
         <yammer.metrics.version>2.2.0</yammer.metrics.version>
         <dropwizard.version>0.7.1</dropwizard.version>
         <skip.integration.tests>true</skip.integration.tests>
-        <recipesEnv/>
-        <endpoint/>
+        <recipesEnv />
+        <endpoint />
     </properties>
 
     <modules>
@@ -77,6 +76,7 @@
         <module>util</module>
         <module>mongodb</module>
         <module>documentation</module>
+        <module>services-pg</module>
     </modules>
 
     <profiles>
@@ -481,6 +481,23 @@
                             </configuration>
                         </execution>
                     </executions>
+                </plugin>
+                <plugin>
+                    <groupId>external.atlassian.jgitflow</groupId>
+                    <artifactId>jgitflow-maven-plugin</artifactId>
+                    <version>1.0-m5.1</version>
+                    <configuration>
+                        <autoVersionSubmodules>true</autoVersionSubmodules>
+                        <noDeploy>true</noDeploy>
+                        <pushReleases>true</pushReleases>
+                        <username>${username}</username>
+                        <password>${password}</password>
+                        <scmCommentPrefix>[RELEASE] </scmCommentPrefix>
+                        <!--
+                         see goals wiki page for configuration options
+                         https://bitbucket.org/atlassian/jgit-flow/wiki/goals.wiki
+                         -->
+                    </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>
