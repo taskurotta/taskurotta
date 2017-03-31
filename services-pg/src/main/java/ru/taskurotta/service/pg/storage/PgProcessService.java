@@ -4,6 +4,7 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.support.JdbcDaoSupport;
 import ru.taskurotta.exception.ServiceCriticalException;
@@ -131,6 +132,8 @@ public class PgProcessService extends JdbcDaoSupport implements ProcessService, 
         try {
             return getJdbcTemplate().queryForObject("SELECT START_JSON FROM TSK_PROCESS WHERE PROCESS_ID = ? ",
                     (rs, rowNum) -> PgQueryUtils.readValue(rs.getString("start_json"), TaskContainer.class), processId.toString());
+        } catch (EmptyResultDataAccessException ex) {
+            return null;
         } catch (Throwable ex) {
             String message = "DB exception on getStartTask for process id ["+processId+"]";
             logger.error(message, ex);
@@ -168,6 +171,8 @@ public class PgProcessService extends JdbcDaoSupport implements ProcessService, 
         try {
             return getJdbcTemplate().queryForObject("SELECT PROCESS_ID, START_TASK_ID, CUSTOM_ID, START_TIME, END_TIME, STATE, RETURN_VALUE, START_JSON " +
                     "FROM TSK_PROCESS WHERE PROCESS_ID = ?", processMapper, processUUID.toString());
+        } catch (EmptyResultDataAccessException ex) {
+            return null;
         } catch (Throwable ex) {
             String message = "DB exception on getProcess by uuid["+processUUID+"]";
             logger.error(message, ex);

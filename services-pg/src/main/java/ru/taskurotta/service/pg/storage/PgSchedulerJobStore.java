@@ -5,6 +5,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.support.JdbcDaoSupport;
 import ru.taskurotta.service.pg.IdReturningCallback;
 import ru.taskurotta.service.pg.PgQueryUtils;
+import ru.taskurotta.service.schedule.JobConstants;
 import ru.taskurotta.service.schedule.model.JobVO;
 import ru.taskurotta.service.schedule.storage.JobStore;
 import ru.taskurotta.transport.model.TaskContainer;
@@ -97,7 +98,11 @@ public class PgSchedulerJobStore extends JdbcDaoSupport implements JobStore {
 
     @Override
     public int getJobStatus(long jobId) {
-        return getJdbcTemplate().queryForObject(SQL_GET_JOB_STATUS, statusMapper, jobId);
+        try {
+            return getJdbcTemplate().queryForObject(SQL_GET_JOB_STATUS, statusMapper, jobId);
+        } catch (EmptyResultDataAccessException e) {
+            return JobConstants.STATUS_UNDEFINED;
+        }
     }
 
     @Override
