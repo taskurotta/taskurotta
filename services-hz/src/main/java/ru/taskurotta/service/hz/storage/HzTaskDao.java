@@ -160,8 +160,8 @@ public class HzTaskDao implements TaskDao {
                 return;
             }
 
-            if (decision.getState() != Decision.STATE_REGISTERED) {
-                logger.debug("{}/{} Can not start task. Task has {} state (not in registered state)",
+            if (decision.getState() != Decision.STATE_WORK) {
+                logger.debug("{}/{} Can not update timeout. Task has {} state (not in work state)",
                         taskId, processId, decision.getState());
 
                 return;
@@ -170,7 +170,7 @@ public class HzTaskDao implements TaskDao {
             long recoveryTime = System.currentTimeMillis() + workerTimeout;
             decision.setRecoveryTime(recoveryTime);
 
-            id2TaskDecisionMap.set(taskKey, decision, 0l, TimeUnit.NANOSECONDS);
+            id2TaskDecisionMap.set(taskKey, decision, 0L, TimeUnit.NANOSECONDS);
 
         } finally {
             unlock(taskKey);
