@@ -6,7 +6,7 @@
     <parent>
         <artifactId>ru.taskurotta</artifactId>
         <groupId>ru.taskurotta</groupId>
-        <version>11.2</version>
+        <version>11.3</version>
     </parent>
 
     <artifactId>taskurotta</artifactId>
