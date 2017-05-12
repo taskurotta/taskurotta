@@ -69,6 +69,10 @@ public class GeneralRuntimeProcessor implements RuntimeProcessor {
             assert targetReference != null;
             RetryPolicy retryPolicy = targetReference.getRetryPolicy();
 
+            if (e instanceof InvocationTargetException && e.getCause() != null) {
+                e = e.getCause();//to send real error to the server
+            }
+
             long restartTime = TaskDecision.NO_RESTART;
             if (retryPolicy != null && retryPolicy.isRetryable(e)) {
                 long recordedFailure = System.currentTimeMillis();
@@ -80,14 +84,11 @@ public class GeneralRuntimeProcessor implements RuntimeProcessor {
             }
 
             if (Environment.getInstance().getType() == Environment.Type.TEST) {
-                if (e.getCause() instanceof TestException) {
+                if (e instanceof TestException) {
                     throw new RuntimeException(e);
                 }
             }
 
-            if (e instanceof InvocationTargetException && e.getCause() != null) {
-                e = e.getCause();//to send real error to the server
-            }
             taskDecision = new TaskDecisionImpl(task.getId(), task.getProcessId(), task.getPass(), e, RuntimeContext
                     .getCurrent().getTasks(), restartTime);
         } finally {

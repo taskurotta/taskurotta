@@ -26,7 +26,10 @@ import ru.taskurotta.util.StringUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -231,6 +234,8 @@ public class GeneralRuntimeProvider implements RuntimeProvider {
             retryPolicy.setMaximumAttempts(annotationPolicy.maximumAttempts());
             retryPolicy.setBackoffCoefficient(annotationPolicy.backoffCoefficient());
             retryPolicy.setRetryExpirationIntervalSeconds(annotationPolicy.retryExpirationSeconds());
+            retryPolicy.setExceptionsToRetry(listOfExceptions(annotationPolicy.exceptionsToRetry()));
+            retryPolicy.setExceptionsToExclude(listOfExceptions(annotationPolicy.excludeExceptions()));
         }
 
         if (method.isAnnotationPresent(LinearRetry.class)) {
@@ -239,9 +244,17 @@ public class GeneralRuntimeProvider implements RuntimeProvider {
             retryPolicy.setMaximumRetryIntervalSeconds(annotationPolicy.maximumRetryIntervalSeconds());
             retryPolicy.setMaximumAttempts(annotationPolicy.maximumAttempts());
             retryPolicy.setRetryExpirationIntervalSeconds(annotationPolicy.retryExpirationSeconds());
+            retryPolicy.setExceptionsToRetry(listOfExceptions(annotationPolicy.exceptionsToRetry()));
+            retryPolicy.setExceptionsToExclude(listOfExceptions(annotationPolicy.excludeExceptions()));
         }
 
         return retryPolicy;
+    }
+
+    private static List<Class<? extends Throwable>> listOfExceptions(Class<? extends Throwable>[] exceptions) {
+        List<Class<? extends Throwable>> list = new ArrayList<Class<? extends Throwable>>(exceptions.length);
+        Collections.addAll(list, exceptions);
+        return list;
     }
 
 }
