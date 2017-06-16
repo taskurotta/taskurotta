@@ -324,7 +324,7 @@ public class PgProcessService extends JdbcDaoSupport implements ProcessService, 
         try {
             return taskList != null
                     ? getJdbcTemplate().queryForObject(SQL_GET_PROCESS_CNT_BY_STATE_AND_STARTER_ID + " AND TASK_LIST = ?", Integer.class, Process.ACTIVE, actorId, taskList)
-                    : getJdbcTemplate().queryForObject(SQL_GET_PROCESS_CNT_BY_STATE_AND_STARTER_ID, Integer.class, Process.ACTIVE, actorId);
+                    : getJdbcTemplate().queryForObject(SQL_GET_PROCESS_CNT_BY_STATE_AND_STARTER_ID + " AND TASK_LIST is NULL", Integer.class, Process.ACTIVE, actorId);
 
         } catch (Throwable e) {
             String message = "DB error counting active processes for actorId["+actorId+"], taskList["+taskList+"]";
