@@ -2,6 +2,7 @@ package ru.taskurotta.client;
 
 import ru.taskurotta.client.internal.CommonClientServiceManager;
 import ru.taskurotta.client.jersey.JerseyHttpTaskServerProxy;
+import ru.taskurotta.server.json.ObjectFactory;
 
 /**
  */
@@ -23,7 +24,7 @@ public class Taskurotta {
         taskServer.setMaxConnectionsPerHost(threadPoolSize);
         taskServer.init();
 
-        ClientServiceManager clientServiceManager = new CommonClientServiceManager(taskServer);
+        ClientServiceManager clientServiceManager = new CommonClientServiceManager(taskServer, new ObjectFactory());
 
         this.clientProvider = clientServiceManager.getDeciderClientProvider();
     }

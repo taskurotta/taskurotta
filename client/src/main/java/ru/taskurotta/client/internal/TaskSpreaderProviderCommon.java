@@ -3,6 +3,7 @@ package ru.taskurotta.client.internal;
 import ru.taskurotta.client.TaskSpreader;
 import ru.taskurotta.client.TaskSpreaderProvider;
 import ru.taskurotta.server.TaskServer;
+import ru.taskurotta.server.json.ObjectFactory;
 import ru.taskurotta.util.ActorDefinition;
 
 /**
@@ -13,13 +14,15 @@ import ru.taskurotta.util.ActorDefinition;
 public class TaskSpreaderProviderCommon implements TaskSpreaderProvider {
 
     private TaskServer taskServer;
+    private ObjectFactory objectFactory;
 
-    public TaskSpreaderProviderCommon(TaskServer taskServer) {
+    public TaskSpreaderProviderCommon(TaskServer taskServer, ObjectFactory objectFactory) {
         this.taskServer = taskServer;
+        this.objectFactory = objectFactory;
     }
 
     @Override
     public TaskSpreader getTaskSpreader(ActorDefinition actorDefinition) {
-        return new TaskSpreaderCommon(taskServer, actorDefinition);
+        return new TaskSpreaderCommon(taskServer, actorDefinition, objectFactory);
     }
 }

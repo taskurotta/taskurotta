@@ -4,6 +4,7 @@ import ru.taskurotta.client.ClientServiceManager;
 import ru.taskurotta.client.DeciderClientProvider;
 import ru.taskurotta.client.TaskSpreaderProvider;
 import ru.taskurotta.server.TaskServer;
+import ru.taskurotta.server.json.ObjectFactory;
 
 /**
  * ClientServiceManager common implementation based on passed TaskServer instance
@@ -14,9 +15,11 @@ import ru.taskurotta.server.TaskServer;
 public class CommonClientServiceManager implements ClientServiceManager {
 
     private TaskServer taskServer;
+    private ObjectFactory objectFactory;
 
-    public CommonClientServiceManager(TaskServer taskServer) {
+    public CommonClientServiceManager(TaskServer taskServer, ObjectFactory objectFactory) {
         this.taskServer = taskServer;
+        this.objectFactory = objectFactory;
     }
 
     @Override
@@ -26,7 +29,7 @@ public class CommonClientServiceManager implements ClientServiceManager {
 
     @Override
     public TaskSpreaderProvider getTaskSpreaderProvider() {
-        return new TaskSpreaderProviderCommon(taskServer);
+        return new TaskSpreaderProviderCommon(taskServer, objectFactory);
     }
 
 }

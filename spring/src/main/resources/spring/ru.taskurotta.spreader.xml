@@ -28,6 +28,13 @@
 
     <bean id="clientServiceManager" class="ru.taskurotta.client.internal.CommonClientServiceManager">
         <constructor-arg name="taskServer" ref="taskServer"/>
+        <constructor-arg name="objectFactory" ref="objectFactory"/>
     </bean>
+
+    <bean id="objectFactory" class="ru.taskurotta.server.json.ObjectFactory">
+        <constructor-arg name="mapper" ref="objectMapper"/>
+    </bean>
+
+    <bean id="objectMapper" class="com.fasterxml.jackson.databind.ObjectMapper"/>
 
 </beans>

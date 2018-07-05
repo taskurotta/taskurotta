@@ -6,6 +6,7 @@ import ru.taskurotta.client.TaskSpreaderProvider;
 import ru.taskurotta.client.internal.DeciderClientProviderCommon;
 import ru.taskurotta.client.internal.TaskSpreaderProviderCommon;
 import ru.taskurotta.server.TaskServer;
+import ru.taskurotta.server.json.ObjectFactory;
 
 /**
  * User: romario
@@ -27,7 +28,7 @@ public class ClientServiceManagerMemory implements ClientServiceManager {
 
     @Override
     public TaskSpreaderProvider getTaskSpreaderProvider() {
-        return new TaskSpreaderProviderCommon(taskServer);
+        return new TaskSpreaderProviderCommon(taskServer, new ObjectFactory());
     }
 
 

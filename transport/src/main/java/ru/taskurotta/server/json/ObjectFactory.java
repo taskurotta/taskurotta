@@ -53,6 +53,11 @@ public class ObjectFactory {
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
     }
 
+    public ObjectFactory(ObjectMapper mapper) {
+        this.mapper = mapper;
+        this.mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
+    }
+
     public Object parseArg(ArgContainer argContainer) {
 
         if (argContainer == null) {

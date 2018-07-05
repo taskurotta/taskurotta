@@ -27,11 +27,10 @@ public class TaskSpreaderCommon implements TaskSpreader {
     private ActorDefinition actorDefinition;
     private ObjectFactory objectFactory;
 
-    public TaskSpreaderCommon(TaskServer taskServer, ActorDefinition actorDefinition) {
+    public TaskSpreaderCommon(TaskServer taskServer, ActorDefinition actorDefinition, ObjectFactory objectFactory) {
         this.taskServer = taskServer;
         this.actorDefinition = actorDefinition;
-        // TODO: receive from constructor args
-        this.objectFactory = new ObjectFactory();
+        this.objectFactory = objectFactory;
     }
 
     @Override
