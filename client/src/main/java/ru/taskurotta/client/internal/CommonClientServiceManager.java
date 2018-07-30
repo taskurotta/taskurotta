@@ -24,7 +24,7 @@ public class CommonClientServiceManager implements ClientServiceManager {
 
     @Override
     public DeciderClientProvider getDeciderClientProvider() {
-        return new DeciderClientProviderCommon(taskServer);
+        return new DeciderClientProviderCommon(taskServer, objectFactory);
     }
 
     @Override

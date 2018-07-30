@@ -21,9 +21,13 @@ public class DeciderClientProviderCommon implements DeciderClientProvider {
     private ObjectFactory objectFactory;
 
     public DeciderClientProviderCommon(TaskServer taskServerCommon) {
+        this(taskServerCommon, new ObjectFactory());
+
+    }
+
+    public DeciderClientProviderCommon(TaskServer taskServerCommon, ObjectFactory objectFactory) {
         this.taskServerCommon = taskServerCommon;
-        // TODO: receive from constructor args
-        this.objectFactory = new ObjectFactory();
+        this.objectFactory = objectFactory;
 
     }
 
