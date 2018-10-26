@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>ru.taskurotta</groupId>
 		<artifactId>ru.taskurotta</artifactId>
-		<version>11.3</version>
+		<version>11.3.thkad-p1</version>
 	</parent>
 
 	<artifactId>core</artifactId>

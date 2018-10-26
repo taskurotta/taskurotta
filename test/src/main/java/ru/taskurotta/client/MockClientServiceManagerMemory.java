@@ -1,9 +1,11 @@
 package ru.taskurotta.client;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import ru.taskurotta.client.internal.DeciderClientProviderCommon;
 import ru.taskurotta.client.internal.TaskSpreaderProviderCommon;
 import ru.taskurotta.server.GeneralTaskServer;
 import ru.taskurotta.server.TaskServer;
+import ru.taskurotta.server.json.ObjectFactory;
 import ru.taskurotta.service.MemoryServiceBundle;
 import ru.taskurotta.service.config.ConfigService;
 import ru.taskurotta.service.queue.QueueService;
@@ -14,6 +16,7 @@ public class MockClientServiceManagerMemory implements ClientServiceManager {
 
     private TaskServer taskServer;
     private MemoryServiceBundle memoryServiceBundle;
+    private ObjectFactory objectFactory = new ObjectFactory();
 
     public MockClientServiceManagerMemory() {
         this(60);
@@ -26,12 +29,12 @@ public class MockClientServiceManagerMemory implements ClientServiceManager {
 
     @Override
     public DeciderClientProvider getDeciderClientProvider() {
-        return new DeciderClientProviderCommon(taskServer);
+        return new DeciderClientProviderCommon(taskServer, objectFactory);
     }
 
     @Override
     public TaskSpreaderProvider getTaskSpreaderProvider() {
-        return new TaskSpreaderProviderCommon(taskServer);
+        return new TaskSpreaderProviderCommon(taskServer, objectFactory);
     }
 
     public QueueService getQueueService() {

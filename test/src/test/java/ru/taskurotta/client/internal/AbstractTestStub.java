@@ -108,8 +108,8 @@ public class AbstractTestStub {
                 serviceBundle.getProcessService(), serviceBundle.getTaskService(), taskDao, graphDao, interruptedTasksService, garbageCollectorService,
                 1l, 1000l, 0l, 1000l);
 
-        taskSpreaderProvider = new TaskSpreaderProviderCommon(taskServer);
         objectFactory = new ObjectFactory();
+        taskSpreaderProvider = new TaskSpreaderProviderCommon(taskServer, objectFactory);
     }
 
     public boolean isTaskInProgress(UUID taskId, UUID processId) {

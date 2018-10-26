@@ -6,6 +6,7 @@ import ru.taskurotta.client.Taskurotta;
 import ru.taskurotta.client.internal.CommonClientServiceManager;
 import ru.taskurotta.client.jersey.JerseyHttpTaskServerProxy;
 import ru.taskurotta.core.TaskConfig;
+import ru.taskurotta.server.json.ObjectFactory;
 import ru.taskurotta.test.fullfeature.decider.FullFeatureDeciderClient;
 
 /**
@@ -40,7 +41,7 @@ public class FullFeatureStarter implements Starter {
         taskServer.setMaxConnectionsPerHost(10);
         taskServer.init();
 
-        ClientServiceManager clientServiceManager = new CommonClientServiceManager(taskServer);
+        ClientServiceManager clientServiceManager = new CommonClientServiceManager(taskServer, new ObjectFactory());
 
         DeciderClientProvider clientProvider = clientServiceManager.getDeciderClientProvider();
         FullFeatureDeciderClient decider = clientProvider.getDeciderClient(FullFeatureDeciderClient.class);
