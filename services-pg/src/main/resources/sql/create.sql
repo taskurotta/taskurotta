@@ -1,5 +1,5 @@
 CREATE TABLE TSK_PROCESS (
-  process_id    VARCHAR(36)         NOT NULL,
+  process_id    VARCHAR(36)         NOT NULL PRIMARY KEY,
   start_task_id VARCHAR(36)         NOT NULL,
   custom_id     VARCHAR(256)        NULL,
   start_time    BIGINT              NOT NULL,
