@@ -10,6 +10,7 @@ public class TaskConfigContainer implements Serializable {
     private String customId;
     private long startTime;
     private String taskList;
+    private String idempotencyKey;
     private RetryPolicyConfigContainer retryPolicyConfigContainer;
 
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
@@ -66,6 +67,14 @@ public class TaskConfigContainer implements Serializable {
         this.timeout = timeout;
     }
 
+    public String getIdempotencyKey() {
+        return idempotencyKey;
+    }
+
+    public void setIdempotencyKey(String idempotencyKey) {
+        this.idempotencyKey = idempotencyKey;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -75,6 +84,7 @@ public class TaskConfigContainer implements Serializable {
 
         if (startTime != that.startTime) return false;
         if (timeout != that.timeout) return false;
+        if (idempotencyKey != null ? !idempotencyKey.equals(that.idempotencyKey) : that.idempotencyKey != null) return false;
         if (customId != null ? !customId.equals(that.customId) : that.customId != null) return false;
         if (taskList != null ? !taskList.equals(that.taskList) : that.taskList != null) return false;
         return retryPolicyConfigContainer != null ? retryPolicyConfigContainer.equals(that.retryPolicyConfigContainer) : that.retryPolicyConfigContainer == null;
@@ -88,6 +98,7 @@ public class TaskConfigContainer implements Serializable {
         result = 31 * result + (taskList != null ? taskList.hashCode() : 0);
         result = 31 * result + (retryPolicyConfigContainer != null ? retryPolicyConfigContainer.hashCode() : 0);
         result = 31 * result + (int) (timeout ^ (timeout >>> 32));
+        result = 31 * result + (idempotencyKey != null ? idempotencyKey.hashCode() : 0);
         return result;
     }
 
@@ -99,6 +110,7 @@ public class TaskConfigContainer implements Serializable {
                 ", taskList='" + taskList + '\'' +
                 ", retryPolicyConfigContainer=" + retryPolicyConfigContainer +
                 ", timeout=" + timeout +
+                ", idempotencyKey=" + idempotencyKey +
                 '}';
     }
 }

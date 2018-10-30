@@ -15,6 +15,7 @@ import ru.taskurotta.service.dependency.model.DependencyDecision;
 import ru.taskurotta.service.gc.GarbageCollectorService;
 import ru.taskurotta.service.queue.QueueService;
 import ru.taskurotta.service.queue.TaskQueueItem;
+import ru.taskurotta.service.storage.IdempotencyKeyViolation;
 import ru.taskurotta.service.storage.InterruptedTasksService;
 import ru.taskurotta.service.storage.ProcessService;
 import ru.taskurotta.service.storage.TaskService;
@@ -103,7 +104,12 @@ public class GeneralTaskServer implements TaskServer {
 
         // registration of new process
         // atomic statement
-        processService.startProcess(task);
+        try {
+            processService.startProcess(task);
+        } catch (IdempotencyKeyViolation ex) {
+            logger.debug("idempotency key violation: process[{}]", task.getProcessId());
+            return;
+        }
 
         try {
             // inform taskService about new process

@@ -4,6 +4,7 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.support.JdbcDaoSupport;
@@ -14,26 +15,27 @@ import ru.taskurotta.service.console.model.Process;
 import ru.taskurotta.service.console.retriever.ProcessInfoRetriever;
 import ru.taskurotta.service.console.retriever.command.ProcessSearchCommand;
 import ru.taskurotta.service.hz.server.HzTaskServer;
-import ru.taskurotta.service.pg.UuidResultSetCursor;
 import ru.taskurotta.service.pg.PgQueryUtils;
+import ru.taskurotta.service.pg.UuidResultSetCursor;
+import ru.taskurotta.service.storage.IdempotencyKeyViolation;
 import ru.taskurotta.service.storage.ProcessService;
+import ru.taskurotta.transport.model.TaskConfigContainer;
 import ru.taskurotta.transport.model.TaskContainer;
+import ru.taskurotta.transport.model.TaskOptionsContainer;
 import ru.taskurotta.transport.utils.TransportUtils;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class PgProcessService extends JdbcDaoSupport implements ProcessService, ProcessInfoRetriever {
 
     private static final Logger logger = LoggerFactory.getLogger(PgProcessService.class);
 
     private static final String LOCK_PROCESS_MAP_NAME = HzTaskServer.class.getName() + "#lockProcessMap";
+    private static final String IDEMPOTENCY_PROCESS_MAP_NAME = HzTaskServer.class.getName() + "#idempotencyProcessMap";
 
     public static final String WILDCARD = "%";
 
@@ -56,6 +58,7 @@ public class PgProcessService extends JdbcDaoSupport implements ProcessService, 
             "SELECT COUNT(PROCESS_ID) AS cnt FROM TSK_PROCESS WHERE STATE = ? AND ACTOR_ID = ? ";
 
     private IMap<UUID, ?> lockProcessMap;
+    private IMap<String, ?> idempotencyProcessMap;
 
     protected RowMapper<Process> processMapper = (rs, rowNum) -> {
         Process process = new Process();
@@ -72,6 +75,7 @@ public class PgProcessService extends JdbcDaoSupport implements ProcessService, 
 
     public PgProcessService(HazelcastInstance hzInstance, DataSource dataSource) {
         lockProcessMap = hzInstance.getMap(LOCK_PROCESS_MAP_NAME);
+        idempotencyProcessMap = hzInstance.getMap(IDEMPOTENCY_PROCESS_MAP_NAME);
         setDataSource(dataSource);
     }
 
@@ -87,6 +91,26 @@ public class PgProcessService extends JdbcDaoSupport implements ProcessService, 
 
     @Override
     public void startProcess(TaskContainer task) {
+        String idempotencyKey = Optional.ofNullable(task.getOptions())
+                .map(TaskOptionsContainer::getTaskConfigContainer)
+                .map(TaskConfigContainer::getIdempotencyKey)
+                .orElse(null);
+
+        if (idempotencyKey != null) {
+            if (idempotencyProcessMap.tryLock(idempotencyKey)) {
+                try {
+                    getJdbcTemplate().update("INSERT INTO TSK_PROCESS_IDEMPOTENCY (IDEMPOTENCY_KEY, PROCESS_ID, START_TIME) VALUES (?, ?, ?)",
+                            idempotencyKey, task.getProcessId().toString(), new Date().getTime());
+                } catch (DuplicateKeyException ex) {
+                    throw new IdempotencyKeyViolation();
+                } finally {
+                    idempotencyProcessMap.unlock(idempotencyKey);
+                }
+            } else {
+                throw new IdempotencyKeyViolation();
+            }
+        }
+
         try {
             logger.debug("Try to start process with task [{}]", task);
             getJdbcTemplate().update("INSERT INTO TSK_PROCESS (PROCESS_ID, START_TASK_ID, CUSTOM_ID, START_TIME, STATE, START_JSON, ACTOR_ID, TASK_LIST) " +
