@@ -35,7 +35,6 @@ public class PgProcessService extends JdbcDaoSupport implements ProcessService, 
     private static final Logger logger = LoggerFactory.getLogger(PgProcessService.class);
 
     private static final String LOCK_PROCESS_MAP_NAME = HzTaskServer.class.getName() + "#lockProcessMap";
-    private static final String IDEMPOTENCY_PROCESS_MAP_NAME = HzTaskServer.class.getName() + "#idempotencyProcessMap";
 
     public static final String WILDCARD = "%";
 
@@ -58,7 +57,6 @@ public class PgProcessService extends JdbcDaoSupport implements ProcessService, 
             "SELECT COUNT(PROCESS_ID) AS cnt FROM TSK_PROCESS WHERE STATE = ? AND ACTOR_ID = ? ";
 
     private IMap<UUID, ?> lockProcessMap;
-    private IMap<String, ?> idempotencyProcessMap;
 
     protected RowMapper<Process> processMapper = (rs, rowNum) -> {
         Process process = new Process();
@@ -75,7 +73,6 @@ public class PgProcessService extends JdbcDaoSupport implements ProcessService, 
 
     public PgProcessService(HazelcastInstance hzInstance, DataSource dataSource) {
         lockProcessMap = hzInstance.getMap(LOCK_PROCESS_MAP_NAME);
-        idempotencyProcessMap = hzInstance.getMap(IDEMPOTENCY_PROCESS_MAP_NAME);
         setDataSource(dataSource);
     }
 
@@ -97,16 +94,10 @@ public class PgProcessService extends JdbcDaoSupport implements ProcessService, 
                 .orElse(null);
 
         if (idempotencyKey != null) {
-            if (idempotencyProcessMap.tryLock(idempotencyKey)) {
-                try {
-                    getJdbcTemplate().update("INSERT INTO TSK_PROCESS_IDEMPOTENCY (IDEMPOTENCY_KEY, PROCESS_ID, START_TIME) VALUES (?, ?, ?)",
-                            idempotencyKey, task.getProcessId().toString(), new Date().getTime());
-                } catch (DuplicateKeyException ex) {
-                    throw new IdempotencyKeyViolation();
-                } finally {
-                    idempotencyProcessMap.unlock(idempotencyKey);
-                }
-            } else {
+            try {
+                getJdbcTemplate().update("INSERT INTO TSK_PROCESS_IDEMPOTENCY (IDEMPOTENCY_KEY, PROCESS_ID, START_TIME) VALUES (?, ?, ?)",
+                        idempotencyKey, task.getProcessId().toString(), new Date().getTime());
+            } catch (DuplicateKeyException ex) {
                 throw new IdempotencyKeyViolation();
             }
         }
