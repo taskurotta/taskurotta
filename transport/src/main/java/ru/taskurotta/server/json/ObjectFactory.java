@@ -148,8 +148,13 @@ public class ObjectFactory {
                 result.setPromise(true);
                 result.setReady(pArg.isReady());
                 result.setTaskId(pArg.getId());
+
                 if (pArg.isReady()) {
-                    setArgContainerValue(result, pArg.get());
+                    if (pArg.hasFail()) {
+                        result.setErrorContainer(dumpError(pArg.getFail()));
+                    } else {
+                        setArgContainerValue(result, pArg.get());
+                    }
                 }
             } else {
                 result.setPromise(false);

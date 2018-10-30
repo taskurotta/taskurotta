@@ -110,7 +110,7 @@ public class PgProcessServiceTest {
         if (target != null) {
             int count = 5;
             int limit = 3;
-            Set<UUID> uuids = createProcesses(5);
+            Set<UUID> uuids = createProcesses(5, false);
             ResultSetCursor<UUID> rsc = target.findIncompleteProcesses(System.currentTimeMillis()+60000l, limit);
             validateResultSetCursor(rsc, limit, uuids, count);
             rsc.close();
@@ -122,7 +122,7 @@ public class PgProcessServiceTest {
         if (target != null) {
             int count = 5;
             int limit = 3;
-            Set<UUID> uuids = createProcesses(count);
+            Set<UUID> uuids = createProcesses(count, false);
             finishProcesses(uuids);
 
             ResultSetCursor<UUID> rsc = target.findLostProcesses(System.currentTimeMillis()+60000l, 10l, limit);
@@ -159,17 +159,21 @@ public class PgProcessServiceTest {
     public void testRetrieverCounters() {
         if (target != null) {
             int count = 5;
-            Set<UUID> uuids = createProcesses(count);
-
+            Set<UUID> uuids = createProcesses(count, false);
+            Set<UUID> uuidsFull = createProcesses(count, true);
             Assert.assertEquals(count, target.getActiveCount(ACTOR_ID, null));
+            Assert.assertEquals(count, target.getActiveCount(ACTOR_ID, TASK_LIST));
 
             finishProcesses(uuids);
             Assert.assertEquals(count, target.getFinishedCount(null));
+
+            finishProcesses(uuidsFull);
 
             for (UUID id : uuids) {
                 target.markProcessAsBroken(id);
             }
             Assert.assertEquals(count, target.getBrokenProcessCount());
+
         }
     }
 
@@ -178,7 +182,7 @@ public class PgProcessServiceTest {
         if (target != null) {
             int count = 5;
             int limit = 3;
-            Set<UUID> uuids = createProcesses(count);
+            Set<UUID> uuids = createProcesses(count, false);
 
             ProcessSearchCommand command = new ProcessSearchCommand();
             command.setActorId(ACTOR_ID);
@@ -225,12 +229,12 @@ public class PgProcessServiceTest {
         }
     }
 
-    Set<UUID> createProcesses(int count) {
+    Set<UUID> createProcesses(int count, boolean isFullContainer) {
         Set<UUID> uuids = new HashSet<>(count);
         for (int i = 0; i < count; i++) {
             UUID pid = UUID.randomUUID();
             uuids.add(pid);
-            target.startProcess(getMinimalContainer(pid));
+            target.startProcess(isFullContainer? getFullContainer(pid) : getMinimalContainer(pid));
         }
         return uuids;
     }

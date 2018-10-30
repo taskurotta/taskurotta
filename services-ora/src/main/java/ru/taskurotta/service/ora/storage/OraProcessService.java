@@ -485,7 +485,7 @@ public class OraProcessService extends AbstractHzProcessService implements Proce
         int result = 0;
         if (actorId != null) {
             ResultSet resultSet = null;
-            String sql = taskList!=null? SQL_GET_PROCESS_CNT_BY_STATE_AND_STARTER_ID + " AND TASK_LIST = ?" : SQL_GET_PROCESS_CNT_BY_STATE_AND_STARTER_ID;
+            String sql = taskList!=null? SQL_GET_PROCESS_CNT_BY_STATE_AND_STARTER_ID + " AND TASK_LIST = ?" : SQL_GET_PROCESS_CNT_BY_STATE_AND_STARTER_ID + " AND TASK_LIST IS NULL";
             try (Connection connection = dataSource.getConnection();
                  PreparedStatement ps = connection.prepareStatement(sql)) {
                 ps.setInt(1, Process.ACTIVE);

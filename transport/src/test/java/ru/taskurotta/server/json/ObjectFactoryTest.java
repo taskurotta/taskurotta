@@ -40,6 +40,18 @@ public class ObjectFactoryTest {
     }
 
     @Test
+    public void dumpPromiseArgumentWithFail() {
+        Fail fail = new Fail(IllegalArgumentException.class.getName(), "Test error text");
+        Promise failedPromiseValue = Promise.asPromise(null);
+        failedPromiseValue.setFail(fail);
+        ArgContainer argContainer = objectFactory.dumpArg(failedPromiseValue);
+        log.info("Straight failPromise[{}]", argContainer);
+
+        Object v = objectFactory.parseArg(argContainer);
+        Assert.assertEquals(v, failedPromiseValue);
+    }
+
+    @Test
     public void argContainerPromiseWithFail() {
         Fail fail = new Fail(IllegalArgumentException.class.getName(), "Test error text");
         Promise failedPromiseValue = Promise.asPromise(null);
