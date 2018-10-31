@@ -13,6 +13,7 @@ import ru.taskurotta.service.common.ResultSetCursor;
 import ru.taskurotta.service.console.model.GenericPage;
 import ru.taskurotta.service.console.model.Process;
 import ru.taskurotta.service.console.retriever.command.ProcessSearchCommand;
+import ru.taskurotta.service.storage.IdempotencyKeyViolation;
 import ru.taskurotta.transport.model.*;
 
 import java.io.File;
@@ -20,6 +21,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
+
+import static org.junit.Assert.fail;
 
 public class PgProcessServiceTest {
 
@@ -220,6 +223,25 @@ public class PgProcessServiceTest {
             page = target.findProcesses(command);
             Assert.assertEquals(1, page.getTotalCount());
             Assert.assertEquals(1, page.getItems().size());
+        }
+    }
+
+    @Test
+    public void idempotencyTest() {
+        if (target != null) {
+            UUID pid = UUID.randomUUID();
+            String idempotencyKey = UUID.randomUUID().toString();
+            TaskContainer fullContainer = getFullContainer(pid);
+            fullContainer.getOptions().getTaskConfigContainer().setIdempotencyKey(idempotencyKey);
+            try {
+                target.startProcess(fullContainer);
+                target.startProcess(fullContainer);
+                fail("no idempotency violation");
+            } catch (IdempotencyKeyViolation ex) {
+            } finally {
+                target.finishProcess(pid, RETURN_VALUE_JSON);
+                target.deleteProcess(pid);
+            }
         }
     }
 
