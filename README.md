@@ -1,8 +1,10 @@
 taskurotta
 ==========
 
-Workflow tasks on native java.
+Framework helps to coordinate work across distributed components.
 
-taskurotta is open source and available under the [MIT license].
+Taskurotta is open source and available under the [MIT license].
+Article on [Habrahabr]
 
 [MIT license]: http://opensource.org/licenses/MIT
+[Habrahabr]: https://habrahabr.ru/post/206188/
