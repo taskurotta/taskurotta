@@ -11,6 +11,7 @@ public class TaskConfig {
     private String taskList; // name of task queue/list
     private RetryPolicyConfig retryPolicyConfig;
     private long timeout = -1;
+    private String idempotencyKey;
 
     public String getCustomId() {
         return customId;
@@ -57,6 +58,15 @@ public class TaskConfig {
         return this;
     }
 
+    public String getIdempotencyKey() {
+        return idempotencyKey;
+    }
+
+    public TaskConfig setIdempotencyKey(String idempotencyKey) {
+        this.idempotencyKey = idempotencyKey;
+        return this;
+    }
+
     public TaskConfig withRetryPolicyConfig(RetryPolicyConfig.RetryPolicyType type,
                                             long initialRetryIntervalSeconds,
                                             long maximumRetryIntervalSeconds,
@@ -96,6 +106,8 @@ public class TaskConfig {
 
         if (startTime != that.startTime) return false;
         if (timeout != that.timeout) return false;
+
+        if (idempotencyKey != null ? !idempotencyKey.equals(that.idempotencyKey) : that.idempotencyKey != null) return false;
         if (customId != null ? !customId.equals(that.customId) : that.customId != null) return false;
         if (taskList != null ? !taskList.equals(that.taskList) : that.taskList != null) return false;
         return retryPolicyConfig != null ? retryPolicyConfig.equals(that.retryPolicyConfig) : that.retryPolicyConfig == null;
@@ -109,6 +121,7 @@ public class TaskConfig {
         result = 31 * result + (taskList != null ? taskList.hashCode() : 0);
         result = 31 * result + (retryPolicyConfig != null ? retryPolicyConfig.hashCode() : 0);
         result = 31 * result + (int) (timeout ^ (timeout >>> 32));
+        result = 31 * result + (idempotencyKey != null ? idempotencyKey.hashCode() : 0);
         return result;
     }
 
@@ -120,6 +133,7 @@ public class TaskConfig {
                 ", taskList='" + taskList + '\'' +
                 ", retryPolicyConfig=" + retryPolicyConfig +
                 ", timeout=" + timeout +
+                ", idempotencyKey=" + idempotencyKey +
                 '}';
     }
 }

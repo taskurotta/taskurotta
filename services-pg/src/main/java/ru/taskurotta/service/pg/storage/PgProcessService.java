@@ -4,6 +4,7 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.support.JdbcDaoSupport;
@@ -14,20 +15,20 @@ import ru.taskurotta.service.console.model.Process;
 import ru.taskurotta.service.console.retriever.ProcessInfoRetriever;
 import ru.taskurotta.service.console.retriever.command.ProcessSearchCommand;
 import ru.taskurotta.service.hz.server.HzTaskServer;
-import ru.taskurotta.service.pg.UuidResultSetCursor;
 import ru.taskurotta.service.pg.PgQueryUtils;
+import ru.taskurotta.service.pg.UuidResultSetCursor;
+import ru.taskurotta.service.storage.IdempotencyKeyViolation;
 import ru.taskurotta.service.storage.ProcessService;
+import ru.taskurotta.transport.model.TaskConfigContainer;
 import ru.taskurotta.transport.model.TaskContainer;
+import ru.taskurotta.transport.model.TaskOptionsContainer;
 import ru.taskurotta.transport.utils.TransportUtils;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class PgProcessService extends JdbcDaoSupport implements ProcessService, ProcessInfoRetriever {
 
@@ -87,6 +88,20 @@ public class PgProcessService extends JdbcDaoSupport implements ProcessService, 
 
     @Override
     public void startProcess(TaskContainer task) {
+        String idempotencyKey = Optional.ofNullable(task.getOptions())
+                .map(TaskOptionsContainer::getTaskConfigContainer)
+                .map(TaskConfigContainer::getIdempotencyKey)
+                .orElse(null);
+
+        if (idempotencyKey != null) {
+            try {
+                getJdbcTemplate().update("INSERT INTO TSK_PROCESS_IDEMPOTENCY (IDEMPOTENCY_KEY, PROCESS_ID, START_TIME) VALUES (?, ?, ?)",
+                        idempotencyKey, task.getProcessId().toString(), new Date().getTime());
+            } catch (DuplicateKeyException ex) {
+                throw new IdempotencyKeyViolation();
+            }
+        }
+
         try {
             logger.debug("Try to start process with task [{}]", task);
             getJdbcTemplate().update("INSERT INTO TSK_PROCESS (PROCESS_ID, START_TASK_ID, CUSTOM_ID, START_TIME, STATE, START_JSON, ACTOR_ID, TASK_LIST) " +
@@ -324,7 +339,7 @@ public class PgProcessService extends JdbcDaoSupport implements ProcessService, 
         try {
             return taskList != null
                     ? getJdbcTemplate().queryForObject(SQL_GET_PROCESS_CNT_BY_STATE_AND_STARTER_ID + " AND TASK_LIST = ?", Integer.class, Process.ACTIVE, actorId, taskList)
-                    : getJdbcTemplate().queryForObject(SQL_GET_PROCESS_CNT_BY_STATE_AND_STARTER_ID, Integer.class, Process.ACTIVE, actorId);
+                    : getJdbcTemplate().queryForObject(SQL_GET_PROCESS_CNT_BY_STATE_AND_STARTER_ID + " AND TASK_LIST is NULL", Integer.class, Process.ACTIVE, actorId);
 
         } catch (Throwable e) {
             String message = "DB error counting active processes for actorId["+actorId+"], taskList["+taskList+"]";

@@ -13,6 +13,7 @@ import ru.taskurotta.service.common.ResultSetCursor;
 import ru.taskurotta.service.console.model.GenericPage;
 import ru.taskurotta.service.console.model.Process;
 import ru.taskurotta.service.console.retriever.command.ProcessSearchCommand;
+import ru.taskurotta.service.storage.IdempotencyKeyViolation;
 import ru.taskurotta.transport.model.*;
 
 import java.io.File;
@@ -20,6 +21,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
+
+import static org.junit.Assert.fail;
 
 public class PgProcessServiceTest {
 
@@ -110,7 +113,7 @@ public class PgProcessServiceTest {
         if (target != null) {
             int count = 5;
             int limit = 3;
-            Set<UUID> uuids = createProcesses(5);
+            Set<UUID> uuids = createProcesses(5, false);
             ResultSetCursor<UUID> rsc = target.findIncompleteProcesses(System.currentTimeMillis()+60000l, limit);
             validateResultSetCursor(rsc, limit, uuids, count);
             rsc.close();
@@ -122,7 +125,7 @@ public class PgProcessServiceTest {
         if (target != null) {
             int count = 5;
             int limit = 3;
-            Set<UUID> uuids = createProcesses(count);
+            Set<UUID> uuids = createProcesses(count, false);
             finishProcesses(uuids);
 
             ResultSetCursor<UUID> rsc = target.findLostProcesses(System.currentTimeMillis()+60000l, 10l, limit);
@@ -159,17 +162,21 @@ public class PgProcessServiceTest {
     public void testRetrieverCounters() {
         if (target != null) {
             int count = 5;
-            Set<UUID> uuids = createProcesses(count);
-
+            Set<UUID> uuids = createProcesses(count, false);
+            Set<UUID> uuidsFull = createProcesses(count, true);
             Assert.assertEquals(count, target.getActiveCount(ACTOR_ID, null));
+            Assert.assertEquals(count, target.getActiveCount(ACTOR_ID, TASK_LIST));
 
             finishProcesses(uuids);
             Assert.assertEquals(count, target.getFinishedCount(null));
+
+            finishProcesses(uuidsFull);
 
             for (UUID id : uuids) {
                 target.markProcessAsBroken(id);
             }
             Assert.assertEquals(count, target.getBrokenProcessCount());
+
         }
     }
 
@@ -178,7 +185,7 @@ public class PgProcessServiceTest {
         if (target != null) {
             int count = 5;
             int limit = 3;
-            Set<UUID> uuids = createProcesses(count);
+            Set<UUID> uuids = createProcesses(count, false);
 
             ProcessSearchCommand command = new ProcessSearchCommand();
             command.setActorId(ACTOR_ID);
@@ -219,18 +226,37 @@ public class PgProcessServiceTest {
         }
     }
 
+    @Test
+    public void idempotencyTest() {
+        if (target != null) {
+            UUID pid = UUID.randomUUID();
+            String idempotencyKey = UUID.randomUUID().toString();
+            TaskContainer fullContainer = getFullContainer(pid);
+            fullContainer.getOptions().getTaskConfigContainer().setIdempotencyKey(idempotencyKey);
+            try {
+                target.startProcess(fullContainer);
+                target.startProcess(fullContainer);
+                fail("no idempotency violation");
+            } catch (IdempotencyKeyViolation ex) {
+            } finally {
+                target.finishProcess(pid, RETURN_VALUE_JSON);
+                target.deleteProcess(pid);
+            }
+        }
+    }
+
     void finishProcesses(Set<UUID> uuids) {
         for (UUID id : uuids) {
             target.finishProcess(id, "null");
         }
     }
 
-    Set<UUID> createProcesses(int count) {
+    Set<UUID> createProcesses(int count, boolean isFullContainer) {
         Set<UUID> uuids = new HashSet<>(count);
         for (int i = 0; i < count; i++) {
             UUID pid = UUID.randomUUID();
             uuids.add(pid);
-            target.startProcess(getMinimalContainer(pid));
+            target.startProcess(isFullContainer? getFullContainer(pid) : getMinimalContainer(pid));
         }
         return uuids;
     }
