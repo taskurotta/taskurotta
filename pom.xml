@@ -115,12 +115,12 @@
             <distributionManagement>
                 <repository>
                     <id>internal-releases</id>
-                    <url>http://nexus.egron.net:8081/nexus/content/repositories/releases</url>
+                    <url>https://nexus.egron.net:8081/nexus/content/repositories/releases</url>
                 </repository>
                 <snapshotRepository>
                     <id>internal-snapshots</id>
                     <name>Internal Snapshots</name>
-                    <url>http://nexus.egron.net:8081/nexus/content/repositories/snapshots</url>
+                    <url>https://nexus.egron.net:8081/nexus/content/repositories/snapshots</url>
                     <uniqueVersion>false</uniqueVersion>
                 </snapshotRepository>
             </distributionManagement>
