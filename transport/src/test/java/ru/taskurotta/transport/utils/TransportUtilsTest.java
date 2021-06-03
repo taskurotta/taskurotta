@@ -19,6 +19,7 @@ public class TransportUtilsTest {
     public void testGetActorDefinition() {
         String actorId = "ru.taskurotta.test.Actor#1.0";
         String taskList = "testList";
+        String idempotenceKey = "idempotenceKey";
         TaskContainer tc1 = new TaskContainer(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), "test", actorId, TaskType.WORKER, -1, 3, null, null, false, null);
         ActorDefinition ad1 = TransportUtils.getActorDefinition(tc1);
 
@@ -27,7 +28,7 @@ public class TransportUtilsTest {
         Assert.assertEquals("1.0", ad1.getVersion());
         Assert.assertNull(ad1.getTaskList());
 
-        TaskOptionsContainer toc = new TaskOptionsContainer(null, new TaskConfigContainer(null, -1, taskList, null, -1), null);
+        TaskOptionsContainer toc = new TaskOptionsContainer(null, new TaskConfigContainer(null, -1, taskList, idempotenceKey, null, -1), null);
         TaskContainer tc2 = new TaskContainer(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), "test", actorId, TaskType.WORKER, -1, 3, null, toc, false, null);
         ActorDefinition ad2 = TransportUtils.getActorDefinition(tc2);
 

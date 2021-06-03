@@ -22,6 +22,7 @@ public class TaskConfigContainerStreamSerializer implements StreamSerializer<Tas
         writeString(out, object.getCustomId());
         out.writeLong(object.getStartTime());
         writeString(out, object.getTaskList());
+        writeString(out, object.getIdempotenceKey());
         if (object.getRetryPolicyConfigContainer() != null) {
             out.writeBoolean(true);
             retryPolicyConfigContainerSerializer.write(out, object.getRetryPolicyConfigContainer());
@@ -37,6 +38,7 @@ public class TaskConfigContainerStreamSerializer implements StreamSerializer<Tas
         container.setCustomId(readString(in));
         container.setStartTime(in.readLong());
         container.setTaskList(readString(in));
+        container.setIdempotenceKey(readString(in));
         boolean retryPolicyExist = in.readBoolean();
         if (retryPolicyExist) {
             container.setRetryPolicyConfigContainer(retryPolicyConfigContainerSerializer.read(in));

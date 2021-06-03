@@ -113,10 +113,18 @@ public class PgProcessServiceTest {
         if (target != null) {
             int count = 5;
             int limit = 3;
-            Set<UUID> uuids = createProcesses(5, false);
-            ResultSetCursor<UUID> rsc = target.findIncompleteProcesses(System.currentTimeMillis()+60000l, limit);
-            validateResultSetCursor(rsc, limit, uuids, count);
-            rsc.close();
+            Set<UUID> uuids = Collections.emptySet();
+            try {
+                uuids = createProcesses(5, false);
+                ResultSetCursor<UUID> rsc = target.findIncompleteProcesses(System.currentTimeMillis()+60000l, limit);
+                validateResultSetCursor(rsc, limit, uuids, count);
+                rsc.close();
+            } finally {
+                for (UUID uuid : uuids) {
+                    target.deleteProcess(uuid);
+                }
+            }
+
         }
     }
 
@@ -139,22 +147,26 @@ public class PgProcessServiceTest {
         if (target != null) {
             UUID pid2 = UUID.randomUUID();
             target.startProcess(getFullContainer(pid2));
-            Process p2 = target.getProcess(pid2);
-            Assert.assertNotNull(p2);
+            try {
+                Process p2 = target.getProcess(pid2);
+                Assert.assertNotNull(p2);
 
-            Assert.assertEquals(pid2, p2.getProcessId());
-            Assert.assertEquals(pid2, p2.getStartTaskId());
-            Assert.assertEquals(CUSTOM_ID, p2.getCustomId());
-            Assert.assertTrue(p2.getStartTime() >= START_TIME);
-            Assert.assertEquals(0l, p2.getEndTime());
-            Assert.assertEquals(Process.ACTIVE, p2.getState());
-            Assert.assertNull(p2.getReturnValue());
+                Assert.assertEquals(pid2, p2.getProcessId());
+                Assert.assertEquals(pid2, p2.getStartTaskId());
+                Assert.assertEquals(CUSTOM_ID, p2.getCustomId());
+                Assert.assertTrue(p2.getStartTime() >= START_TIME);
+                Assert.assertEquals(0l, p2.getEndTime());
+                Assert.assertEquals(Process.ACTIVE, p2.getState());
+                Assert.assertNull(p2.getReturnValue());
 
-            TaskContainer startTask2 = p2.getStartTask();
-            Assert.assertNotNull(startTask2);
-            Assert.assertEquals(pid2, startTask2.getProcessId());
-            Assert.assertEquals(START_TIME, startTask2.getStartTime());
-            Assert.assertEquals(METHOD, startTask2.getMethod());
+                TaskContainer startTask2 = p2.getStartTask();
+                Assert.assertNotNull(startTask2);
+                Assert.assertEquals(pid2, startTask2.getProcessId());
+                Assert.assertEquals(START_TIME, startTask2.getStartTime());
+                Assert.assertEquals(METHOD, startTask2.getMethod());
+            } finally {
+                target.deleteProcess(pid2);
+            }
         }
     }
 
@@ -162,20 +174,32 @@ public class PgProcessServiceTest {
     public void testRetrieverCounters() {
         if (target != null) {
             int count = 5;
-            Set<UUID> uuids = createProcesses(count, false);
-            Set<UUID> uuidsFull = createProcesses(count, true);
-            Assert.assertEquals(count, target.getActiveCount(ACTOR_ID, null));
-            Assert.assertEquals(count, target.getActiveCount(ACTOR_ID, TASK_LIST));
+            Set<UUID> uuids = Collections.emptySet();
+            Set<UUID> uuidsFull = Collections.emptySet();
+            try {
+                uuids = createProcesses(count, false);
+                uuidsFull = createProcesses(count, true);
 
-            finishProcesses(uuids);
-            Assert.assertEquals(count, target.getFinishedCount(null));
+                Assert.assertEquals(count, target.getActiveCount(ACTOR_ID, null));
+                Assert.assertEquals(count, target.getActiveCount(ACTOR_ID, TASK_LIST));
 
-            finishProcesses(uuidsFull);
+                finishProcesses(uuids);
+                Assert.assertEquals(count, target.getFinishedCount(null));
 
-            for (UUID id : uuids) {
-                target.markProcessAsBroken(id);
+                finishProcesses(uuidsFull);
+
+                for (UUID id : uuids) {
+                    target.markProcessAsBroken(id);
+                }
+                Assert.assertEquals(count, target.getBrokenProcessCount());
+            } finally {
+                Set<UUID> processesSet = new HashSet<>();
+                processesSet.addAll(uuids);
+                processesSet.addAll(uuidsFull);
+                for (UUID uuid : processesSet) {
+                    target.deleteProcess(uuid);
+                }
             }
-            Assert.assertEquals(count, target.getBrokenProcessCount());
 
         }
     }
@@ -185,58 +209,65 @@ public class PgProcessServiceTest {
         if (target != null) {
             int count = 5;
             int limit = 3;
-            Set<UUID> uuids = createProcesses(count, false);
+            Set<UUID> uuids = Collections.emptySet();
+            try {
+                uuids = createProcesses(count, false);
 
-            ProcessSearchCommand command = new ProcessSearchCommand();
-            command.setActorId(ACTOR_ID);
-            command.setStartedFrom(System.currentTimeMillis() - 60000l);
-            command.setStartedTill(System.currentTimeMillis() + 60000l);
-            command.setState(Process.ACTIVE);
+                ProcessSearchCommand command = new ProcessSearchCommand();
+                command.setActorId(ACTOR_ID);
+                command.setStartedFrom(System.currentTimeMillis() - 60000l);
+                command.setStartedTill(System.currentTimeMillis() + 60000l);
+                command.setState(Process.ACTIVE);
 
-            command.setPageNum(1);
-            command.setPageSize(limit);
+                command.setPageNum(1);
+                command.setPageSize(limit);
 
-            GenericPage<Process> page = target.findProcesses(command);
-            Assert.assertEquals(count, page.getTotalCount());
-            Assert.assertEquals(limit, page.getItems().size());
+                GenericPage<Process> page = target.findProcesses(command);
+                Assert.assertEquals(count, page.getTotalCount());
+                Assert.assertEquals(limit, page.getItems().size());
 
-            for (Process p : page.getItems()) {
-                Assert.assertTrue(uuids.contains(p.getProcessId()));
+                for (Process p : page.getItems()) {
+                    Assert.assertTrue(uuids.contains(p.getProcessId()));
+                }
+
+                command.setPageNum(2);
+                page = target.findProcesses(command);
+                Assert.assertEquals(count-limit, page.getItems().size());
+                Assert.assertEquals(count, page.getTotalCount());
+
+                command.setPageNum(1);
+                command.setProcessId(UUID.randomUUID().toString());
+                page = target.findProcesses(command);
+                Assert.assertEquals(0, page.getTotalCount());
+
+                command.setProcessId(null);
+                command.setCustomId(CUSTOM_ID);
+                page = target.findProcesses(command);
+                Assert.assertEquals(0, page.getTotalCount());
+
+                target.startProcess(getFullContainer(UUID.randomUUID()));
+                page = target.findProcesses(command);
+                Assert.assertEquals(1, page.getTotalCount());
+                Assert.assertEquals(1, page.getItems().size());
+            } finally {
+                for (UUID uuid : uuids) {
+                    target.deleteProcess(uuid);
+                }
             }
-
-            command.setPageNum(2);
-            page = target.findProcesses(command);
-            Assert.assertEquals(count-limit, page.getItems().size());
-            Assert.assertEquals(count, page.getTotalCount());
-
-            command.setPageNum(1);
-            command.setProcessId(UUID.randomUUID().toString());
-            page = target.findProcesses(command);
-            Assert.assertEquals(0, page.getTotalCount());
-
-            command.setProcessId(null);
-            command.setCustomId(CUSTOM_ID);
-            page = target.findProcesses(command);
-            Assert.assertEquals(0, page.getTotalCount());
-
-            target.startProcess(getFullContainer(UUID.randomUUID()));
-            page = target.findProcesses(command);
-            Assert.assertEquals(1, page.getTotalCount());
-            Assert.assertEquals(1, page.getItems().size());
         }
     }
 
     @Test
-    public void idempotencyTest() {
+    public void idempotenceTest() {
         if (target != null) {
             UUID pid = UUID.randomUUID();
-            String idempotencyKey = UUID.randomUUID().toString();
+            String idempotenceKey = UUID.randomUUID().toString();
             TaskContainer fullContainer = getFullContainer(pid);
-            fullContainer.getOptions().getTaskConfigContainer().setIdempotencyKey(idempotencyKey);
+            fullContainer.getOptions().getTaskConfigContainer().setIdempotenceKey(idempotenceKey);
             try {
                 target.startProcess(fullContainer);
                 target.startProcess(fullContainer);
-                fail("no idempotency violation");
+                fail("no idempotence violation");
             } catch (IdempotencyKeyViolation ex) {
             } finally {
                 target.finishProcess(pid, RETURN_VALUE_JSON);
@@ -282,7 +313,7 @@ public class PgProcessServiceTest {
     }
 
     TaskContainer getFullContainer(UUID processId) {
-        TaskConfigContainer cfgContainer = new TaskConfigContainer(CUSTOM_ID, START_TIME, TASK_LIST, null, 1000000l);
+        TaskConfigContainer cfgContainer = new TaskConfigContainer(CUSTOM_ID, START_TIME, TASK_LIST, randomIdempotenceKey(), null, 1000000l);
         ArgType[] argTypes = new ArgType[1];
         argTypes[0] = ArgType.WAIT;
         TaskOptionsContainer options = new TaskOptionsContainer(argTypes, cfgContainer, null);
@@ -297,6 +328,10 @@ public class PgProcessServiceTest {
 
     TaskContainer getMinimalContainer(UUID processId) {
         return new TaskContainer(processId, processId, UUID.randomUUID(), METHOD, ACTOR_ID, TaskType.DECIDER_START, START_TIME, 0, null, null, false, null);
+    }
+
+    private static String randomIdempotenceKey() {
+        return UUID.randomUUID().toString();
     }
 
 }
