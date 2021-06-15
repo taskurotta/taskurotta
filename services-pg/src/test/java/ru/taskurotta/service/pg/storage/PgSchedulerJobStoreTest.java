@@ -28,7 +28,7 @@ public class PgSchedulerJobStoreTest {
     static final String ACTOR_ID = "test#1.0";
     static final String CUSTOM_ID = "test_custom_id";
     static final String TASK_LIST = "test_task_list";
-    static final String IDEMPOTENCE_KEY = "test_idempotence_key";
+    static final String IDEMPOTENCY_KEY = "test_idempotency_key";
     static final long START_TIME = System.currentTimeMillis();
     static String RETURN_VALUE_JSON = "\"R_VALUE\"";
 
@@ -141,7 +141,7 @@ public class PgSchedulerJobStoreTest {
     }
 
     TaskContainer getFullContainer(UUID processId) {
-        TaskConfigContainer cfgContainer = new TaskConfigContainer(CUSTOM_ID, START_TIME, TASK_LIST, IDEMPOTENCE_KEY, null, 1000000l);
+        TaskConfigContainer cfgContainer = new TaskConfigContainer(CUSTOM_ID, START_TIME, TASK_LIST, IDEMPOTENCY_KEY, null, 1000000l);
         ArgType[] argTypes = new ArgType[1];
         argTypes[0] = ArgType.WAIT;
         TaskOptionsContainer options = new TaskOptionsContainer(argTypes, cfgContainer, null);

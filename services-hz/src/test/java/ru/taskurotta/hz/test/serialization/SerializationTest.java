@@ -206,7 +206,7 @@ public class SerializationTest {
         container.setCustomId("customId");
         container.setStartTime(new Date().getTime());
         container.setTaskList("taskList");
-        container.setIdempotenceKey("idempotencyKey");
+        container.setIdempotencyKey("idempotencyKey");
         hzMap.put("actorScheduledOptionsContainer", container);
         TaskConfigContainer getted = (TaskConfigContainer) hzMap.get("actorScheduledOptionsContainer");
         assertEquals(container, getted);

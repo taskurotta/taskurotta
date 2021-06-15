@@ -197,7 +197,7 @@ public class BsonSerializationTest {
 
         taskConfigContainer.setStartTime(89689798);
         taskConfigContainer.setTaskList("task list");
-        taskConfigContainer.setIdempotenceKey("idempotence key");
+        taskConfigContainer.setIdempotencyKey("idempotency key");
         RetryPolicyConfigContainer retryPolicyConfigContainer = new RetryPolicyConfigContainer();
         retryPolicyConfigContainer.setBackoffCoefficient(0.8);
         retryPolicyConfigContainer.setExceptionsToExclude(Arrays.asList("str", "rstrfg"));

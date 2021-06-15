@@ -90,12 +90,12 @@ public class PgProcessService extends JdbcDaoSupport implements ProcessService, 
     public void startProcess(TaskContainer task) {
         String idempotencyKey = Optional.ofNullable(task.getOptions())
                 .map(TaskOptionsContainer::getTaskConfigContainer)
-                .map(TaskConfigContainer::getIdempotenceKey)
+                .map(TaskConfigContainer::getIdempotencyKey)
                 .orElse(null);
 
         if (idempotencyKey != null) {
             try {
-                getJdbcTemplate().update("INSERT INTO TSK_PROCESS_IDEMPOTENCE (IDEMPOTENCE_KEY, PROCESS_ID, START_TIME) VALUES (?, ?, ?)",
+                getJdbcTemplate().update("INSERT INTO TSK_PROCESS_IDEMPOTENCY (IDEMPOTENCY_KEY, PROCESS_ID, START_TIME) VALUES (?, ?, ?)",
                         idempotencyKey, task.getProcessId().toString(), new Date().getTime());
             } catch (DuplicateKeyException ex) {
                 throw new IdempotencyKeyViolation();
@@ -135,7 +135,7 @@ public class PgProcessService extends JdbcDaoSupport implements ProcessService, 
     public void deleteProcess(UUID processId) {
         try {
             getJdbcTemplate().update("DELETE FROM TSK_PROCESS WHERE PROCESS_ID = ?", processId.toString());
-            getJdbcTemplate().update("DELETE FROM TSK_PROCESS_IDEMPOTENCE WHERE PROCESS_ID = ?", processId.toString());
+            getJdbcTemplate().update("DELETE FROM TSK_PROCESS_IDEMPOTENCY WHERE PROCESS_ID = ?", processId.toString());
         } catch (Throwable ex) {
             String message = "DB exception on deleting process id["+processId+"]";
             logger.error(message, ex);

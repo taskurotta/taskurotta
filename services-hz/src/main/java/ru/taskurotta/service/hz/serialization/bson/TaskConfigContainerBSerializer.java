@@ -32,7 +32,7 @@ public class TaskConfigContainerBSerializer implements StreamBSerializer<TaskCon
         out.writeString(CUSTOM_ID, object.getCustomId());
         out.writeLong(START_TIME, object.getStartTime(), -1L);
         out.writeString(TASK_LIST, object.getTaskList());
-        out.writeString(IDEMPOTENCY_KEY, object.getIdempotenceKey());
+        out.writeString(IDEMPOTENCY_KEY, object.getIdempotencyKey());
         writeObjectIfNotNull(RETRY_POLICY, object.getRetryPolicyConfigContainer(),
                 retryPolicyConfigContainerBSerializer, out);
         out.writeLong(TIMEOUT, object.getTimeout(), -1L);

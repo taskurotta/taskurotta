@@ -258,16 +258,16 @@ public class PgProcessServiceTest {
     }
 
     @Test
-    public void idempotenceTest() {
+    public void idempotencyTest() {
         if (target != null) {
             UUID pid = UUID.randomUUID();
-            String idempotenceKey = UUID.randomUUID().toString();
+            String idempotencyKey = UUID.randomUUID().toString();
             TaskContainer fullContainer = getFullContainer(pid);
-            fullContainer.getOptions().getTaskConfigContainer().setIdempotenceKey(idempotenceKey);
+            fullContainer.getOptions().getTaskConfigContainer().setIdempotencyKey(idempotencyKey);
             try {
                 target.startProcess(fullContainer);
                 target.startProcess(fullContainer);
-                fail("no idempotence violation");
+                fail("no idempotency violation");
             } catch (IdempotencyKeyViolation ex) {
             } finally {
                 target.finishProcess(pid, RETURN_VALUE_JSON);
@@ -313,7 +313,7 @@ public class PgProcessServiceTest {
     }
 
     TaskContainer getFullContainer(UUID processId) {
-        TaskConfigContainer cfgContainer = new TaskConfigContainer(CUSTOM_ID, START_TIME, TASK_LIST, randomIdempotenceKey(), null, 1000000l);
+        TaskConfigContainer cfgContainer = new TaskConfigContainer(CUSTOM_ID, START_TIME, TASK_LIST, randomIdempotencyKey(), null, 1000000l);
         ArgType[] argTypes = new ArgType[1];
         argTypes[0] = ArgType.WAIT;
         TaskOptionsContainer options = new TaskOptionsContainer(argTypes, cfgContainer, null);
@@ -330,7 +330,7 @@ public class PgProcessServiceTest {
         return new TaskContainer(processId, processId, UUID.randomUUID(), METHOD, ACTOR_ID, TaskType.DECIDER_START, START_TIME, 0, null, null, false, null);
     }
 
-    private static String randomIdempotenceKey() {
+    private static String randomIdempotencyKey() {
         return UUID.randomUUID().toString();
     }
 
