@@ -135,6 +135,7 @@ public class PgProcessService extends JdbcDaoSupport implements ProcessService, 
     public void deleteProcess(UUID processId) {
         try {
             getJdbcTemplate().update("DELETE FROM TSK_PROCESS WHERE PROCESS_ID = ?", processId.toString());
+            getJdbcTemplate().update("DELETE FROM TSK_PROCESS_IDEMPOTENCY WHERE PROCESS_ID = ?", processId.toString());
         } catch (Throwable ex) {
             String message = "DB exception on deleting process id["+processId+"]";
             logger.error(message, ex);
