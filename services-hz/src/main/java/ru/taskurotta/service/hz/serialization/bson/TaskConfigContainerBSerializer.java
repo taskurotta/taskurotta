@@ -17,6 +17,7 @@ public class TaskConfigContainerBSerializer implements StreamBSerializer<TaskCon
     private static final CString TASK_LIST = new CString("taskList");
     private static final CString RETRY_POLICY = new CString("retryPolicy");
     private static final CString TIMEOUT = new CString("timeout");
+    private static final CString IDEMPOTENCY_KEY = new CString("idempotencyKey");
 
     RetryPolicyConfigContainerBSerializer retryPolicyConfigContainerBSerializer = new RetryPolicyConfigContainerBSerializer();
 
@@ -31,6 +32,7 @@ public class TaskConfigContainerBSerializer implements StreamBSerializer<TaskCon
         out.writeString(CUSTOM_ID, object.getCustomId());
         out.writeLong(START_TIME, object.getStartTime(), -1L);
         out.writeString(TASK_LIST, object.getTaskList());
+        out.writeString(IDEMPOTENCY_KEY, object.getIdempotencyKey());
         writeObjectIfNotNull(RETRY_POLICY, object.getRetryPolicyConfigContainer(),
                 retryPolicyConfigContainerBSerializer, out);
         out.writeLong(TIMEOUT, object.getTimeout(), -1L);
@@ -41,10 +43,11 @@ public class TaskConfigContainerBSerializer implements StreamBSerializer<TaskCon
         String customId = in.readString(CUSTOM_ID);
         long startTime = in.readLong(START_TIME, -1L);
         String taskList = in.readString(TASK_LIST);
+        String idempotencyKey = in.readString(IDEMPOTENCY_KEY);
         RetryPolicyConfigContainer retryPolicyConfigContainer = readObject(RETRY_POLICY,
                 retryPolicyConfigContainerBSerializer, in);
         long timeout = in.readLong(TIMEOUT, -1L);
 
-        return new TaskConfigContainer(customId, startTime, taskList, retryPolicyConfigContainer, timeout);
+        return new TaskConfigContainer(customId, startTime, taskList, idempotencyKey, retryPolicyConfigContainer, timeout);
     }
 }

@@ -19,10 +19,11 @@ public class TaskConfigContainer implements Serializable {
     public TaskConfigContainer() {
     }
 
-    public TaskConfigContainer(String customId, long startTime, String taskList, RetryPolicyConfigContainer retryPolicyConfigContainer, long timeout) {
+    public TaskConfigContainer(String customId, long startTime, String taskList, String idempotencyKey, RetryPolicyConfigContainer retryPolicyConfigContainer, long timeout) {
         this.customId = customId;
         this.startTime = startTime;
         this.taskList = taskList;
+        this.idempotencyKey = idempotencyKey;
         this.retryPolicyConfigContainer = retryPolicyConfigContainer;
         this.timeout = timeout;
     }
