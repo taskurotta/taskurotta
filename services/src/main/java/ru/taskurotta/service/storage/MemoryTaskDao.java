@@ -87,7 +87,7 @@ public class MemoryTaskDao implements TaskDao {
     }
 
     @Override
-    public boolean retryTask(UUID taskId, UUID processId) {
+    public boolean retryTask(UUID taskId, UUID processId, long workerTimeout) {
 
         UUID taskKey = taskId;
 
@@ -106,9 +106,11 @@ public class MemoryTaskDao implements TaskDao {
                 return false;
             }
 
+            long recoveryTime = System.currentTimeMillis() + workerTimeout;
+
             decision.setState(Decision.STATE_REGISTERED);
             decision.setDecisionContainer(null);
-            decision.setRecoveryTime(0l);
+            decision.setRecoveryTime(recoveryTime);
 
             id2TaskDecisionMap.put(taskKey, decision);
 

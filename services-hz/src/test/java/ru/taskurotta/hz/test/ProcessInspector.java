@@ -249,7 +249,7 @@ public class ProcessInspector {
             }
 
             @Override
-            public boolean retryTask(UUID taskId, UUID processId) {
+            public boolean retryTask(UUID taskId, UUID processId, long workerTimeout) {
                 return true;
             }
 

@@ -41,7 +41,7 @@ public interface TaskService {
 
     Decision finishTask(DecisionContainer taskDecision);
 
-    boolean retryTask(UUID taskId, UUID processId);
+    boolean retryTask(UUID taskId, UUID processId, long restartTime);
 
     /**
      * @param taskId
