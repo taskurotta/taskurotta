@@ -14,15 +14,15 @@
  */
 package ru.taskurotta.policy.retry;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-
 public abstract class RetryPolicyBase implements RetryPolicy {
-    
+
     private List<Class<? extends Throwable>> exceptionsToRetry = new ArrayList<Class<? extends Throwable>>();
-    
+
     private List<Class<? extends Throwable>> exceptionsToExclude = new ArrayList<Class<? extends Throwable>>();
 
     protected RetryPolicyBase() {
@@ -38,39 +38,39 @@ public abstract class RetryPolicyBase implements RetryPolicy {
         if (exceptionsToRetry != null) {
             exceptionsToRetryCopy.addAll(exceptionsToRetry);
         }
-        
+
         this.exceptionsToRetry = exceptionsToRetryCopy;
     }
-    
+
     public RetryPolicyBase withExceptionsToRetry(Collection<Class<? extends Throwable>> exceptionsToRetry) {
         List<Class<? extends Throwable>> exceptionsToRetryCopy = new ArrayList<Class<? extends Throwable>>();
         if (exceptionsToRetry != null) {
             exceptionsToRetryCopy.addAll(exceptionsToRetry);
         }
-        
+
         this.exceptionsToRetry = exceptionsToRetryCopy;
         return this;
     }
-    
+
     public List<Class<? extends Throwable>> getExceptionsToExclude() {
         return exceptionsToExclude;
     }
-    
+
     public void setExceptionsToExclude(List<Class<? extends Throwable>> exceptionsToExclude) {
         List<Class<? extends Throwable>> exceptionsToExcludeCopy = new ArrayList<Class<? extends Throwable>>();
         if (exceptionsToExclude != null) {
             exceptionsToExcludeCopy.addAll(exceptionsToExclude);
         }
-        
+
         this.exceptionsToExclude = exceptionsToExcludeCopy;
     }
-    
+
     public RetryPolicyBase withExceptionsToExclude(Collection<Class<? extends Throwable>> exceptionsToExclude) {
         List<Class<? extends Throwable>> exceptionsToExcludeCopy = new ArrayList<Class<? extends Throwable>>();
         if (exceptionsToExclude != null) {
             exceptionsToExcludeCopy.addAll(exceptionsToExclude);
         }
-        
+
         this.exceptionsToExclude = exceptionsToExcludeCopy;
         return this;
     }
@@ -78,23 +78,32 @@ public abstract class RetryPolicyBase implements RetryPolicy {
     @Override
     public boolean isRetryable(Throwable failure) {
         boolean isRetryable = false;
-        
-        for (Class<? extends Throwable> exceptionToRetry: getExceptionsToRetry()) {
-            if (exceptionToRetry.isAssignableFrom(failure.getClass())) {
+
+        // извлекаем оригинальное исключение (если возможно)
+        Throwable exactFailure = failure;
+        if (failure instanceof InvocationTargetException) {
+            Throwable target = ((InvocationTargetException) failure).getTargetException();
+            if (target != null) {
+                exactFailure = target;
+            }
+        }
+
+        for (Class<? extends Throwable> exceptionToRetry : getExceptionsToRetry()) {
+            if (exceptionToRetry.isAssignableFrom(exactFailure.getClass())) {
                 isRetryable = true;
                 break;
             }
         }
-        
+
         if (isRetryable) {
-            for (Class<? extends Throwable> exceptionNotToRetry: getExceptionsToExclude()) {
-                if (exceptionNotToRetry.isAssignableFrom(failure.getClass())) {
+            for (Class<? extends Throwable> exceptionNotToRetry : getExceptionsToExclude()) {
+                if (exceptionNotToRetry.isAssignableFrom(exactFailure.getClass())) {
                     isRetryable = false;
                     break;
                 }
             }
         }
-        
+
         return isRetryable;
     }
 }
