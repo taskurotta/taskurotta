@@ -26,9 +26,9 @@ import ru.taskurotta.util.StringUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-
 
 /**
  * User: romario
@@ -231,6 +231,8 @@ public class GeneralRuntimeProvider implements RuntimeProvider {
             retryPolicy.setMaximumAttempts(annotationPolicy.maximumAttempts());
             retryPolicy.setBackoffCoefficient(annotationPolicy.backoffCoefficient());
             retryPolicy.setRetryExpirationIntervalSeconds(annotationPolicy.retryExpirationSeconds());
+            retryPolicy.setExceptionsToRetry(Arrays.asList(annotationPolicy.exceptionsToRetry()));
+            retryPolicy.setExceptionsToExclude(Arrays.asList(annotationPolicy.excludeExceptions()));
         }
 
         if (method.isAnnotationPresent(LinearRetry.class)) {
@@ -239,6 +241,8 @@ public class GeneralRuntimeProvider implements RuntimeProvider {
             retryPolicy.setMaximumRetryIntervalSeconds(annotationPolicy.maximumRetryIntervalSeconds());
             retryPolicy.setMaximumAttempts(annotationPolicy.maximumAttempts());
             retryPolicy.setRetryExpirationIntervalSeconds(annotationPolicy.retryExpirationSeconds());
+            retryPolicy.setExceptionsToRetry(Arrays.asList(annotationPolicy.exceptionsToRetry()));
+            retryPolicy.setExceptionsToExclude(Arrays.asList(annotationPolicy.excludeExceptions()));
         }
 
         return retryPolicy;
