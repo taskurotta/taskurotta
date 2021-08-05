@@ -51,16 +51,19 @@
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
         </dependency>
+<!--        <dependency>-->
+<!--            <groupId>ch.qos.logback.contrib</groupId>-->
+<!--            <artifactId>logback-jackson</artifactId>-->
+<!--        </dependency>-->
+<!--        &lt;!&ndash; ch.qos.logback.contrib.json.classic.JsonLayout &ndash;&gt;-->
+<!--        <dependency>-->
+<!--            <groupId>ch.qos.logback.contrib</groupId>-->
+<!--            <artifactId>logback-json-classic</artifactId>-->
+<!--        </dependency>-->
         <dependency>
-            <groupId>ch.qos.logback.contrib</groupId>
-            <artifactId>logback-jackson</artifactId>
+            <groupId>net.logstash.logback</groupId>
+            <artifactId>logstash-logback-encoder</artifactId>
         </dependency>
-        <!-- ch.qos.logback.contrib.json.classic.JsonLayout -->
-        <dependency>
-            <groupId>ch.qos.logback.contrib</groupId>
-            <artifactId>logback-json-classic</artifactId>
-        </dependency>
-
         <!-- metrics -->
         <dependency>
             <groupId>com.yammer.metrics</groupId>

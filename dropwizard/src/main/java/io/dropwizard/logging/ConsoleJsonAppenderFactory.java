@@ -2,12 +2,12 @@ package io.dropwizard.logging;
 
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.contrib.json.classic.JsonLayout;
 import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.ConsoleAppender;
 import ch.qos.logback.core.Layout;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
+import net.logstash.logback.encoder.LogstashEncoder;
 
 import javax.validation.constraints.NotNull;
 import java.util.TimeZone;
@@ -100,10 +100,11 @@ public class ConsoleJsonAppenderFactory extends AbstractAppenderFactory {
         appender.setName("console-json-appender");
         appender.setContext(context);
         appender.setTarget(target.get());
-        Layout<ILoggingEvent> jsonLayout = new JsonLayout();
-        appender.setLayout(jsonLayout);
-        jsonLayout.setContext(context);
-        jsonLayout.start();
+        LogstashEncoder encoder = new LogstashEncoder();
+        encoder.setContext(context);
+        encoder.setIncludeMdc(true);
+        appender.setEncoder(encoder);
+        encoder.start();
         addThresholdFilter(appender, threshold);
         appender.start();
 
