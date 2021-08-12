@@ -289,8 +289,27 @@ public class GeneralTaskService implements TaskService, TaskInfoRetriever {
     }
 
     @Override
-    public boolean retryTask(UUID taskId, UUID processId) {
-        return taskDao.retryTask(taskId, processId);
+    public boolean retryTask(UUID taskId, UUID processId, long restartTime) {
+
+        long waitTime = restartTime - System.currentTimeMillis();
+
+        long timeout = workerTimeoutMilliseconds;
+
+        TaskContainer task = getTask(taskId, processId);
+
+        TaskOptionsContainer taskOptions = task.getOptions();
+        if (taskOptions != null) {
+            TaskConfigContainer taskConfig = taskOptions.getTaskConfigContainer();
+            if (taskConfig != null && taskConfig.getTimeout() != -1) {
+                timeout = taskConfig.getTimeout();
+            }
+        }
+
+        if (waitTime > 0) {
+            timeout += waitTime;
+        }
+
+        return taskDao.retryTask(taskId, processId, timeout);
     }
 
     @Override

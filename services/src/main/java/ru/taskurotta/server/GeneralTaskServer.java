@@ -270,7 +270,7 @@ public class GeneralTaskServer implements TaskServer {
                 // enqueue task immediately if needed
                 logger.debug("#[{}]/[{}]: enqueue error task = [{}]", processId, taskId, task);
 
-                if (taskService.retryTask(taskId, processId)) {
+                if (taskService.retryTask(taskId, processId, restartTime)) {
                     enqueueTask(taskId, processId, task.getActorId(), restartTime, getTaskList(task));
                 } else {
                     logger.warn("{}/{} Can not prepare task to retry. Operation taskService.retryTask() return is " +

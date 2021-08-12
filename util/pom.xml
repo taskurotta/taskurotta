@@ -3,7 +3,7 @@
     <parent>
         <artifactId>ru.taskurotta</artifactId>
         <groupId>ru.taskurotta</groupId>
-        <version>12.0</version>
+        <version>12.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -51,7 +51,19 @@
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
         </dependency>
-
+<!--        <dependency>-->
+<!--            <groupId>ch.qos.logback.contrib</groupId>-->
+<!--            <artifactId>logback-jackson</artifactId>-->
+<!--        </dependency>-->
+<!--        &lt;!&ndash; ch.qos.logback.contrib.json.classic.JsonLayout &ndash;&gt;-->
+<!--        <dependency>-->
+<!--            <groupId>ch.qos.logback.contrib</groupId>-->
+<!--            <artifactId>logback-json-classic</artifactId>-->
+<!--        </dependency>-->
+        <dependency>
+            <groupId>net.logstash.logback</groupId>
+            <artifactId>logstash-logback-encoder</artifactId>
+        </dependency>
         <!-- metrics -->
         <dependency>
             <groupId>com.yammer.metrics</groupId>

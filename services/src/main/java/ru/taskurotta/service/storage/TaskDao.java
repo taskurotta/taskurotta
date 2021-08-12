@@ -32,7 +32,7 @@ public interface TaskDao {
      */
     boolean restartTask(UUID taskId, UUID processId, boolean force, boolean ifFatalError);
 
-    boolean retryTask(UUID taskId, UUID processId);
+    boolean retryTask(UUID taskId, UUID processId, long workerTimeout);
 
     Decision finishTask(DecisionContainer taskDecision);
 

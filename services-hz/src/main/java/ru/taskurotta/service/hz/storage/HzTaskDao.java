@@ -112,7 +112,7 @@ public class HzTaskDao implements TaskDao {
     }
 
     @Override
-    public boolean retryTask(UUID taskId, UUID processId) {
+    public boolean retryTask(UUID taskId, UUID processId, long workerTimeout) {
 
         TaskKey taskKey = new TaskKey(taskId, processId);
 
@@ -131,9 +131,11 @@ public class HzTaskDao implements TaskDao {
                 return false;
             }
 
+            long recoveryTime = System.currentTimeMillis() + workerTimeout;
+
             decision.setState(Decision.STATE_REGISTERED);
             decision.setDecisionContainer(null);
-            decision.setRecoveryTime(0l);
+            decision.setRecoveryTime(recoveryTime);
 
             id2TaskDecisionMap.set(taskKey, decision, 0l, TimeUnit.NANOSECONDS);
 

@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>ru.taskurotta</groupId>
 		<artifactId>ru.taskurotta</artifactId>
-		<version>12.0</version>
+		<version>12.2-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>core</artifactId>
@@ -48,6 +48,19 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
+        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>ch.qos.logback.contrib</groupId>-->
+<!--            <artifactId>logback-jackson</artifactId>-->
+<!--        </dependency>-->
+<!--        &lt;!&ndash; ch.qos.logback.contrib.json.classic.JsonLayout &ndash;&gt;-->
+<!--        <dependency>-->
+<!--            <groupId>ch.qos.logback.contrib</groupId>-->
+<!--            <artifactId>logback-json-classic</artifactId>-->
+<!--        </dependency>-->
+        <dependency>
+            <groupId>net.logstash.logback</groupId>
+            <artifactId>logstash-logback-encoder</artifactId>
         </dependency>
 
         <dependency>
