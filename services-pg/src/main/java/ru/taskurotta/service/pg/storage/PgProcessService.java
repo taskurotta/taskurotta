@@ -88,10 +88,7 @@ public class PgProcessService extends JdbcDaoSupport implements ProcessService, 
 
     @Override
     public void startProcess(TaskContainer task) {
-        String idempotencyKey = Optional.ofNullable(task.getOptions())
-                .map(TaskOptionsContainer::getTaskConfigContainer)
-                .map(TaskConfigContainer::getIdempotencyKey)
-                .orElse(null);
+        String idempotencyKey = getIdempotencyKey(task);
 
         if (idempotencyKey != null) {
             try {
@@ -124,6 +121,7 @@ public class PgProcessService extends JdbcDaoSupport implements ProcessService, 
             getJdbcTemplate().update("UPDATE TSK_PROCESS SET END_TIME = ?, STATE = ?, RETURN_VALUE= ? WHERE PROCESS_ID = ?",
                     new Date().getTime(), Process.FINISHED,
                     PgQueryUtils.asJsonbString(returnValue), processId.toString());
+            getJdbcTemplate().update("DELETE FROM TSK_PROCESS_IDEMPOTENCY WHERE PROCESS_ID = ?", processId.toString());
         } catch (Throwable ex) {
             String message = "DB exception on finish process id["+processId+"], return value["+returnValue+"]";
             logger.error(message, ex);
@@ -159,7 +157,7 @@ public class PgProcessService extends JdbcDaoSupport implements ProcessService, 
 
     @Override
     public void markProcessAsBroken(UUID processId) {
-        setProcessState(processId, Process.BROKEN);
+        setProcessState(processId, Process.BROKEN, true);
     }
 
     @Override
@@ -169,12 +167,18 @@ public class PgProcessService extends JdbcDaoSupport implements ProcessService, 
 
     @Override
     public void markProcessAsAborted(UUID processId) {
-        setProcessState(processId, Process.ABORTED);
+        setProcessState(processId, Process.ABORTED, true);
     }
 
     private void setProcessState(UUID processId, int state) {
+        setProcessState(processId, state, false);
+    }
+    private void setProcessState(UUID processId, int state, boolean removeIdempotency) {
         try {
             getJdbcTemplate().update("UPDATE TSK_PROCESS SET STATE = ? WHERE PROCESS_ID = ?", state, processId.toString());
+            if (removeIdempotency) {
+                getJdbcTemplate().update("DELETE FROM TSK_PROCESS_IDEMPOTENCY WHERE PROCESS_ID = ?", processId.toString());
+            }
         } catch (Throwable ex) {
             String message = "DB exception on set state["+state+"] for process["+processId+"]";
             logger.error(message, ex);
@@ -268,6 +272,13 @@ public class PgProcessService extends JdbcDaoSupport implements ProcessService, 
 
         sql.append(" LIMIT ? ");
         params.add(limit);
+    }
+
+    private String getIdempotencyKey(TaskContainer task) {
+        return Optional.ofNullable(task.getOptions())
+                .map(TaskOptionsContainer::getTaskConfigContainer)
+                .map(TaskConfigContainer::getIdempotencyKey)
+                .orElse(null);
     }
 
     static void appendFilterConditions(StringBuilder sql, List<Object> params, ProcessSearchCommand command) {
