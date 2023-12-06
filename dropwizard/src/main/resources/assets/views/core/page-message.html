@@ -6,11 +6,11 @@
             <td ng-if="messageEvent.detail || messageEvent.detailConfig">
                 <span ng-click="messageEvent.$detail = !messageEvent.$detail" style="cursor:pointer;">
                    <span ng-hide="messageEvent.$detail" class="muted">
-                    <i class="icon-chevron-down" popover="Show config" popover-trigger="mouseenter"
+                    <i class="icon-chevron-down" title="Show config" popover-trigger="mouseenter"
                        popover-placement="left"></i>
                    </span>
                   <span ng-show="messageEvent.$detail" class="muted">
-                    <i class="icon-chevron-up" popover="Hide config" popover-trigger="mouseenter"
+                    <i class="icon-chevron-up" title="Hide config" popover-trigger="mouseenter"
                        popover-placement="left"></i>
                   </span>
                 </span>

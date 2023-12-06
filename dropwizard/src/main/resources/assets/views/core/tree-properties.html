@@ -11,7 +11,7 @@
             <span ng-style="node.$padding(10)">
                 <a ng-if="node.$children" ng-click="node.$toggle()">
                     <i class="icon-chevron-{{ node.$expanded ? 'down' : 'right' }}" popover-trigger="mouseenter"
-                       popover="{{ node.$expanded ? 'Collapse' : 'Expand' }}"></i>
+                       title="{{ node.$expanded ? 'Collapse' : 'Expand' }}"></i>
                 </a>
             </span>
             <small>

@@ -181,6 +181,14 @@ public class HzTaskDao implements TaskDao {
     }
 
     @Override
+    public Decision getTaskDecision(UUID taskId, UUID processId) {
+
+        TaskKey taskKey = new TaskKey(taskId, processId);
+
+        return id2TaskDecisionMap.get(taskKey);
+    }
+
+    @Override
     public Decision startTask(UUID taskId, UUID processId, long workerTimeout, boolean failOnWorkerTimeout) {
 
         TaskKey taskKey = new TaskKey(taskId, processId);

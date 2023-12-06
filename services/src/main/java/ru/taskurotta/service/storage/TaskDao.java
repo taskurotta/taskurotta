@@ -21,6 +21,8 @@ public interface TaskDao {
 
     void updateTimeout(UUID taskId, UUID processId, long workerTimeout);
 
+    Decision getTaskDecision(UUID taskId, UUID processId);
+
     Decision startTask(UUID taskId, UUID processId, long workerTimeout, boolean failOnWorkerTimeout);
 
     /**

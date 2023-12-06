@@ -10,7 +10,7 @@
 
     <list-reload model="subscriptionsResource">
         <div style="float:right">
-            <a ui-sref="subscription_create" class="btn btn-small" popover="Add subscription" popover-trigger="mouseenter">
+            <a ui-sref="subscription_create" class="btn btn-small" title="Add subscription" popover-trigger="mouseenter">
                 <i class="icon-plus"></i>
             </a>
         </div>
@@ -38,7 +38,7 @@
                 {{ subscription.actorIds | json }}
             </td>
             <td>
-                <a class="btn btn-small" ng-click="delete(subscription.id)" popover="Delete subscription" popover-trigger="mouseenter"><i class="icon-trash"></i></a>
+                <a class="btn btn-small" ng-click="delete(subscription.id)" title="Delete subscription" popover-trigger="mouseenter"><i class="icon-trash"></i></a>
             </td>
         </tr>
         </tbody>

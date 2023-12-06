@@ -29,18 +29,18 @@ interruptedModel = {{ interruptedModel | json }}
                 {{ groups[resourceParams.group].label }}
             </th>
             <th ng-hide="groups.starter.selected" style="width: 200px;">
-                <a ui-sref="interrupted({group:'starter'})" popover="{{ groups.starter.regroup }}"
-                   popover-trigger="mouseenter" class="btn-link" style="display: block; width: 100%;">
+                <a ui-sref="interrupted({group:'starter'})"  title={{ groups.starter.regroup }}"
+                   class="btn-link" style="display: block; width: 100%;">
                     {{ groups.starter.name }}</a>
             </th>
             <th ng-hide="groups.actor.selected" style="width: 200px;">
-                <a ui-sref="interrupted({group:'actor'})" popover="{{ groups.actor.regroup }}"
-                   popover-trigger="mouseenter" class="btn-link" style="display: block; width: 100%;">
+                <a ui-sref="interrupted({group:'actor'})" title="{{ groups.actor.regroup }}"
+                   class="btn-link" style="display: block; width: 100%;">
                     {{ groups.actor.name }}</a>
             </th>
             <th ng-hide="groups.exception.selected" style="width: 200px;">
-                <a ui-sref="interrupted({group:'exception'})" popover="{{ groups.exception.regroup }}"
-                   popover-trigger="mouseenter" class="btn-link" style="display: block; width: 100%;">
+                <a ui-sref="interrupted({group:'exception'})" title="{{ groups.exception.regroup }}"
+                   class="btn-link" style="display: block; width: 100%;">
                     {{ groups.exception.name }}</a>
             </th>
             <th style="width: 100px;">
@@ -64,7 +64,7 @@ interruptedModel = {{ interruptedModel | json }}
             </td>
 
             <td ng-hide="groups.starter.selected" style="width: 200px;">
-                <div popover="Add filter and show groups" popover-trigger="mouseenter">
+                <div title="Add filter and show groups" popover-trigger="mouseenter">
                     <a ui-sref="interrupted(joinFilterParam({group:'starter'},group.name))" class="btn-link"
                        style="display: block; width: 100%;">
                         <b>{{group.startersCount}}</b>
@@ -72,7 +72,7 @@ interruptedModel = {{ interruptedModel | json }}
                 </div>
             </td>
             <td ng-hide="groups.actor.selected" style="width: 200px;">
-                <div popover="Add filter and show groups" popover-trigger="mouseenter">
+                <div title="Add filter and show groups" popover-trigger="mouseenter">
                     <a ui-sref="interrupted(joinFilterParam({group:'actor'},group.name))" class="btn-link"
                        style="display: block; width: 100%;">
                         <b>{{group.actorsCount}}</b>
@@ -80,7 +80,7 @@ interruptedModel = {{ interruptedModel | json }}
                 </div>
             </td>
             <td ng-hide="groups.exception.selected" style="width: 200px;">
-                <div popover="Add filter and show groups" popover-trigger="mouseenter">
+                <div title="Add filter and show groups" popover-trigger="mouseenter">
                     <a ui-sref="interrupted(joinFilterParam({group:'exception'},group.name))" class="btn-link"
                        style="display: block; width: 100%;">
                         <b>{{group.exceptionsCount}}</b>
@@ -88,7 +88,7 @@ interruptedModel = {{ interruptedModel | json }}
                 </div>
             </td>
             <td style="width: 100px;">
-                <div popover="List all tasks in the group" popover-trigger="mouseenter">
+                <div title="List all tasks in the group" popover-trigger="mouseenter">
                     <a ui-sref="interrupted_list(joinFilterParam($stateParams,group.name))"
                        class="btn-link" style="display: block; width: 100%;">
                         <b>{{group.total}}</b>
@@ -97,7 +97,7 @@ interruptedModel = {{ interruptedModel | json }}
 
             </td>
             <td style="width: 100px; text-align:center;">
-                <button ng-click="restartGroup(group)" popover="Submit restart task for all tasks in the group"
+                <button ng-click="restartGroup(group)" title="Submit restart task for all tasks in the group"
                         popover-trigger="mouseenter">
                     <i class="icon-retweet"></i>
                 </button>

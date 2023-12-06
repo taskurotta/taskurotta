@@ -239,6 +239,11 @@ public class ProcessInspector {
             }
 
             @Override
+            public Decision getTaskDecision(UUID taskId, UUID processId) {
+                return null;
+            }
+
+            @Override
             public Decision startTask(UUID taskId, UUID processId, long workerTimeout, boolean failOnWorkerTimeout) {
                 return null;
             }

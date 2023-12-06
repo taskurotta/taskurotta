@@ -148,22 +148,22 @@
                 <td style="vertical-align: top; text-align: left; width: 160px;">
                     <label class="checkbox small">
                         <input type="checkbox" ng-model="$stateParams.zoom" />
-                        <span popover="Enable to zoom in/out on mouse scroll over plot pane"
+                        <span title="Enable to zoom in/out on mouse scroll over plot pane"
                                popover-trigger="mouseenter" popover-placement="bottom">Zoom</span>
                     </label>
                     <label class="checkbox small">
                         <input type="checkbox" ng-model="$stateParams.pan" />
-                        <span popover="Enable to drag plot over pane with mouse"
+                        <span title="Enable to drag plot over pane with mouse"
                            popover-trigger="mouseenter" popover-placement="bottom">Draggable</span>
                     </label>
                     <label class="checkbox small">
                         <input type="checkbox" ng-model="$stateParams.points" />
-                        <span popover="Show points on plot pane"
+                        <span title="Show points on plot pane"
                               popover-trigger="mouseenter" popover-placement="bottom">Points</span>
                     </label>
                     <label class="checkbox small">
                         <input type="checkbox" ng-model="$stateParams.showLegend" />
-                        <span popover="Show legend on plot pane"
+                        <span title="Show legend on plot pane"
                               popover-trigger="mouseenter" popover-placement="bottom">Legend</span>
                     </label>
                     <select ng-if="$stateParams.showLegend" class="input-small" ng-model="$stateParams.legend"
@@ -205,8 +205,8 @@
                 <!--</td>-->
                 <!--<td style="text-align: right;">-->
                         <!--<span ng-click="collapse.table = !collapse.table" style="cursor:pointer;">-->
-                            <!--<i class="icon-chevron-up" ng-hide="collapse.table" popover="Hide data table" popover-trigger="mouseenter" popover-placement="left"></i>-->
-                            <!--<i class="icon-chevron-down"  ng-show="collapse.table" popover="Show data table" popover-trigger="mouseenter" popover-placement="left"></i>-->
+                            <!--<i class="icon-chevron-up" ng-hide="collapse.table" title="Hide data table" popover-trigger="mouseenter" popover-placement="left"></i>-->
+                            <!--<i class="icon-chevron-down"  ng-show="collapse.table" title="Show data table" popover-trigger="mouseenter" popover-placement="left"></i>-->
                         <!--</span>-->
                 <!--</td>-->
             <!--</tr>-->

@@ -45,7 +45,7 @@ queuesModel = {{ queuesModel | json}}
             </th>
             <th style="width: 50px">Size
                 <i class="icon-question-sign"
-                   popover="Value is measured by metrics handler and could be 5-7 seconds delayed from real current size"
+                   title="Value is measured by metrics handler and could be 5-7 seconds delayed from real current size"
                    popover-trigger="mouseenter"></i>
             </th>
             <th>Actions</th>
@@ -55,13 +55,13 @@ queuesModel = {{ queuesModel | json}}
         <tr ng-repeat="queue in queuesModel.items" ng-class="actorStateConf[queue.state].css">
             <td>
                 {{ queuesModel.$startIndex + $index }}
-                <i class="icon-flag" ng-show="queue.local" popover="Owned by current node"
+                <i class="icon-flag" ng-show="queue.local" title="Owned by current node"
                    popover-trigger="mouseenter"></i>
-                <i class="icon-globe" ng-hide="queue.local" popover="Owned by remote node"
+                <i class="icon-globe" ng-hide="queue.local" title="Owned by remote node"
                    popover-trigger="mouseenter"></i>
                 <i class="icon-ban-circle" ng-if="actorStateConf[queue.state].blocked"
                    style="width:25px; height:25px;cursor:help;"
-                   popover="Blocked: 'poll' and 'release' requests for this actor are rejected."
+                   title="Blocked: 'poll' and 'release' requests for this actor are rejected."
                    popover-trigger="mouseenter"></i>
             </td>
             <td>
@@ -70,17 +70,17 @@ queuesModel = {{ queuesModel | json}}
                 </a>
             </td>
             <td>
-                <div popover="{{ queue.lastActivity | dateTime }}" popover-trigger="mouseenter">
+                <div title="{{ queue.lastActivity | dateTime }}" popover-trigger="mouseenter">
                     {{util.getInterval(queuesModel.currentTimeMillis, queue.lastActivity) }}
                 </div>
             </td>
             <td>
-                <div popover="{{ queue.lastPolledTaskEnqueueTime | dateTime }}" popover-trigger="mouseenter">
+                <div title="{{ queue.lastPolledTaskEnqueueTime | dateTime }}" popover-trigger="mouseenter">
                     {{util.getInterval(queuesModel.currentTimeMillis, queue.lastPolledTaskEnqueueTime) }}
                 </div>
             </td>
             <td>
-                <div popover="by {{queue.nodes || 0}} nodes" popover-trigger="mouseenter">
+                <div title="by {{queue.nodes || 0}} nodes" popover-trigger="mouseenter">
                     In: <b>{{$stateParams.balancePeriod === 'day' ? queue.inDay : queue.inHour}}</b>,
                     out: <b>{{$stateParams.balancePeriod === 'day' ? queue.outDay: queue.outHour}}</b>
                 </div>
@@ -93,36 +93,36 @@ queuesModel = {{ queuesModel | json}}
             </td>
             <td>
                 <button ng-click="showRealSize(queue)" class="btn btn-mini"
-                        popover="Show current real size of the queue"
+                        title="Show current real size of the queue"
                         popover-trigger="mouseenter">
                     <i class="icon-info-sign"></i>
                 </button>
 
                 <button ng-click="showStorageRealSize(queue)" class="btn btn-mini"
-                        popover="Show current size of the storage for this queue. Storage contains tasks that would be enqueued in future."
+                        title="Show current size of the storage for this queue. Storage contains tasks that would be enqueued in future."
                         popover-trigger="mouseenter">
                     <i class="icon-hdd"></i>
                 </button>
 
                 <button ng-click="clear(queue)" class="btn btn-mini"
-                        popover="Remove all elements from actor's queue"
+                        title="Remove all elements from actor's queue"
                         popover-trigger="mouseenter">
                     <i class="icon-eject"></i>
                 </button>
 
                 <button ng-click="remove(queue)" class="btn btn-mini"
-                        popover="Remove actor's queue"
+                        title="Remove actor's queue"
                         popover-trigger="mouseenter">
                     <i class="icon-trash"></i>
                 </button>
 
                 <button ng-show="actorStateConf[queue.state].blocked" class="btn btn-mini"
-                        ng-click="unblock(queue)" popover="Unblock actor" popover-trigger="mouseenter">
+                        ng-click="unblock(queue)" title="Unblock actor" popover-trigger="mouseenter">
                     <i class="icon-play-circle"></i>
                 </button>
 
                 <button ng-hide="actorStateConf[queue.state].blocked" class="btn btn-mini"
-                        ng-click="block(queue)" popover="Block actor" popover-trigger="mouseenter">
+                        ng-click="block(queue)" title="Block actor" popover-trigger="mouseenter">
                     <i class="icon-ban-circle"></i>
                 </button>
 

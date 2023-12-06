@@ -19,6 +19,8 @@ public interface TaskInfoRetriever {
 
     TaskContainer getTask(UUID taskId, UUID processId);
 
+    TaskContainer getTaskWithLastDecision(UUID taskId, UUID processId);
+
     List<TaskContainer> findTasks(TaskSearchCommand command);
 
     Collection<TaskContainer> getProcessTasks(Collection<UUID> processTaskIds, UUID processId);

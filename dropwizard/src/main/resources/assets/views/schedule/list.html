@@ -10,7 +10,7 @@
 
     <list-reload model="schedulesResource">
         <div style="float:right">
-            <a ui-sref="schedule_create" class="btn btn-small" popover="Add scheduled task" popover-trigger="mouseenter">
+            <a ui-sref="schedule_create" class="btn btn-small" title="Add scheduled task" popover-trigger="mouseenter">
                 <i class="icon-plus"></i>
             </a>
         </div>
@@ -68,16 +68,16 @@
                             <td>
                                 <span class="{{ 'badge badge-' + (schedule.job.status | scheduleState:'class') }}">{{ schedule.job.status | scheduleState:'name' }}</span>
                             </td>
-                            <td ng-if="schedule.job.status==1 && schedule.local"><i class="icon-flag" popover="Scheduled on current node" popover-trigger="mouseenter" ></i></td>
-                            <td ng-if="schedule.job.status==1 && !schedule.local"><i class="icon-globe" popover="Scheduled on some remote node" popover-trigger="mouseenter" ></i></td>
+                            <td ng-if="schedule.job.status==1 && schedule.local"><i class="icon-flag" title="Scheduled on current node" popover-trigger="mouseenter" ></i></td>
+                            <td ng-if="schedule.job.status==1 && !schedule.local"><i class="icon-globe" title="Scheduled on some remote node" popover-trigger="mouseenter" ></i></td>
                         </tr>
                     </table>
                 </td>
                 <td>
-                    <a ng-if="schedule.job.status==-1" class="btn btn-small" ng-click="activate(schedule.job.id)" popover="Run job" popover-trigger="mouseenter"><i class="icon-play"></i></a>
-                    <a ng-if="schedule.job.status==-2" class="btn btn-small" ng-click="activate(schedule.job.id)" popover="Try run again" popover-trigger="mouseenter"><i class="icon-play"></i></a>
-                    <a ng-if="schedule.job.status==1" class="btn btn-small" ng-click="deactivate(schedule.job.id)" popover="Stop job" popover-trigger="mouseenter"><i class="icon-stop"></i></a>
-                    <a class="btn btn-small" ng-click="delete(schedule.job.id)" popover="Delete job" popover-trigger="mouseenter"><i class="icon-trash"></i></a>
+                    <a ng-if="schedule.job.status==-1" class="btn btn-small" ng-click="activate(schedule.job.id)" title="Run job" popover-trigger="mouseenter"><i class="icon-play"></i></a>
+                    <a ng-if="schedule.job.status==-2" class="btn btn-small" ng-click="activate(schedule.job.id)" title="Try run again" popover-trigger="mouseenter"><i class="icon-play"></i></a>
+                    <a ng-if="schedule.job.status==1" class="btn btn-small" ng-click="deactivate(schedule.job.id)" title="Stop job" popover-trigger="mouseenter"><i class="icon-stop"></i></a>
+                    <a class="btn btn-small" ng-click="delete(schedule.job.id)" title="Delete job" popover-trigger="mouseenter"><i class="icon-trash"></i></a>
                 </td>
             </tr>
         </tbody>

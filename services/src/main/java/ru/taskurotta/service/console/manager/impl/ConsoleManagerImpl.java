@@ -69,7 +69,7 @@ public class ConsoleManagerImpl implements ConsoleManager {
         if (taskInfo == null) {
             return null;
         }
-        return taskInfo.getTask(taskId, processId);
+        return taskInfo.getTaskWithLastDecision(taskId, processId);
     }
 
     @Override

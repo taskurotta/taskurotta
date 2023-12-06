@@ -33,8 +33,8 @@
                         <div class="controls">
                             <input id="job_cron" class="input-medium" type="text" ng-model="command.cron"
                                    ng-change="changeCron()" required />
-                            <i ng-if="command.isCronValid === true" popover="Valid cron expression" popover-trigger="mouseenter" class="icon-thumbs-up"></i>
-                            <i ng-if="command.isCronValid === false" popover = "Incorrect cron expression" popover-trigger="mouseenter" class="icon-thumbs-down"></i>
+                            <i ng-if="command.isCronValid === true" title="Valid cron expression" popover-trigger="mouseenter" class="icon-thumbs-up"></i>
+                            <i ng-if="command.isCronValid === false" title="Incorrect cron expression" popover-trigger="mouseenter" class="icon-thumbs-down"></i>
                             <i icon-info="Cron expression to trigger task."></i>
                         </div>
                     </div>

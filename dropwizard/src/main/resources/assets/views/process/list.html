@@ -75,7 +75,7 @@ processesModel= {{ processesModel | json}}
             <tr ng-repeat="process in processesModel.items">
                 <td>
                     {{ processesModel.$startIndex + $index}}
-                    <i class="{{ process.state | processState:'icon' }}" popover="{{ process.state | processState:'desc' }}" popover-trigger="mouseenter"></i>
+                    <i class="{{ process.state | processState:'icon' }}" title="{{ process.state | processState:'desc' }}" popover-trigger="mouseenter"></i>
                  </td>
                 <td>
                     <a class="btn-link"
@@ -102,12 +102,12 @@ processesModel= {{ processesModel | json}}
                 </td>
                 <td>
                     <button ng-click="recovery(process)" class="btn btn-small"
-                            popover="Submit process to recovery service" popover-trigger="mouseenter"
+                            title="Submit process to recovery service" popover-trigger="mouseenter"
                             ng-hide="process.$recoverySubmited">
                         <i class="icon-retweet"></i>
                     </button>
                     <button ng-click="abort(process)" class="btn btn-small"
-                            popover="Abort process" popover-trigger="mouseenter">
+                            title="Abort process" popover-trigger="mouseenter">
                         <i class="icon-trash"></i>
                     </button>
                 </td>

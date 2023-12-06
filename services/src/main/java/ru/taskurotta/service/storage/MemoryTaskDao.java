@@ -155,6 +155,13 @@ public class MemoryTaskDao implements TaskDao {
 
     }
 
+    @Override
+    public Decision getTaskDecision(UUID taskId, UUID processId) {
+
+        UUID taskKey = taskId;
+
+        return id2TaskDecisionMap.get(taskKey);
+    }
 
 
     @Override

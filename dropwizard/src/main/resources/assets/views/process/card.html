@@ -18,15 +18,15 @@ processParams= {{ processParams | json}}
         </div>
         <div style="float: right; margin-bottom: 5px;">
             <button class="btn btn-small" ng-click="clone(process)"
-                    popover="Restart process" popover-trigger="mouseenter">
+                    title="Restart process" popover-trigger="mouseenter">
                 <i class="icon-retweet"></i>
             </button>
             <button class="btn btn-small" ng-click="recovery(process)"
-                    popover="Submit process to recovery service" popover-trigger="mouseenter">
+                    title="Submit process to recovery service" popover-trigger="mouseenter">
                 <i class="icon-wrench"></i>
             </button>
             <button class="btn btn-small" ng-click="abort(process)"
-                    popover="Abort process" popover-trigger="mouseenter" ng-disabled="process.state == 3">
+                    title="Abort process" popover-trigger="mouseenter" ng-disabled="process.state == 3">
                 <i class="icon-trash"></i>
             </button>
         </div>
@@ -132,7 +132,7 @@ processParams= {{ processParams | json}}
 
 <div class="well">
     <div>
-        <i class="icon-question-sign" popover="Navigate to find tasks view for the process"
+        <i class="icon-question-sign" title="Navigate to find tasks view for the process"
            popover-trigger="mouseenter"></i>
         <a class="btn btn-link" ui-sref="tasks({processId:process.processId})">List tasks for this process <span>({{ taskTree.tasksCount }})</span></a>
     </div>

@@ -21,18 +21,18 @@
     <table class="table table-bordered">
         <tr>
             <td style="width: 50%">
-                <button class="btn btn-small" ng-click="addEmail()" popover="Add email." popover-trigger="mouseenter">
+                <button class="btn btn-small" ng-click="addEmail()" title="Add email." popover-trigger="mouseenter">
                     <i class="icon-plus-sign"></i>
                 </button>
                 <b>Emails:</b>
-                <i class="icon-question-sign" popover="Specify email addresses for notifications" popover-trigger="mouseenter" ></i>
+                <i class="icon-question-sign" title="Specify email addresses for notifications" popover-trigger="mouseenter" ></i>
             </td>
             <td>
-                <button class="btn btn-small" ng-click="addActorId()" popover="Add actorId prefix." popover-trigger="mouseenter">
+                <button class="btn btn-small" ng-click="addActorId()" title="Add actorId prefix." popover-trigger="mouseenter">
                     <i class="icon-plus-sign"></i>
                 </button>
                 <b>ActorIds:</b>
-                <i class="icon-question-sign" popover="Specify actor ids prefixes to track" popover-trigger="mouseenter"></i>
+                <i class="icon-question-sign" title="Specify actor ids prefixes to track" popover-trigger="mouseenter"></i>
             </td>
         </tr>
         <tr>
@@ -40,14 +40,14 @@
                 <div class="control-group">
                     <span ng-if="!(subscription.emails && subscription.emails.length > 0)" class="alert">
                         No emails specified
-                        <button class="btn btn-small" ng-click="addEmail()" popover="Add email." popover-trigger="mouseenter">
+                        <button class="btn btn-small" ng-click="addEmail()" title="Add email." popover-trigger="mouseenter">
                             <i class="icon-plus-sign"></i>
                         </button>
                     </span>
                     <div class="controls" ng-repeat="email in subscription.emails" >
                         {{ $index + 1 }}
                         <input class="input-xlarge" type="text" ng-model="email.value" required />
-                        <button class="btn btn-small" ng-click="removeEmail($index)" popover="Remove email" popover-trigger="mouseenter">
+                        <button class="btn btn-small" ng-click="removeEmail($index)" title="Remove email" popover-trigger="mouseenter">
                             <i class="icon-minus-sign"></i>
                         </button>
                     </div>
@@ -57,14 +57,14 @@
                 <div class="control-group">
                     <span ng-if="!(subscription.actorIds && subscription.actorIds.length > 0)" class="alert">
                         No actorId prefixes specified
-                        <button class="btn btn-small" ng-click="addActorId()" popover="Add actorId prefix." popover-trigger="mouseenter">
+                        <button class="btn btn-small" ng-click="addActorId()" title="Add actorId prefix." popover-trigger="mouseenter">
                             <i class="icon-plus-sign"></i>
                         </button>
                     </span>
                     <div class="controls" ng-repeat="actorId in subscription.actorIds">
                         {{ $index + 1 }}
                         <input class="input-xlarge" type="text" ng-model="actorId.value" required />
-                        <button class="btn btn-small" ng-click="removeActorId($index)" popover="Remove actorId" popover-trigger="mouseenter">
+                        <button class="btn btn-small" ng-click="removeActorId($index)" title="Remove actorId" popover-trigger="mouseenter">
                             <i class="icon-minus-sign"></i>
                         </button>
                     </div>

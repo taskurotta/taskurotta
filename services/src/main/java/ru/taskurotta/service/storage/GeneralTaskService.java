@@ -231,9 +231,24 @@ public class GeneralTaskService implements TaskService, TaskInfoRetriever {
 
 
     @Override
+    public TaskContainer getTaskWithLastDecision(UUID taskId, UUID processId) {
+        TaskContainer task = taskDao.getTask(taskId, processId);
+        logger.debug("Task wih last decision received by taskId[{}], is[{}]", taskId, task);
+
+        Decision decision = taskDao.getTaskDecision(taskId, processId);
+
+        if (decision != null) {
+            task.setErrorAttempts(decision.getErrorAttempts());
+        }
+
+        return task;
+    }
+
+    @Override
     public TaskContainer getTask(UUID taskId, UUID processId) {
         TaskContainer task = taskDao.getTask(taskId, processId);
         logger.debug("Task received by taskId[{}], is[{}]", taskId, task);
+
         return task;
     }
 
