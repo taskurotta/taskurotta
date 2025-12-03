@@ -36,14 +36,14 @@
     </licenses>
 
     <distributionManagement>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
         <repository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+            <id>technokad-releases</id>
+            <url>http://gitlab.technokad.ru:9981/repository/technokad-release</url>
         </repository>
+        <snapshotRepository>
+            <id>technokad-snapshots</id>
+            <url>http://gitlab.technokad.ru:9981/repository/technokad-snapshot</url>
+        </snapshotRepository>
     </distributionManagement>
 
     <properties>
