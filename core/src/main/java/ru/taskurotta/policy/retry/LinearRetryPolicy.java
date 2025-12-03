@@ -1,5 +1,7 @@
 package ru.taskurotta.policy.retry;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.taskurotta.policy.PolicyConstants;
 
 import java.util.Collection;
@@ -10,6 +12,8 @@ import java.util.Collection;
  * Time: 13:21
  */
 public class LinearRetryPolicy extends TimeRetryPolicyBase {
+
+    private static final Logger logger = LoggerFactory.getLogger(LinearRetryPolicy.class);
 
     public LinearRetryPolicy(long initialRetryIntervalSeconds) {
         this.initialRetryIntervalSeconds = initialRetryIntervalSeconds;

@@ -1,4 +1,4 @@
-version: "2"
+version: "2.2"
 
 services:
   igrr-postgres:
@@ -6,13 +6,14 @@ services:
     hostname: tsk-postgres
     networks:
       - taskurotta
-    image: dhr.thprom.ru:5000/postgres:9.5.1-1.pgdg80.1
+    image: repository.technokad.ru:5000/postgres:16.5
     volumes:
       - ./data/postgres/data:/var/lib/postgresql/data
       - ../services-pg/src/main/resources/sql/create.sql:/docker-entrypoint-initdb.d/init.sql
     environment:
-      - POSTGRES_DB=taskurotta
-      - POSTGRES_PASSWORD=taskurotta
+      - POSTGRES_DB=${ADD_DB_NAME}
+      - POSTGRES_USER=${APP_DB_USERNAME}
+      - POSTGRES_PASSWORD=${APP_DB_PASSWORD}
     expose:
       - 5432
     ports:
@@ -22,7 +23,7 @@ services:
     container_name: tsk_mongodb
     networks:
       - taskurotta
-    image: mongo:3.2.0
+    image: repository.technokad.ru:5000/mongo:3.7.9
     volumes:
       - ./data/mongo:/data/db
       - ./etc/mongo:/etc/mongo
@@ -38,18 +39,23 @@ services:
       - ./data/node1:/tmp/javadumps
       - ./data/node1:/var/log/taskurotta
       - ./etc/node:/etc/taskurotta/server
+      - ../taskurotta/target/taskurotta-$MVN_PROJECT_VERSION.jar:/opt/taskurotta/taskurotta.jar
     links:
       - tsk_mongodb
     command: |
       java -Xmx512m -Xms512m -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp/javadumps
       -Dhazelcast.health.monitoring.level=OFF -server -jar /opt/taskurotta/taskurotta.jar server
       /etc/taskurotta/server/config-pg.yml
+    expose:
+      - 8811
+    ports:
+      - "8811:8811"
 
   tsk_http:
     container_name: tsk_http
     networks:
       - taskurotta
-    image: haproxy:1.6.2
+    image: haproxy:3.2.8
     volumes:
       - ./etc/haproxy/haproxy.conf:/usr/local/etc/haproxy/haproxy.cfg
       - ./data/haproxy:/var/log/haproxy

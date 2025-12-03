@@ -311,6 +311,7 @@ public class ObjectFactory {
             optionsContainer.setCustomId(taskConfig.getCustomId());
             optionsContainer.setTaskList(taskConfig.getTaskList());
             optionsContainer.setTimeout(taskConfig.getTimeout());
+            optionsContainer.setIdempotencyKey(taskConfig.getIdempotencyKey());
             RetryPolicyConfig rp = taskConfig.getRetryPolicyConfig();
             if (rp != null) {
                 optionsContainer.setRetryPolicyConfigContainer(new RetryPolicyConfigContainer(

@@ -102,6 +102,9 @@ public class GeneralTaskServer implements TaskServer {
             throw new IllegalStateException("Can not start process with task type[" + task.getType() + "]. Should be one of [" + TaskType.DECIDER_START + ", " + TaskType.WORKER_SCHEDULED + "]");
         }
 
+        // fill startTime ifAbsent
+        task.setStartTimeIfAbsent();
+
         // registration of new process
         // atomic statement
         try {
@@ -230,6 +233,16 @@ public class GeneralTaskServer implements TaskServer {
 
         if (taskDecision == null) {
             throw new IllegalStateException("Task decision not found. " + decision);
+        }
+
+        // fill absent startTime
+        TaskContainer[] tasks = taskDecision.getTasks();
+        if (tasks != null) {
+            long now = System.currentTimeMillis();
+
+            for (int i = 0; i < tasks.length; i++) {
+                tasks[i].setStartTimeIfAbsent(now);
+            }
         }
 
         UUID taskId = taskDecision.getTaskId();

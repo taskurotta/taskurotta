@@ -4,7 +4,7 @@
 
     <groupId>ru.taskurotta</groupId>
     <artifactId>ru.taskurotta</artifactId>
-    <version>12.4</version>
+    <version>12.5</version>
     <packaging>pom</packaging>
 
     <name>Taskurotta :: Parent module</name>
@@ -14,6 +14,12 @@
             <email>taskurotta@googlegroups.com</email>
         </developer>
     </developers>
+    <dependencies>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+    </dependencies>
     <url>http://taskurotta.org</url>
 
     <scm>

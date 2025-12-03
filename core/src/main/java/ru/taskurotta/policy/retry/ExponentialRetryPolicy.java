@@ -14,11 +14,16 @@
  */
 package ru.taskurotta.policy.retry;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import ru.taskurotta.internal.RuntimeContext;
 import ru.taskurotta.policy.PolicyConstants;
 
 import java.util.Collection;
 
 public class ExponentialRetryPolicy extends TimeRetryPolicyBase {
+
+    private static final Logger logger = LoggerFactory.getLogger(ExponentialRetryPolicy.class);
 
     public ExponentialRetryPolicy(long initialRetryIntervalSeconds) {
         this.initialRetryIntervalSeconds = initialRetryIntervalSeconds;

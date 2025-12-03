@@ -14,7 +14,8 @@ public class SumWorkerImpl implements SumWorker {
         int maxNumberOfTries = 4;
         if (numberOfTries < maxNumberOfTries) {
             numberOfTries++;
-            throw new RuntimeException("Test exception");
+            new RuntimeException("Test exception2").printStackTrace();
+            throw new RuntimeException("Test exception2");
         }
 
         return a + b;

@@ -118,6 +118,18 @@ public class TaskContainer implements Serializable {
         this.errorAttempts = errorAttempts;
     }
 
+    public void setStartTimeIfAbsent() {
+        if (this.startTime == -1) {
+            this.startTime = System.currentTimeMillis();
+        }
+    }
+
+    public void setStartTimeIfAbsent(long startTime) {
+        if (this.startTime == -1) {
+            this.startTime = startTime;
+        }
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

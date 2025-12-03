@@ -12,13 +12,27 @@ spreader:
         properties:
           a: 1
           b: 2
-
+          count: 1000000
+          startTasks: true
+          startTasksInBackground: false
+          endpoint: "http://localhost:8811"
+          threadPoolSize: 20
+          readTimeout: 0
+          connectTimeout: 3000
 actor:
   - SumDecider:
       actorInterface: ru.taskurotta.recipes.retrypolicy.decider.SumDecider
+      runtimeConfig: MainRuntimeConfig
+      spreaderConfig: MainTaskSpreaderConfig
+      profilerConfig: MainProfilerConfig
+      count: 1
 
   - SumWorker:
       actorInterface: ru.taskurotta.recipes.retrypolicy.workers.SumWorker
+      runtimeConfig: MainRuntimeConfig
+      spreaderConfig: MainTaskSpreaderConfig
+      profilerConfig: MainProfilerConfig
+      count: 1
 
 logback:
     appender:

@@ -44,12 +44,12 @@ f_wait_log_message()
 
 do_up()
 {
-    docker-compose -f docker-compose.yml -f docker-compose_dev.yml up -d
+    docker-compose -f docker-compose.yml -f docker-compose_pg.yml up -d
 }
 
 do_stop()
 {
-    docker-compose -f docker-compose.yml -f docker-compose_dev.yml stop
+    docker-compose -f docker-compose.yml -f docker-compose_pg.yml stop
 }
 
 do_e2e() {

@@ -1,5 +1,6 @@
 package ru.taskurotta.recipes.retrypolicy.workers;
 
+import ru.taskurotta.annotation.ExponentialRetry;
 import ru.taskurotta.annotation.LinearRetry;
 import ru.taskurotta.annotation.Worker;
 
@@ -10,6 +11,13 @@ import ru.taskurotta.annotation.Worker;
  */
 @Worker
 public interface SumWorker {
-    @LinearRetry(initialRetryIntervalSeconds = 5)
-    public int sum(int a, int b);
+//    @LinearRetry(initialRetryIntervalSeconds = 5)
+@ExponentialRetry(
+        initialRetryIntervalSeconds = 5,
+        maximumRetryIntervalSeconds = 30,
+        retryExpirationSeconds = 120, // неделя
+        exceptionsToRetry = {
+                RuntimeException.class
+        }
+)public int sum(int a, int b);
 }
