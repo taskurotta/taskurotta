@@ -36,6 +36,10 @@ public final class ClientCheckerUtil {
         for (Method method : actorInterface.getMethods()) {
             String methodName = method.getName();
 
+            if (methodName.contains("$")) {
+                continue; // игнорируем сгенерированные Kotlin методы
+            }
+
             Method anotherMethodWithSameName = actorMethodMap.put(methodName, method);
             if (anotherMethodWithSameName != null) {
                 throw new ProxyFactoryException("Method overloading are not supported. Actor interface has two methods ("
@@ -47,7 +51,13 @@ public final class ClientCheckerUtil {
 
         for (Method clientMethod : clientInterface.getDeclaredMethods()) {
 
-            Method actorMethod = actorMethodMap.get(clientMethod.getName());
+            String methodName = clientMethod.getName();
+
+            if (methodName.contains("$")) {
+                continue; // игнорируем сгенерированные Kotlin методы
+            }
+
+            Method actorMethod = actorMethodMap.get(methodName);
             if (actorMethod == null) {
 
                 throw new ProxyFactoryException("Client (" + clientInterface.getName() + ") method ("
