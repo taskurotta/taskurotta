@@ -1,0 +1,7 @@
+# pgbouncer userlist: строка «имя_пользователя пароль». Заполнить локальными
+# e2e-учётками (рецепт — playbook.md, раздел «env: как заполнить»).
+# Факт о стеке: bitnami-образ pgbouncer строит свой userlist из env
+# (пользователь postgres, пароль POSTGRESQL_PASSWORD) и смонтированный файл
+# игнорирует — рабочая учётка taskurotta: postgres. Файл нужен, если используется
+# образ pgbouncer, читающий /bitnami/userlists.txt.
+e2e_user1 REPLACE_WITH_LOCAL_E2E_PASSWORD

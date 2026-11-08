@@ -15,66 +15,78 @@ public class DataRowVO extends BaseDataRowVO {
     private AtomicReferenceArray<DataPointVO<Long>> dsCounts;
     private AtomicReferenceArray<DataPointVO<Double>> dsMean;
 
-    public DataRowVO(int size, String metricName, String dataSetName) {
-        super(size, metricName, dataSetName);
+    public DataRowVO(int size, long binMillis, String metricName, String dataSetName) {
+        super(size, binMillis, metricName, dataSetName);
 
         this.dsCounts = new AtomicReferenceArray<DataPointVO<Long>>(size);
         this.dsMean = new AtomicReferenceArray<DataPointVO<Double>>(size);
     }
 
-    //Return updated position
+    /**
+     * Запись отметки в бин по времени данных.
+     * count бина накапливается (сумма за бин), mean бина — среднее, взвешенное по count
+     * (merge: (mean_old * count_old + mean_new * count_new) / (count_old + count_new)).
+     * Накопление — только внутри одного абсолютного слота; если слот переиспользован
+     * (кольцо обошло полный оборот), данные прежнего оборота сбрасываются —
+     * кольцо остаётся скользящим окном.
+     * Idle-отметка (count=0) бин не пишет: неактивный ключ точками не заполняется,
+     * пустые бины остаются «дырами» в графике.
+     *
+     * @return индекс бина, в который записана отметка; -1, если отметка не писалась (count=0)
+     */
     public int populate(long count, double mean, long measureTime) {
+        if (count <= 0) {
+            return -1;
+        }
 
-        int position = getPosition();
-        DataPointVO countValue = this.dsCounts.get(position);
+        int position = binIndex(measureTime);
+        long slot = measureTime / binMillis;
+
+        long oldCount = 0L;
+        DataPointVO<Long> countValue = dsCounts.get(position);
+        // Кольцо — скользящее окно: слот переиспользуется каждый полный оборот.
+        // Данные прежнего оборота (time из другого абсолютного слота) сбрасываются,
+        // а не суммируются — иначе «всего за окно» накапливал бы все обороты.
+        boolean sameSlot = countValue != null && countValue.getTime() / binMillis == slot;
+        if (sameSlot && countValue.getValue() != null) {
+            oldCount = countValue.getValue();
+        }
+
+        double oldMean = 0.0;
+        DataPointVO<Double> meanValue = dsMean.get(position);
+        if (sameSlot && meanValue != null && meanValue.getValue() != null) {
+            oldMean = meanValue.getValue();
+        }
+
+        long totalCount = oldCount + count;
+        double mergedMean = totalCount > 0 ? (oldMean * oldCount + mean * count) / totalCount : mean;
+
         if (countValue != null) {
-            countValue.update(count, measureTime);
-
+            countValue.update(totalCount, measureTime);
         } else {
-            this.dsCounts.set(position, new DataPointVO<Long>(count, measureTime));
+            dsCounts.set(position, new DataPointVO<Long>(totalCount, measureTime));
         }
 
-        DataPointVO meanValue = this.dsMean.get(position);
         if (meanValue != null) {
-            meanValue.update(mean, measureTime);
-
+            meanValue.update(mergedMean, measureTime);
         } else {
-            this.dsMean.set(position, new DataPointVO<Double>(mean, measureTime));
+            dsMean.set(position, new DataPointVO<Double>(mergedMean, measureTime));
         }
-
 
         this.updated = System.currentTimeMillis();
-        if (count > 0 && lastActive < measureTime) {
+        if (lastActive < measureTime) {
             this.lastActive = measureTime;
         }
         return position;
     }
 
-    public double getAverageMean() {
-        double result = 0L;
-        int resultCount = 0;
-
-        for (int i = 0; i < this.size; i++) {
-            DataPointVO<Double> dataPoint = dsMean.get(i);
-            if (dataPoint != null) {
-                Double value = dsMean.get(i).getValue();
-                if (value != null && value >= 0) {
-                    result += value;
-                    resultCount++;
-                }
-            }
-        }
-
-        if (resultCount > 0) {
-            result = result / (double) resultCount;
-        }
-
-        return result;
-    }
-
-    public long getTotalCount(int positionFrom, int positionTo) {
+    /**
+     * «Всего за окно»: сумма всех бин кольца, включая недополненный текущий бин
+     * (допуск: не более одного интервала агрегации).
+     */
+    public long getTotalCount() {
         long result = 0L;
-        for (int i = positionFrom; i < positionTo; i++) {
+        for (int i = 0; i < this.size; i++) {
             DataPointVO<Long> dataPoint = dsCounts.get(i);
             if (dataPoint != null) {
                 Long value = dataPoint.getValue();
@@ -86,12 +98,9 @@ public class DataRowVO extends BaseDataRowVO {
         return result;
     }
 
-    public long getTotalCount() {
-        return getTotalCount(0, this.size);
-    }
-
     /**
-     * Fastest way (one time scan) to get all summary data
+     * Быстрый способ (один проход) получить все сводные данные по кольцу.
+     * Средневзвешенное mean по count; учитывает все заполненные бины.
      */
     public DataRowSummary getSummary() {
         DataRowSummary summary = new DataRowSummary();
@@ -146,6 +155,32 @@ public class DataRowVO extends BaseDataRowVO {
         summary.setTimeMax(timeMax);
 
         return summary;
+    }
+
+    /**
+     * Снимок только полных бин (binStart + binSize &lt;= now): недополненный текущий бин
+     * в отдачу графиков не попадает. Пустые бины — null (маркер «дыры»).
+     */
+    public DataPointVO<Long>[] getCompleteCounts(long now) {
+        return snapshotCompleteBins(dsCounts, now);
+    }
+
+    public DataPointVO<Double>[] getCompleteMeans(long now) {
+        return snapshotCompleteBins(dsMean, now);
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T extends Number> DataPointVO<T>[] snapshotCompleteBins(AtomicReferenceArray<DataPointVO<T>> array, long now) {
+        int incompleteBin = binIndex(now);
+        DataPointVO<T>[] result = new DataPointVO[size - 1];
+        int k = 0;
+        for (int i = 0; i < size; i++) {
+            if (i == incompleteBin) {
+                continue;
+            }
+            result[k++] = array.get(i);
+        }
+        return result;
     }
 
     public AtomicReferenceArray<DataPointVO<Long>> getDsCounts() {

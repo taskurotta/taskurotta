@@ -1,0 +1,30 @@
+version: "2.2"
+
+services:
+  top-pgbouncer:
+    container_name: e2e-pgbouncer
+    image: repository.technokad.ru:5000/pgbouncer:1.23.0
+    networks:
+      - topnet
+    ports:
+      - "6432:6432"
+    volumes:
+      - ./userlists.txt:/bitnami/userlists.txt:ro
+    environment:
+      - PGBOUNCER_DATABASE=*
+      - POSTGRESQL_HOST=${PGBOUNCER_POSTGRES_HOST}
+      - POSTGRESQL_PORT=${PGBOUNCER_POSTGRES_PORT}
+      - POSTGRESQL_PASSWORD=${PGBOUNCER_POSTGRES_PASS}
+      - PGBOUNCER_IGNORE_STARTUP_PARAMETERS=search_path, extra_float_digits
+      - PGBOUNCER_MAX_CLIENT_CONN=${PGBOUNCER_MAX_CLIENT_CONN}
+      - PGBOUNCER_DEFAULT_POOL_SIZE=${PGBOUNCER_POOL_SIZE}
+      - PGBOUNCER_RESERVE_POOL_SIZE=${PGBOUNCER_POOL_SIZE}
+      - PGBOUNCER_MIN_POOL_SIZE=${PGBOUNCER_POOL_MIN}
+      - PGBOUNCER_POOL_MODE=transaction
+      - PGBOUNCER_MAX_PREPARED_STATEMENTS=${PGBOUNCER_MAX_PREPARED_STATEMENTS}
+    extra_hosts:
+      - top-db:host-gateway
+
+networks:
+  topnet:
+    external: true

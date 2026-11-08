@@ -10,6 +10,11 @@ logs/
 # Idea
 **/*.iml
 .idea/
+
+# Agent tooling workspaces (local, per team convention)
+.scratch/
+.specify/
+specs/
 target/
 */target/
 */dependency-reduced-pom.xml

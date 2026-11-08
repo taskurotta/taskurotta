@@ -7,7 +7,7 @@ import java.util.concurrent.atomic.AtomicReferenceArray;
 
 /**
  * User: dimadin
- * Date: 24.10.13 17:02
+ * Date: 25.10.13 17:02
  */
 public class NumberDataRowVO extends BaseDataRowVO {
 
@@ -15,15 +15,19 @@ public class NumberDataRowVO extends BaseDataRowVO {
 
     private AtomicReferenceArray<DataPointVO<Number>> data;
 
-    public NumberDataRowVO(int size, String metricName, String dataSetName) {
-        super(size, metricName, dataSetName);
+    public NumberDataRowVO(int size, long binMillis, String metricName, String dataSetName) {
+        super(size, binMillis, metricName, dataSetName);
         data = new AtomicReferenceArray<DataPointVO<Number>>(size);
     }
 
-    //Return updated position
+    /**
+     * Запись выборки в бин по времени данных: last-write-wins — в бине остаётся
+     * последняя выборка за бин (период выборки короче бина).
+     */
+    //Return updated bin position
     public int populate(Number value, long measureTime) {
 
-        int position = getPosition();
+        int position = binIndex(measureTime);
         DataPointVO<Number> positionValue = data.get(position);
 
         if (positionValue != null) {
@@ -39,45 +43,44 @@ public class NumberDataRowVO extends BaseDataRowVO {
         return position;
     }
 
+    /**
+     * «Последнее значение»: значение бина, в который попала последняя запись
+     * (lastActive); если он пуст — свежайший заполненный бин до него.
+     * Ничего не записано — null (null-guard).
+     */
     public Number getLastValue() {
-        int position = getCurrentPositionOnly() - 1;
-        if (position < 0) {
-            position = size - 1;
-        }
-
-        // position can be incremented but value not populated yet - see populate() method
-        DataPointVO<Number> positionValue = data.get(position);
-
-        int previousPosition = position - 1;
-        if (previousPosition < 0) {
-            previousPosition = size - 1;
-        }
-
-        DataPointVO<Number> previousPositionValue = data.get(previousPosition);
-
-        if (positionValue == null) {
-            if (previousPositionValue != null) {
-                // position value not populated yet
-                return previousPositionValue.getValue();
-            }
-
+        if (lastActive <= 0) {
             return null;
+        }
 
-        } else {
-            if (positionValue.getTime() > previousPositionValue.getTime()) {
+        int position = binIndex(lastActive);
+        for (int i = 0; i < size; i++) {
+            DataPointVO<Number> positionValue = data.get(position);
+            if (positionValue != null && positionValue.getValue() != null) {
                 return positionValue.getValue();
             }
-
-            // position value has old data (not populated yet). use previous value
-            return previousPositionValue.getValue();
+            position = position - 1;
+            if (position < 0) {
+                position = size - 1;
+            }
         }
-
+        return null;
     }
 
-    public DataPointVO<Number>[] getCurrentData() {
-        DataPointVO<Number>[] result = new DataPointVO[size];
+    /**
+     * Снимок только полных бин (binStart + binSize &lt;= now): недополненный текущий бин
+     * в отдачу графиков не попадает. Пустые бины — null (маркер «дыры»).
+     */
+    @SuppressWarnings("unchecked")
+    public DataPointVO<Number>[] getCompleteData(long now) {
+        int incompleteBin = binIndex(now);
+        DataPointVO<Number>[] result = new DataPointVO[size - 1];
+        int k = 0;
         for (int i = 0; i < size; i++) {
-            result[i] = data.get(i);
+            if (i == incompleteBin) {
+                continue;
+            }
+            result[k++] = data.get(i);
         }
         return result;
     }

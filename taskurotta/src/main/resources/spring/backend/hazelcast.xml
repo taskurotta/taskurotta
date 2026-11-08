@@ -313,9 +313,20 @@
     <!-- /Task server -->
 
     <!-- Metrics data support -->
-    <bean id="metricsDataHandler" class="ru.taskurotta.service.metrics.handler.MetricsDataHandler" init-method="init"/>
+    <bean id="metricsDataHandler" class="ru.taskurotta.service.metrics.handler.MetricsDataHandler" init-method="init">
+        <constructor-arg name="hourBinSeconds" value="${metric.data.method.hour-bin-seconds}"/>
+        <constructor-arg name="dayBinSeconds" value="${metric.data.method.day-bin-seconds}"/>
+        <constructor-arg name="maxRows" value="${metric.data.store.max-rows}"/>
+        <constructor-arg name="inactiveTtlSeconds" value="${metric.data.store.inactive-ttl-seconds}"/>
+        <constructor-arg name="statusLogPeriodSeconds" value="${metric.data.status-log-period-seconds}"/>
+    </bean>
     <bean id="metricsNumberDataHandler" class="ru.taskurotta.service.metrics.handler.NumberDataHandler"
-          init-method="init"/>
+          init-method="init">
+        <constructor-arg name="periodicBinSeconds" value="${metric.data.periodic.bin-seconds}"/>
+        <constructor-arg name="maxRows" value="${metric.data.store.max-rows}"/>
+        <constructor-arg name="inactiveTtlSeconds" value="${metric.data.store.inactive-ttl-seconds}"/>
+        <constructor-arg name="statusLogPeriodSeconds" value="${metric.data.status-log-period-seconds}"/>
+    </bean>
     <!-- Metrics data support -->
 
     <!-- Executors -->

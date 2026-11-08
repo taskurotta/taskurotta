@@ -40,12 +40,7 @@
         <property name="methodDataRetriever" ref="metricsDataHandler"/>
         <property name="numberDataRetriever" ref="metricsNumberDataHandler"/>
         <property name="methodMetricsPeriodSeconds" value="${metric.data.method.period-in-seconds}"/>
-        <property name="periodicMetricPeriods">
-            <map>
-                <entry key="queueSize" value="${metric.data.queue-size.period-in-seconds}"/>
-                <entry key="memory" value="${metric.data.memory.period-in-seconds}"/>
-            </map>
-        </property>
+        <property name="periodicBinSeconds" value="${metric.data.periodic.bin-seconds}"/>
     </bean>
 
     <bean id="consoleMetricsOptionsHandler"

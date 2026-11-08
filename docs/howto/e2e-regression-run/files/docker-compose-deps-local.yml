@@ -1,0 +1,25 @@
+version: "2.2"
+
+services:
+  top-db:
+    image: repository.technokad.ru:5000/postgres:16.5
+    container_name: e2e-top-db16
+    ports:
+      - "5434:5432"
+    volumes:
+      - e2e-top-db16:/var/lib/postgresql/data
+      - ${E2E_LOG_DIR:?не задан E2E_LOG_DIR (см. .env.example)}/postgres:/var/logs
+    environment:
+      - POSTGRES_MULTIPLE_DATABASES=application,auth,taskurotta,files
+      - POSTGRES_USER=${APP_DB_USERNAME}
+      - POSTGRES_PASSWORD=${APP_DB_PASSWORD}
+    networks:
+      - topnet
+
+volumes:
+  e2e-top-db16:
+    name: e2e-top-db16
+
+networks:
+  topnet:
+    external: true

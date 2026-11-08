@@ -1,7 +1,5 @@
 package ru.taskurotta.service.metrics.model;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
 /**
  * Created with IntelliJ IDEA.
  * User: dimadin
@@ -12,23 +10,27 @@ public class BaseDataRowVO {
     protected final String dataSetName;
     protected int size = -1;
 
-    protected final AtomicInteger counter = new AtomicInteger(0);
+    /**
+     * Размер агрегационного бина в миллисекундах. Индекс слота кольца вычисляется
+     * по абсолютному времени данных: (time / binMillis) % size; окно wrap = size * binMillis.
+     */
+    protected final long binMillis;
+
     protected volatile long updated = -1L;
     protected volatile long lastActive = -1L;
 
-    public BaseDataRowVO(int size, String metricName, String dataSetName) {
+    public BaseDataRowVO(int size, long binMillis, String metricName, String dataSetName) {
         this.metricName = metricName;
         this.dataSetName = dataSetName;
         this.size = size;
+        this.binMillis = binMillis;
     }
 
-    protected int getPosition() {
-        counter.compareAndSet(this.size, 0);//reset counter if exceeded
-        return counter.getAndIncrement();
-    }
-
-    protected int getCurrentPositionOnly() {
-        return counter.get();
+    /**
+     * Индекс бина по абсолютному времени данных. t и t + окно (size * binMillis) — один и тот же бин.
+     */
+    protected int binIndex(long time) {
+        return (int) ((time / binMillis) % size);
     }
 
     public String getMetricsName() {

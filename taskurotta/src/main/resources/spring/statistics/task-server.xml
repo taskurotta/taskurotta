@@ -17,6 +17,7 @@
         <constructor-arg name="dumpingThreads" value="3"/>
         <constructor-arg name="dataListener" ref="metricsDataHandler"/>
         <constructor-arg name="numberDataListener" ref="metricsNumberDataHandler" />
+        <constructor-arg name="periodicBinSeconds" value="${metric.data.periodic.bin-seconds}"/>
     </bean>
 
 </beans>

@@ -38,7 +38,21 @@ public class MetricsFactory {
 
     private NumberDataListener numberDataListener;
 
+    /**
+     * Агрегационный интервал бина периодических (числовых) метрик, секунд.
+     * Размер кольца = 86400/periodicBinSeconds (24-ч окно) — от периода выборки НЕ зависит.
+     */
+    private int periodicBinSeconds;
+
     public MetricsFactory(int dumpPeriod, int dumpingThreads, DataListener dataListener, NumberDataListener numberDataListener) {
+        this(dumpPeriod, dumpingThreads, dataListener, numberDataListener, 60);
+    }
+
+    public MetricsFactory(int dumpPeriod, int dumpingThreads, DataListener dataListener, NumberDataListener numberDataListener, int periodicBinSeconds) {
+        if (periodicBinSeconds <= 0 || TimeConstants.SECONDS_IN_24_HOURS % periodicBinSeconds != 0) {
+            throw new IllegalArgumentException("periodic bin must be positive and divide the 24-hour window: periodicBinSeconds=" + periodicBinSeconds);
+        }
+
         this.executorService = Executors.newScheduledThreadPool(dumpingThreads, new ThreadFactory() {
             private int counter = 0;
 
@@ -56,6 +70,7 @@ public class MetricsFactory {
         this.dumpPeriod = dumpPeriod;
         this.dataListener = dataListener;
         this.numberDataListener = numberDataListener;
+        this.periodicBinSeconds = periodicBinSeconds;
     }
 
     public Metric getInstance(String name, int dumpPeriodMs, DataListener dataListener) {
@@ -80,8 +95,8 @@ public class MetricsFactory {
 
     public PeriodicMetric getPeriodicInstance(String name, int periodSeconds) {
 
-        //number of points to cover 24 hours period.
-        int dataPointsCount = TimeConstants.SECONDS_IN_24_HOURS / periodSeconds;
+        //number of bins to cover 24 hours period; от периода выборки не зависит (агрегация по бинам).
+        int dataPointsCount = TimeConstants.SECONDS_IN_24_HOURS / periodicBinSeconds;
 
         return new PeriodicMetric(name, executorService, numberDataListener, periodSeconds, dataPointsCount);
     }

@@ -15,7 +15,6 @@ import ru.taskurotta.service.metrics.model.DataPointVO;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Provides metrics data for console resource
@@ -29,7 +28,12 @@ public class MetricsDataProvider implements MetricsConstants, TimeConstants {
     private MetricsMethodDataRetriever methodDataRetriever;
     private MetricsNumberDataRetriever numberDataRetriever;
     private int methodMetricsPeriodSeconds = 0;
-    private Map<String, Integer> periodicMetricPeriods = null;
+    /**
+     * Агрегационный интервал бина периодических (числовых) метрик, секунд.
+     * Кольцо хранит 24-ч окно бинами по этому интервалу — подмножество графика
+     * считается от него (шаг = период бина, не период выборки).
+     */
+    private int periodicBinSeconds = 60;
 
     public List<DatasetVO> getDataResponse(String metricName, List<String> dataSetNames, String scope, String dataType, String period) {
         List<DatasetVO> result = new ArrayList<>();
@@ -75,7 +79,7 @@ public class MetricsDataProvider implements MetricsConstants, TimeConstants {
         MetricsDataUtils.sortDataSet(rawData);
 
 
-        int periodSeconds = periodicMetricPeriods.containsKey(metricName)? periodicMetricPeriods.get(metricName): 5;//5 sec is default for now
+        int periodSeconds = periodicBinSeconds;//шаг подмножества = агрегационный интервал бина, сек
         DataPointVO <Number>[] timeLimitedSubset = getSubset(rawData, getSubsetSizeForPeriod(rawData.length, periodSeconds, period));
         List<Number[]> dataPoints = null;
         dataPoints = MetricsDataUtils.convertToTimedDataRow(timeLimitedSubset);
@@ -226,7 +230,7 @@ public class MetricsDataProvider implements MetricsConstants, TimeConstants {
     }
 
     @Required
-    public void setPeriodicMetricPeriods(Map<String, Integer> periodicMetricPeriods) {
-        this.periodicMetricPeriods = periodicMetricPeriods;
+    public void setPeriodicBinSeconds(int periodicBinSeconds) {
+        this.periodicBinSeconds = periodicBinSeconds;
     }
 }

@@ -1,0 +1,56 @@
+version: "2.2"
+
+services:
+  taskurotta: &tsk_node
+    networks:
+      topnet:
+        aliases:
+          - taskurotta
+    container_name: e2e-taskurotta
+    image: repository.technokad.ru:5000/taskurotta:12.5
+    links:
+      - mongodb
+    volumes:
+      - /tmp/javadumps
+      - ${E2E_LOG_DIR:?не задан E2E_LOG_DIR (см. .env.example)}/taskurotta:/var/log/taskurotta
+      - ${TASKUROTTA_CONFIG_DIR:?не задан TASKUROTTA_CONFIG_DIR (каталог server/ боевого деплоя)}:/etc/taskurotta/server:ro
+      - ${TASKUROTTA_SCHEDULER_DIR:?не задан TASKUROTTA_SCHEDULER_DIR (каталог scheduler/ боевого деплоя)}:/etc/taskurotta/job_store:ro
+    expose:
+      - "8811"
+    ports:
+      - "8815:8811"
+    depends_on:
+      - top-pgbouncer
+    #command: /bin/bash -c 'java -Xmx512m -Xms512m -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp/javadumps -Dhazelcast.health.monitoring.level=OFF -server -jar /opt/taskurotta/taskurotta.jar server /etc/taskurotta/server/config.yml' &> /var/log/taskurotta/console.log
+    command: >
+      /bin/bash -c 'java -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp/javadumps -Xmx1024m -Dhazelcast.health.monitoring.level=OFF
+      -Ddb.url=${TASKUROTTA_DB_URL} -Ddb.user=${TASKUROTTA_DB_USER} -Ddb.password=${TASKUROTTA_DB_PASS} -server
+      -jar /opt/taskurotta/taskurotta.jar server /etc/taskurotta/server/${TASKUROTTA_CONFIG}' &> /var/log/taskurotta/console.log
+
+  mongodb:
+    ports:
+      - "27017:27017"
+    networks:
+      topnet:
+        aliases:
+          - mongodb
+    container_name: e2e-mongodb
+    image: repository.technokad.ru:5000/mongo:3.7.9
+    volumes:
+      - e2e-mongo-data:/data/db
+      - ./mongodb.conf:/etc/mongodb.conf:ro
+    command: -f /etc/mongodb.conf
+    # e2e-правка: дефолтный docker soft-limit nofile=1024 исчерпывается на пике
+    # (363 очереди task_*, курсоры delay-сканов) -> «Too many open files», SIGABRT.
+    # Лимит 65536 + restart, чтобы краш не портил прогон.
+    ulimits:
+      nofile: 65536
+    restart: unless-stopped
+
+volumes:
+  e2e-mongo-data:
+    name: e2e-mongo-data
+
+networks:
+  topnet:
+    external: true
