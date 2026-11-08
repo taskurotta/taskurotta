@@ -1,4 +1,4 @@
-FROM taskurotta/java-oracle-perf
+FROM repository.technokad.ru:5000/java-oracle-perf:latest
 MAINTAINER Taskurotta <taskurotta@googlegroups.com>
 
 # Install taskurotta server
