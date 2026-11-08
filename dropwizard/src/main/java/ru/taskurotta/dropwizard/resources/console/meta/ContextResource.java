@@ -122,18 +122,44 @@ public class ContextResource implements ServerPropertiesAware, ApplicationContex
         }
     }
 
+    private static final String MASKED_VALUE = "***";
+
+    private static final String[] SENSITIVE_KEYS = {
+            "password", "url", "user",
+            "oradb.password", "oradb.user",
+            "notifications.mail.password", "notifications.mail.user", "notifications.mail.from"
+    };
+
+    private static final String[] SENSITIVE_SUBSTRINGS = {
+            "passw", "pwd", "secret", "token"
+    };
+
     @GET
     @Path("/props")
-    //TODO: filter values with a special prefix/suffix? Exposing all props to the web is not a good idea
     public Map<String, String> getTaskServerProperties() {
         Map<String, String> result = null;
         if (properties!=null && !properties.isEmpty()) {
             result = new HashMap<>();
             for (String key : properties.stringPropertyNames()) {
-                result.put(key, properties.getProperty(key, ""));
+                result.put(key, isSensitiveKey(key) ? MASKED_VALUE : properties.getProperty(key, ""));
             }
         }
         return result;
+    }
+
+    private static boolean isSensitiveKey(String key) {
+        String lowerKey = key.toLowerCase();
+        for (String sensitiveKey : SENSITIVE_KEYS) {
+            if (lowerKey.equals(sensitiveKey)) {
+                return true;
+            }
+        }
+        for (String substring : SENSITIVE_SUBSTRINGS) {
+            if (lowerKey.contains(substring)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
